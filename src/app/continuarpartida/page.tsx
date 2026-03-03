@@ -11,7 +11,7 @@ export default function ContinuarPartida() {
                 <Link href="/"className="flex text-white font-sans pl-90">Crear Partida</Link>
                 <h1 className="flex underline font-sans pr-90 text-gray-400">Continuar</h1>
             </div>
-            <ul className="mt-4 flex flex-col text-white ">
+            <ul className="mt-4 flex flex-col text-white w-full ">
                 <SlotPartida jugadores={["Jugador 1", "Jugador 2"]} fechaCreacion="2024-06-01" turnoActual="Jugador 1" creadorPartida="Jugador 1"/>
                 <SlotPartida jugadores={["Jugador 1", "Jugador 2", "Jugador 3"]} fechaCreacion="2024-06-02" turnoActual="Jugador 2" creadorPartida="Jugador 2"/>
             </ul>
