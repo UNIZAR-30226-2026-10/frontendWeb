@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { SlotMazo } from "../../components/interfaz/SlotMazo";
+import { SlotMazo } from "@/components/interfaz/SlotMazo";
 
 export default function Home() {
   return (
