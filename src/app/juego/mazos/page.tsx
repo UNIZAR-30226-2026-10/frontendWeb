@@ -8,7 +8,7 @@ export default function Home() {
             <h1 className='text-white text-2xl text-center'>Mis mazos (2/8)</h1>       
             <div className="mt-4 flex rounded-lg bg-gray-700 font-sans font-bold w-60 h-15 items-center justify-center text-white hover:bg-gray-600 gap-4">  
               <h1 className="border-2 border-white rounded-full w-6 h-6 flex items-center justify-center">+</h1>  
-              <Link href="/mazos/editarmazos" className="hover:underline">
+              <Link href="/juego/mazos/editarmazos" className="hover:underline">
                 Nuevo Mazo
               </Link>
             </div>

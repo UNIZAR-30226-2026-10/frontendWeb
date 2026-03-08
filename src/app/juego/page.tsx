@@ -7,7 +7,7 @@ export default function Home() {
     <main className="min-h-screen">
       <div className="flex justify-between text-2xl">
       <h1 className="flex underline font-sans pl-90 text-gray-400">Crear Partida</h1>
-      <Link href="/continuarpartida"className="flex text-white font-sans pr-90">Continuar</Link>
+      <Link href="/juego/continuarpartida"className="flex text-white font-sans pr-90">Continuar</Link>
       </div>
       <div className="flex items-center justify-center h-full gap-40 pt-10">
         <div className="flex flex-col gap-30">

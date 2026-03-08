@@ -8,7 +8,7 @@ export default function ContinuarPartida() {
     return (
         <main className="min-h-screen">
             <div className="flex justify-between text-2xl">
-                <Link href="/"className="flex text-white font-sans pl-90">Crear Partida</Link>
+                <Link href="/juego"className="flex text-white font-sans pl-90">Crear Partida</Link>
                 <h1 className="flex underline font-sans pr-90 text-gray-400">Continuar</h1>
             </div>
             <ul className="mt-4 flex flex-col text-white w-full ">

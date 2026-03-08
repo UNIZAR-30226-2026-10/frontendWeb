@@ -16,7 +16,7 @@ export const SlotMazo = (props: SlotMazoProps) => {
           <div className="flex text-2xl justify-between">
               <h1 className="text-white text-3xl">{props.nombreMazo} {props.mazoEnUso ? "(En uso)" : ""}</h1>
               <div className="flex items-center gap-10 pt-6">
-                <Link href="/mazos/editarmazos" className="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-500">Editar</Link>
+                <Link href="/juego/mazos/editarmazos" className="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-500">Editar</Link>
                 <button
                   type="button"
                   onClick={() => console.log('Borrar mazo:', props.nombreMazo)} /*Llamada a la API para borrar el mazo*/
