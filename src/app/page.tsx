@@ -3,7 +3,7 @@ import Link from "next/dist/client/link";
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
-export default function LoginPage() {
+export default function PaginaRegistro() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const router = useRouter();
@@ -21,7 +21,7 @@ export default function LoginPage() {
       
       <div className="relative z-10 w-full max-w-md bg-[#121943] p-8 rounded-xl shadow-2xl border border-blue-500/30">
         <div className="flex flex-col items-center mb-8">
-          <div className="text-4xl mb-2 text-white font-bold">S&P REMIX</div>
+          <div className="text-4xl mb-2 text-white font-bold">S&E REMIX</div>
           <h1 className="text-3xl font-bold text-white tracking-tight">¡Bienvenido! Inicia Sesion</h1>
         </div>
 
@@ -34,7 +34,7 @@ export default function LoginPage() {
               onChange={(e) => setEmail(e.target.value)}
               className="bg-[#0a0f2c] border border-blue-900 focus:border-blue-400 outline-none text-white p-3 rounded-md transition-all"
               placeholder="tu@email.com"
-              //required
+              //required (esto es para el principio, luego se descomenta)
             />
           </div>
 
@@ -46,7 +46,7 @@ export default function LoginPage() {
               onChange={(e) => setPassword(e.target.value)}
               className="bg-[#0a0f2c] border border-blue-900 focus:border-blue-400 outline-none text-white p-3 rounded-md transition-all"
               placeholder="••••••••"
-              //required
+              //required (esto es para el principio, luego se descomenta)
             />
           </div>
 
@@ -59,7 +59,7 @@ export default function LoginPage() {
 
           <div className="text-center mt-4">
             <p className="text-gray-400 text-sm"> ¿No tienes cuenta?
-            <Link href="/juego/registro"className="text-blue-400 hover:text-blue-300 font-bold transition-colors hover:underline"
+            <Link href="/registro"className="text-blue-400 hover:text-blue-300 font-bold transition-colors hover:underline"
               > Registrate</Link>
             </p>
           </div>
