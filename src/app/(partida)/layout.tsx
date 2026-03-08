@@ -11,7 +11,7 @@ export default function PartidaLayout({
         <header className="">
           <RegresarJuego />
         </header>
-        <main className="flex-1 p-4 overflow-y-auto">{children}</main>
+        <main className="flex-1 overflow-hidden">{children}</main>
       </div>
     </div>
   );
