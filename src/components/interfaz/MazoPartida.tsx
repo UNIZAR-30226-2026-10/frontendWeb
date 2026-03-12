@@ -11,9 +11,13 @@ export const MazoVisual: React.FC = () => {
         {/* Carta principal del mazo */}
         <div className="absolute bottom-0 left-0 w-full h-full bg-black border-2 border-blue-600 rounded-md shadow-md flex flex-col items-center justify-start gap-1 pt-2">
           {/* Diseño de la parte trasera de la carta */}
-          <h1 className="text-[10px] font-bold text-white leading-none text-center">Carpintero</h1>
-          <div className="w-20 h-20 border border-gray-400 rounded-sm bg-white" />
-          <h1 className="text-[8px] font-bold text-white leading-none text-center">Crea una escalera en la casilla elegida</h1>
+          <h1 className="text-[10px] font-bold text-white leading-none text-center">Moises</h1>
+          <img
+				src="/moises2.png"
+				alt="Dado"
+				className="h-25 w-25 object-contain drop-shadow-lg"
+			/>
+          <h1 className="text-[8px] font-bold text-white leading-none text-center">Te saltas el bloqueo</h1>
         </div>
       </div>
     </div>

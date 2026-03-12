@@ -12,7 +12,7 @@ export const SlotPartida = (props: SlotPartidaProps) => {
   return (
     <CajaLista>
       <div className="flex flex-col font-sans gap-4">
-        <div className="flex text-2xl gap-70">
+        <div className="flex text-2xl gap-25 justify-between items-center ">
           <h1>Partida de {props.creadorPartida}</h1>
           <h1>{props.fechaCreacion}</h1>
           <h1>Turno {props.turnoActual}</h1>
@@ -20,7 +20,10 @@ export const SlotPartida = (props: SlotPartidaProps) => {
         </div>
         <ul className="flex list-inside">
           {props.jugadores.map((jugador, index) => (
-            <li key={index}>{jugador},</li>
+            <li key={index}>
+              {jugador}
+              {index < props.jugadores.length - 1 ? ', ' : ''}
+            </li>
           ))}
         </ul>
       </div>

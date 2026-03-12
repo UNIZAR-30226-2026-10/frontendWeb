@@ -13,15 +13,16 @@ const HuecoJugador: React.FC<HuecoJugadorProps> = ({estaOcupado,esLider,nomJugad
     const [hayBot,setHayBot] = useState(false);
     if(hayBot) {
         return (
-            <div className="bg-[#eab308] w-70 h-70 rounded-4xl flex flex-col items-center justify-center text-white text-3xl font-bold font-sans">
-                <button
-                    className="absolute top-0 right-0 text-white text-xl font-bold"
+        <div className="bg-[#eab308] w-60 h-60 rounded-4xl relative flex items-center justify-center text-white text-3xl font-bold font-sans">
+                
+                <div>Bot</div>
+               <button
+               className="absolute left-1/2 top-2/3 -translate-x-1/2 translate-y-6 text-xl font-bold underline font-sans"
                     onClick={() => setHayBot(false)}
                 >
                   {/*TODO: arreglar para que salga el botón X correctamente y configurarlo tambien para echar jugadores*/}
-                    X
+                    Eliminar
                 </button>
-                <div>Bot</div>
             </div>
         );
     }
@@ -29,7 +30,7 @@ const HuecoJugador: React.FC<HuecoJugadorProps> = ({estaOcupado,esLider,nomJugad
     if(!estaOcupado) {
         return (
             <button
-                className="bg-[#eab308] w-70 h-70 rounded-4xl flex flex-col items-center justify-center text-white text-3xl font-bold font-sans"
+                className="bg-[#eab308] w-60 h-60 rounded-4xl flex flex-col items-center justify-center text-white text-3xl font-bold font-sans"
                 onClick={() => setHayBot(true)}
             >
                 <div>+</div>
@@ -39,7 +40,7 @@ const HuecoJugador: React.FC<HuecoJugadorProps> = ({estaOcupado,esLider,nomJugad
     }
 
     return (
-      <div className="bg-[#eab308] w-70 h-70 rounded-4xl flex flex-col items-center justify-center relative">
+      <div className="bg-[#eab308] w-60 h-60 rounded-4xl flex flex-col items-center justify-center relative">
         {esLider && (
           <div className="-top-6 left-0 text-6xl text-white transform -rotate-12">(corona)</div>
         )}

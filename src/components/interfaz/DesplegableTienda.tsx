@@ -13,9 +13,12 @@ const DesplegableTienda = (props: DesplegableTiendaProps) => {
     <div className="bg-gray-800 text-white p-4 rounded-lg border-amber-500 border-2">
         <div className="flex items-center justify-between cursor-pointer" onClick={() => setAbierto(!abierto)}>
             <h1 className="text-xl">{props.nombreSeccion}</h1>
-            <button className="cursor-pointer">
-              <h1 className="text-sm">{abierto ? "^" : ">"}</h1>
-            </button>
+            <button 
+            onClick={() => setAbierto(!abierto)}
+            className={`text-white transition-transform duration-200 p-1 ${abierto ? 'rotate-90' : 'rotate-0'}`}
+          >
+            ➔
+          </button>
         </div>
         <div className={abierto ? "block" : "hidden"}>
             <div className="flex items-center gap-10 pt-5">

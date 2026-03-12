@@ -4,11 +4,11 @@ import React from 'react'
 export default function Home() {
   return (
     <main>  
-      <div className="flex text-white text-3xl">  
+      <div className="relative flex items-center text-white text-3xl mb-4">  
         <h1 className="text-center w-full"> 
           Tienda
         </h1>
-        <h1 className ="text-right w-40 h-15 bg-gray-800 rounded-2xl items-center justify-center flex text-xl">
+        <h1 className ="absolute right-0 w-40 h-15 bg-gray-800 rounded-2xl items-center justify-center flex text-xl">
           Sep logo 200 
         </h1>
       </div>
