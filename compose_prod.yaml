@@ -1,0 +1,9 @@
+services:
+  frontend_prod:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: frontend_prod_ag
+    restart: always
+    ports:
+      - "3001:3000"
