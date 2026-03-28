@@ -2,7 +2,7 @@
 'use client';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { loginService } from '../services/login.service';
+import { CuentaService } from '@/services/cuentas.service'; 
 
 export const useAuth = () => {
   const [email, setEmail] = useState('');
@@ -18,28 +18,15 @@ export const useAuth = () => {
     setIsLoading(true);
 
     try {
-      // Llamamos a nuestro servicio pasándole los estados actuales
-      await loginService(email, password);
-      
-      // Si el servicio no lanza errores, redirigimos
+      // 2. Usamos el método dentro del objeto
+      await CuentaService.login(email, password);
       router.push('/juego');
-      
     } catch (err: any) {
-      // Atrapamos el error que lanzó el servicio y lo guardamos en el estado
       setError(err.message || 'Error de conexión con el servidor.');
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Devolvemos todo lo que el componente visual va a necesitar
-  return {
-    email,
-    setEmail,
-    password,
-    setPassword,
-    error,
-    isLoading,
-    handleLogin
-  };
+  return { email, setEmail, password, setPassword, error, isLoading, handleLogin };
 };
