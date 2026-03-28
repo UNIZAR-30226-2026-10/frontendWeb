@@ -14,11 +14,11 @@ export const SlotLogro = (props: SlotLogroProps) => {
         <div className='flex text-white justify-between items-center'>
             <div className='flex flex-col gap-4'>
                 <h2 className='text-2xl font-bold'>{props.nombreLogro}</h2>
-                <p>{props.descripciónLogro}</p>
+                <p className='text-xl'>{props.descripciónLogro}</p>
                 <p>Progreso: {props.progresoLogro}/{props.metaLogro}</p>
             </div>
             <div className='flex flex-col items-center justify-end'>
-                <p>Recompensa</p>
+                <p className='text-xl'>Recompensa:</p>
                 <p>{props.recompensaLogro}</p>
             </div>
         </div>

@@ -30,11 +30,6 @@ const BarraAmigos = () => {
           <TarjetaAmigo key={index} amigo={friend} />
         ))}
       </div>
-
-      {/* Tuerca de ajustes al final */}
-      <div className="mt-auto p-4 flex justify-end">
-        <button className="text-gray-400 hover:text-white text-3xl">⚙️</button>
-      </div>
     </div>
   );
 };
