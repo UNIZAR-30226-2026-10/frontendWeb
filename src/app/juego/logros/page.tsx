@@ -2,13 +2,14 @@ import SlotLogro from "@/components/interfaz/SlotLogro";
 
 export default function Home() {
   return (
-    <main>  
-      <div className="flex text-white items-center justify-center text-3xl">  
+    <main className="w-full h-full flex flex-col p-4 md:p-8 overflow-y-auto">  
+      <div className="flex items-center justify-center text-white text-3xl font-bold shrink-0 mb-8">  
         <h1> 
           Logros
         </h1>
       </div>
-      <div className="flex flex-col justify-right gap-4 p-4">
+
+      <div className="flex flex-col gap-4">
         <SlotLogro 
           nombreLogro="Escalador Maestro"
           descripciónLogro="Gana 10 partidas"

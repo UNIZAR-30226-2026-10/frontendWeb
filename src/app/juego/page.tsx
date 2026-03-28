@@ -42,10 +42,11 @@ export default function JuegoPrincipalPage() {
     : [undefined, undefined, undefined, undefined];
 
   return (
-    <main className="h-full w-full flex flex-col bg-transparent overflow-y-auto">
+    // 1. EL TRUCO: flex-1 en lugar de h-full. Así solo ocupa el espacio RESTANTE debajo de tu barra superior.
+    <main className="flex-1 w-full flex flex-col bg-transparent overflow-hidden p-4">
       
-      {/* CABECERA ORIGINAL */}
-      <div className="flex justify-center items-center gap-12 text-2xl ">
+      {/* CABECERA (shrink-0 para que nunca se aplaste) */}
+      <div className="flex justify-center items-center gap-12 text-2xl mb-2 shrink-0">
         <h1 className="flex underline font-sans text-gray-400 cursor-pointer">Crear Partida</h1>
         <Link href="/juego/continuarpartida" className="flex text-white font-sans hover:text-gray-300">
           Continuar
@@ -53,39 +54,48 @@ export default function JuegoPrincipalPage() {
       </div>
 
       {/* ZONA DE JUGADORES */}
-      <div className="flex items-center justify-center flex-1 gap-10 md:gap-20 w-full max-w-6xl mx-auto pb-10">
+      <div className="flex items-center justify-center flex-1 gap-4 md:gap-12 w-full max-w-6xl mx-auto min-h-0">
         
         {/* COLUMNA IZQUIERDA */}
-        <div className="flex flex-col gap-10 w-full max-w-[300px]">
-          <HuecoJugador 
-            estaOcupado={!!huecos[0]} 
-            esLider={huecos[0]?.idJugador === lobby?.idCreador} 
-            nomJugador={huecos[0]?.nombre} 
-          />
-          <HuecoJugador 
-            estaOcupado={!!huecos[1]} 
-            esLider={huecos[1]?.idJugador === lobby?.idCreador} 
-            nomJugador={huecos[1]?.nombre} 
-          />
+        <div className="flex flex-col justify-center gap-4 h-full w-full max-w-[300px] min-h-0">
+          {/* 2. ENVOLTORIO ELÁSTICO: Esto obliga a la carta a no pasarse del límite */}
+          <div className="flex-1 min-h-0 flex flex-col justify-center">
+            <HuecoJugador 
+              estaOcupado={!!huecos[0]} 
+              esLider={huecos[0]?.idJugador === lobby?.idCreador} 
+              nomJugador={huecos[0]?.nombre} 
+            />
+          </div>
+          <div className="flex-1 min-h-0 flex flex-col justify-center">
+            <HuecoJugador 
+              estaOcupado={!!huecos[1]} 
+              esLider={huecos[1]?.idJugador === lobby?.idCreador} 
+              nomJugador={huecos[1]?.nombre} 
+            />
+          </div>
         </div>
 
         {/* COLUMNA CENTRAL (Oculta si no hay error) */}
-        <div className="flex flex-col items-center justify-center min-w-[50px]">
+        <div className="flex flex-col items-center justify-center min-w-[50px] shrink-0">
           {error && <p className="text-red-500 font-bold text-center max-w-xs">{error}</p>}
         </div>       
 
         {/* COLUMNA DERECHA */}
-        <div className="flex flex-col gap-10 w-full max-w-[300px]">
-          <HuecoJugador 
-            estaOcupado={!!huecos[2]} 
-            esLider={huecos[2]?.idJugador === lobby?.idCreador} 
-            nomJugador={huecos[2]?.nombre} 
-          />
-          <HuecoJugador 
-            estaOcupado={!!huecos[3]} 
-            esLider={huecos[3]?.idJugador === lobby?.idCreador} 
-            nomJugador={huecos[3]?.nombre} 
-          />
+        <div className="flex flex-col justify-center gap-4 h-full w-full max-w-[300px] min-h-0">
+          <div className="flex-1 min-h-0 flex flex-col justify-center">
+            <HuecoJugador 
+              estaOcupado={!!huecos[2]} 
+              esLider={huecos[2]?.idJugador === lobby?.idCreador} 
+              nomJugador={huecos[2]?.nombre} 
+            />
+          </div>
+          <div className="flex-1 min-h-0 flex flex-col justify-center">
+            <HuecoJugador 
+              estaOcupado={!!huecos[3]} 
+              esLider={huecos[3]?.idJugador === lobby?.idCreador} 
+              nomJugador={huecos[3]?.nombre} 
+            />
+          </div>
         </div>
 
       </div>
