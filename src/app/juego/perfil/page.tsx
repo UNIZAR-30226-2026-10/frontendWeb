@@ -4,9 +4,11 @@ import SlotSelectorSkin from '@/components/interfaz/SlotSelectorSkin';
 
 export default function Perfil() {
   return (
-    <main className="px-4 pb-4 w-full h-full flex flex-col text-white">
-      <div className="flex justify-center mb-6">
-        <h1 className="text-white text-3xl text-center">Perfil</h1>
+    <main className="w-full h-full flex flex-col p-4 md:p-8 overflow-y-auto">
+      <div className="relative flex items-center justify-center text-white text-3xl mb-8 shrink-0">
+        <h1 className="text-center font-bold">
+          Perfil
+        </h1>
       </div>
 
       <div className="relative bg-gray-800 border-2 border-yellow-400 rounded-4xl p-8 shadow-xl flex flex-col gap-8 max-w-5xl mx-auto w-full">
