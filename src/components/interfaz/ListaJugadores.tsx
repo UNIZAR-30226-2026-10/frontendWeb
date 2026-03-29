@@ -1,41 +1,44 @@
 import React from 'react';
+
 interface jugador{
     nombreJugador?: string;
     esTurno?: boolean;
     esLider?: boolean;
     iconoJugador?: string;
 }
+
 interface Props{
     jugadores: jugador[];
 }
+
 export const ListaJugadores: React.FC<Props> = ({ jugadores }) => {
     return (
-    <div className="absolute top-2 left-10 z-10 w-44 bg-black/40 backdrop-blur-sm p-3 rounded-xl border border-white/20 shadow-2xl">
-      <h3 className="text-white text-center font-bold text-xl mb-2 tracking-wide uppercase">
+    <div className="w-full bg-[#1E1B4B]/80 backdrop-blur-sm p-4 rounded-3xl border-2 border-white/10 shadow-xl">
+      <h3 className="text-white text-center font-bold text-2xl mb-4 tracking-wider uppercase drop-shadow-md">
         Turno
       </h3>
       
-      <div className="flex flex-col gap-2">
+      <div className="flex flex-col gap-3">
         {jugadores.map((jugador) => (
           <div
             key={jugador.nombreJugador}
-            className={`flex items-center gap-2 px-2 py-1.5 rounded-full border-2 transition-all ${
+            className={`flex items-center gap-4 px-3 py-2 rounded-full border-2 transition-all duration-300 ${
               jugador.esTurno 
-                ? 'bg-[#EAB308] border-white scale-105 shadow-lg' // Dorado si es su turno
-                : 'bg-[#1E1B4B] border-transparent opacity-90'    // Azul oscuro si no
+                ? 'bg-[#EAB308] border-white scale-105 shadow-[0_0_15px_rgba(234,179,8,0.5)]' 
+                : 'bg-[#1E1B4B] border-transparent opacity-80 hover:opacity-100'
             }`}
           >
-            {/* Contenedor del Avatar (Serpiente) */}
-            <div className="relative w-10 h-10 bg-white rounded-full border-2 border-black flex items-center justify-center overflow-visible">
-                <span className="text-2xl">🐍</span>
-              {/* Corona si es "Tú" o el líder */}
+            {/* Contenedor del Avatar */}
+            <div className="relative w-12 h-12 shrink-0 bg-white rounded-full border-2 border-black flex items-center justify-center overflow-visible">
+                <span className="text-2xl drop-shadow-sm">🐍</span>
+              {/* Corona */}
               {jugador.esLider && (
-                <span className="absolute -top-5 -right-1 text-xl drop-shadow-md rotate-12">👑</span>
+                <span className="absolute -top-4 -right-2 text-xl drop-shadow-md rotate-12 z-10">👑</span>
               )}
             </div>
 
             {/* Nombre del Jugador */}
-            <span className={`font-black text-lg ${jugador.esTurno ? 'text-white' : 'text-white'}`}>
+            <span className={`font-black text-xl truncate ${jugador.esTurno ? 'text-white drop-shadow-md' : 'text-gray-200'}`}>
               {jugador.nombreJugador}
             </span>
           </div>
