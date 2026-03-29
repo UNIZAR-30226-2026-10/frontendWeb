@@ -43,12 +43,12 @@ export default function JuegoPrincipalPage() {
 
   return (
     // 1. EL TRUCO: flex-1 en lugar de h-full. Así solo ocupa el espacio RESTANTE debajo de tu barra superior.
-    <main className="flex-1 w-full flex flex-col bg-transparent overflow-hidden p-4">
+    <main className="w-full h-full flex flex-col p-4 md:p-8 overflow-y-auto">
       
       {/* CABECERA (shrink-0 para que nunca se aplaste) */}
-      <div className="flex justify-center items-center gap-12 text-2xl mb-2 shrink-0">
-        <h1 className="flex underline font-sans text-gray-400 cursor-pointer">Crear Partida</h1>
-        <Link href="/juego/continuarpartida" className="flex text-white font-sans hover:text-gray-300">
+      <div className="flex justify-center items-center gap-12 text-3xl mb-2 shrink-0">
+        <h1 className="flex underline font-bold text-gray-400 cursor-pointer">Crear Partida</h1>
+        <Link href="/juego/continuarpartida" className="text-center font-bold hover:text-gray-300">
           Continuar
         </Link>
       </div>
