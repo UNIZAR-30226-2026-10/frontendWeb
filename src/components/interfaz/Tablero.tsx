@@ -81,8 +81,15 @@ export default function Tablero() {
   };
 
   // Genera un array de números del 1 al 100 para las casillas del tablero
-  const casillas = Array.from({ length: 100 }, (_, i) => i + 1);
-
+  const casillas: number[] = [];
+  
+  // Bucle que va desde la fila superior (9) hasta la inferior (0)
+  for (let fila = 9; fila >= 0; fila--) {
+    for (let col = 1; col <= 10; col++) {
+      // El 1 está abajo a la izquierda y el 100 arriba a la derecha.
+      casillas.push(fila * 10 + col);
+    }
+  }
   // Destinos iluminados: posiciones posibles para la ficha seleccionada
   const destinosIluminados = fichaSeleccionada ? movimientosPermitidos[fichaSeleccionada] : [];
 
@@ -91,28 +98,20 @@ export default function Tablero() {
 
   // Renderizado del componente
   return (
-    <div className="flex flex-col items-center gap-6 w-full max-w-3xl mx-auto p-4">
+    <div className="flex flex-col items-center justify-center gap-2 h-full max-h-full w-full mx-auto p-2 min-h-0 relative">
 
       {/* Sección del botón para tirar dados y mensaje de selección */}
-      <div className="flex flex-col items-center gap-2 h-24">
-        <button
-          onClick={simularTiradaDado}
-          disabled={tirandoDado || hayMovimientosPendientes}
-          className="px-8 py-3 bg-indigo-600 hover:bg-indigo-500 disabled:bg-gray-600 text-white text-xl font-bold rounded-xl shadow-lg transition-all"
-        >
-          {tirandoDado ? "Lanzando dados..." : hayMovimientosPendientes ? "Selecciona una ficha" : "Tirar Dados"}
-        </button>
-
-        {fichaSeleccionada && (
-          <p className="text-green-400 font-bold animate-pulse text-lg mt-2">
+      {fichaSeleccionada && (
+        <div className="absolute top-4 z-50 bg-black/80 px-6 py-2 rounded-full pointer-events-none shadow-lg border border-green-500/30">
+          <p className="text-green-400 font-bold animate-pulse text-lg">
             Moviendo {fichaSeleccionada}. ¡Elige una casilla verde!
           </p>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* Contenedor del tablero: grid de 10x10 casillas */}
-      <div className="w-full aspect-square bg-gray-900 p-2 rounded-xl shadow-2xl">
-        <div className="w-full h-full grid grid-cols-10 grid-rows-10 gap-0 bg-gray-800 rounded-md relative border border-gray-700 overflow-hidden">
+      <div className="h-full aspect-square max-w-full max-h-full bg-gray-900 p-1.5 rounded-2xl shadow-2xl shrink min-h-0">
+        <div className="w-full h-full grid grid-cols-10 grid-rows-10 relative overflow-hidden rounded-md">
 
           {/* Renderiza cada casilla del tablero */}
           {casillas.map((num) => {
@@ -129,14 +128,14 @@ export default function Tablero() {
                 key={num}
                 onClick={() => esDestinoPosible && moverFichaAlDestino(num)}
                 className={`
-                  relative flex flex-wrap items-center justify-center gap-[2px] transition-all duration-300 p-1
+                  relative flex flex-wrap items-center justify-center gap-[2px] transition-all duration-300
                   ${esDestinoPosible ? "cursor-pointer ring-4 ring-green-300 ring-inset animate-pulse z-30 scale-105 shadow-[0_0_15px_rgba(34,197,94,0.8)]" : ""}
                   ${!esDestinoPosible && fichaSeleccionada ? "opacity-30" : ""}
                 `}
               >
                 {/* Fondo de la casilla con imagen */}
                 <div
-                  className="absolute inset-0 w-full h-full z-0"
+                  className="absolute inset-0 w-full h-full z-0 pointer-events-none scale-105"
                   style={{
                     backgroundImage: `url(${infoCasilla.src})`,
                     backgroundSize: '100% 100%',
