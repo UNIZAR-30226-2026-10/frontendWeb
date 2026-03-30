@@ -1,20 +1,18 @@
 import DesplegableTienda from "@/components/interfaz/DesplegableTienda";
 import SlotTienda from "@/components/interfaz/SlotTienda";
 import React from 'react'
-
 export default function Home() {
   return (
-    <main className="w-full h-full flex flex-col p-4 md:p-8 overflow-y-auto">  
-      <div className="relative flex items-center justify-center text-white text-3xl mb-8 shrink-0">  
-        <h1 className="text-center font-bold"> 
+    <main>  
+      <div className="relative flex items-center text-white text-3xl mb-4">  
+        <h1 className="text-center w-full"> 
           Tienda
         </h1>
-        <div className="absolute right-0 w-40 h-16 bg-gray-800 rounded-2xl flex items-center justify-center text-xl shadow-md">
-          <span>Sep logo 200</span>
-        </div>
+        <h1 className ="absolute right-0 w-40 h-15 bg-gray-800 rounded-2xl items-center justify-center flex text-xl">
+          Sep logo 200 
+        </h1>
       </div>
-
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-4 p-4">
         <DesplegableTienda nombreSeccion="Escaleras" estaAbierto={false}>
           <SlotTienda 
             item={{
@@ -26,7 +24,6 @@ export default function Home() {
             }}
           />
         </DesplegableTienda>
-
         <DesplegableTienda nombreSeccion="Serpientes" estaAbierto={false}>
           <SlotTienda 
             item={{
@@ -36,6 +33,7 @@ export default function Home() {
               imagen: "serpiente.png",
               comprado: false
             }}
+            
           />
           <SlotTienda
             item={{
@@ -47,7 +45,6 @@ export default function Home() {
             }}
           />
         </DesplegableTienda>
-
         <DesplegableTienda nombreSeccion="Iconos" estaAbierto={false}>
           <SlotTienda 
             item={{
@@ -59,7 +56,6 @@ export default function Home() {
             }}
           />
         </DesplegableTienda>
-
         <DesplegableTienda nombreSeccion="Fichas" estaAbierto={false}>
           <SlotTienda 
             item={{
