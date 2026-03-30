@@ -26,7 +26,7 @@ export default function Tienda() {
   }
 
   return (
-    <main className="w-full h-full flex flex-col p-4 md:p-8 overflow-y-auto">  
+    <main className="w-full h-full flex flex-col p-4 md:p-8 overflow-y-auto custom-scroll">  
       <div className="relative flex items-center justify-center text-white text-3xl mb-8 shrink-0">  
         <h1 className="text-center font-bold"> 
           Tienda

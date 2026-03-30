@@ -11,7 +11,8 @@ const Avatar = ({ nombre, estado, avatar }: { nombre: string; estado: string; av
     />
     <div className="flex flex-col">
       <span className="text-white text-sm font-semibold leading-tight">{nombre}</span>
-      <span className={`text-xs ${estado === 'online' ? 'text-green-400' : 'text-grey-400'}`}>
+      <span className={`text-xs ${estado === 'online' ? 'text-green-400' : 
+        estado === 'invitado' ? 'text-yellow-400' : 'text-red-400'}`}>
         {estado}
       </span>
     </div>

@@ -35,7 +35,7 @@ const BarraAmigos = () => {
       )}
 
       {!isLoading && !error && (
-        <div className='mt-4 flex flex-col gap-2 px-2'>
+        <div className='mt-4 flex-1 flex flex-col gap-2 px-2 overflow-y-auto custom-scroll'>
           {amigos.map((friend) => (
             <TarjetaAmigo key={friend.id} amigo={friend} />
           ))}

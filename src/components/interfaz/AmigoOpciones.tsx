@@ -7,9 +7,6 @@ const AmigoOpciones = () => {
           <button className="flex items-center gap-2 text-gray-500 text-sm cursor-not-allowed p-2">
             <span>➔</span> Unirse a la partida
           </button>
-          <button className="flex items-center gap-2 text-white text-sm hover:bg-blue-900 p-2 rounded">
-            <span>✉️</span> Enviar un mensaje
-          </button>
           <button className="flex items-center gap-2 text-white text-sm hover:bg-red-900 p-2 rounded">
             <span>👤-</span> Borrar amigo
           </button>

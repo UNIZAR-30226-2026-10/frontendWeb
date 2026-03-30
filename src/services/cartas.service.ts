@@ -15,6 +15,7 @@ export const CardsService = {
       { nombre: "Carta Épica 1", tipo: "Tablero", rareza: "epica", imagen: "url3", descripcion: "Cambia el clima a tormenta", efecto: "Efecto 3" },
       { nombre: "Carta Legendaria 1", tipo: "Bufo", rareza: "legendaria", imagen: "url4", descripcion: "Revive a una unidad aliada", efecto: "Efecto 4" },
       { nombre: "Carta Común 2", tipo: "Tablero", rareza: "comun", imagen: "url5", descripcion: "Añade una trampa al tablero", efecto: "Efecto 5" },
+      { nombre: "Carta Común 3", tipo: "Debuff", rareza: "comun", imagen: "url6", descripcion: "Reduce -2 el ataque rival", efecto: "Efecto 6" },
     ];
 
     /* --- CÓDIGO REAL PARA EL FUTURO ---
