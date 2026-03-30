@@ -5,11 +5,12 @@ import SlotSelectorSkin from '@/components/interfaz/SlotSelectorSkin';
 import { usePerfil } from '@/hooks/usePerfil';
 
 export default function Perfil() {
-  const { perfil, isLoading, error } = usePerfil('admin@juego.com');
+  const emailUsuario = "admin@juego.com"; 
+  const { perfil, isLoading, error } = usePerfil(emailUsuario);
 
   if (isLoading) {
     return (
-      <main className="w-full h-full flex flex-col p-4 md:p-8 overflow-y-auto items-center justify-center">
+      <main className="w-full h-full flex flex-col p-4 md:p-8 overflow-hidden items-center justify-center">
         <p className="text-white text-xl">Cargando perfil...</p>
       </main>
     );
@@ -17,14 +18,14 @@ export default function Perfil() {
 
   if (error || !perfil) {
     return (
-      <main className="w-full h-full flex flex-col p-4 md:p-8 overflow-y-auto items-center justify-center">
+      <main className="w-full h-full flex flex-col p-4 md:p-8 overflow-hidden items-center justify-center">
         <p className="text-red-500 text-xl">Error: {error || 'No se pudo cargar el perfil'}</p>
       </main>
     );
   }
 
   return (
-    <main className="w-full h-full flex flex-col p-4 md:p-8 overflow-y-auto">
+    <main className="w-full h-full flex flex-col p-4 md:p-8 overflow-hidden">
       <div className="relative flex items-center justify-center text-white text-3xl mb-8 shrink-0">
         <h1 className="text-center font-bold">
           Perfil
