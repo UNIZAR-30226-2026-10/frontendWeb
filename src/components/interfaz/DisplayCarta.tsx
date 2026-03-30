@@ -1,7 +1,13 @@
+// src/components/interfaz/DisplayCarta.tsx
 import Carta from "@/types/carta";
 import React from 'react'
 
-export const DisplayCarta = (props: { carta: Carta }) => {
+interface DisplayCartaProps {
+  carta: Carta;
+  cantidad?: number;
+}
+
+export const DisplayCarta = ({ carta, cantidad = 0 }: DisplayCartaProps) => {
   const getBorderClass = (rareza: string) => {
     switch (rareza.toLowerCase()) {
       case 'comun': return 'border-green-500';
@@ -13,11 +19,25 @@ export const DisplayCarta = (props: { carta: Carta }) => {
   };
 
   return (
-    <div className={`flex flex-col bg-black p-4 rounded-lg shadow-md border-3 ${getBorderClass(props.carta.rareza)} w-60 h-80`}> {/* tamaño fijo rectangular */}
-      <h2 className="text-xl font-bold text-white mb-2 text-center truncate">{props.carta.nombre}</h2>
-      {/*poner la imagen de la carta*/}
-      <div className="flex-1 flex items-center justify-center text-white">placeholder</div>
-      <p className="text-white mt-2 text-sm overflow-hidden">{props.carta.descripcion}</p>
+    <div className={`relative flex flex-col bg-black p-4 rounded-lg shadow-md border-4 ${getBorderClass(carta.rareza)} w-60 h-80 transition-all duration-300 ${cantidad === 0 ? 'opacity-60 grayscale-[0.4]' : 'opacity-100 scale-105'}`}>
+      
+      {/* Insignia amarilla de cantidad (x1, x2) */}
+      {cantidad > 0 && (
+        <div className="absolute -top-3 -right-3 bg-yellow-400 text-black w-10 h-10 rounded-full border-2 border-white flex items-center justify-center font-bold text-xl shadow-lg z-20">
+          x{cantidad}
+        </div>
+      )}
+
+      <h2 className="text-xl font-bold text-white mb-2 text-center truncate">{carta.nombre}</h2>
+      
+      {/* Imagen placeholder */}
+      <div className="flex-1 flex items-center justify-center text-white border border-white/10 rounded bg-gray-900">
+        [Imagen: {carta.imagen}]
+      </div>
+      
+      <p className="text-white mt-2 text-sm h-12 overflow-hidden italic text-center">
+        "{carta.descripcion}"
+      </p>
     </div>
   )
 }

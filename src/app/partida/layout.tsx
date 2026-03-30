@@ -6,13 +6,16 @@ export default function PartidaLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex h-screen bg-blue-700 text-white font-sans overflow-hidden">
-      <div className="flex flex-col flex-1 overflow-hidden">
-        <header className="">
-          <RegresarJuego />
-        </header>
-        <main className="flex-1 overflow-hidden">{children}</main>
-      </div>
+    <div className="flex flex-col h-screen w-screen bg-blue-700 font-sans overflow-hidden">
+      
+      <header className="w-full h-12 flex-none bg-blue-800 border-b border-yellow-500 shadow-md z-50">
+        <RegresarJuego /> 
+      </header>
+
+      <main className="flex-1 w-full relative overflow-hidden">
+        {children}
+      </main>
+      
     </div>
   );
 }

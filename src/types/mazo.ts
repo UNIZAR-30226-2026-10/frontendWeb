@@ -1,9 +1,13 @@
-import Carta from "./carta";
+// src/types/deck.ts
 
-interface Mazo {
-    nombre: string;
-    cartas: Carta[]; //Lista de cartas que componen el mazo
-    enUso: boolean; //Indica si el mazo está siendo utilizado en una partida, para mostrar un mensaje de advertencia al intentar editar o borrar el mazo
+export interface CartaResumen {
+  // Ajusta esto según lo que devuelva tu backend exactamente
+  nombre: string;
 }
 
-export default Mazo;
+export interface Deck {
+  id: string; // El deck-id
+  deck_name: string;
+  cards: CartaResumen[] | string[]; 
+  is_in_use?: boolean; // Para saber si lo está usando en partida
+}

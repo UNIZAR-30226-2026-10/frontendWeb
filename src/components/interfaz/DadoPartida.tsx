@@ -1,13 +1,13 @@
 import React from "react";
 
 export const DadoPartida: React.FC = () => {
-	return (
-		<div className="absolute bottom-10 right-10 z-10">
-			<img
-				src="/dado.jpg"
-				alt="Dado"
-				className="h-30 w-30 object-contain drop-shadow-lg"
-			/>
-		</div>
-	);
+    return (
+        <div className="flex items-center justify-center">
+            <img
+                src="/dado.jpg"
+                alt="Dado"
+                className="w-32 h-32 object-contain drop-shadow-2xl hover:scale-110 transition-transform cursor-pointer"
+            />
+        </div>
+    );
 };
