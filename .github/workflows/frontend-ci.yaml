@@ -25,11 +25,12 @@ jobs:
           cache: 'npm'
 
       - name: 3. Instalar dependencias
+        continue-on-error: true
         run: |
           # Instalamos ignorando el bloqueo por seguridad
           npm ci --no-audit
-          # Ejecutamos el audit pero añadimos "|| true" para que NO falle el CI aunque haya avisos
-          npm audit --audit-level=high || echo "Se encontraron vulnerabilidades, revisarlas luego."
+          # Ejecutamos el audit; permitimos que falle el step sin bloquear el job (continue-on-error)
+          npm audit --audit-level=high
 
       - name: 4. Verificar estilo
         run: npm run lint
