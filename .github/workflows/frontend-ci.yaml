@@ -1,0 +1,41 @@
+name: Frontend CI (Quality Gate)
+
+on:
+  push:
+    branches: [ main ]
+    paths-ignore:
+      - '**.md'
+  pull_request:
+    branches: [ main ]
+    paths-ignore:
+      - '**.md'
+
+jobs:
+  test-and-build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 1. Descargar código
+        uses: actions/checkout@v4
+
+      - name: 2. Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: 'npm'
+
+      - name: 3. Instalar dependencias
+        run: |
+          # Instalamos ignorando el bloqueo por seguridad
+          npm ci --no-audit
+          # Ejecutamos el audit pero añadimos "|| true" para que NO falle el CI aunque haya avisos
+          npm audit --audit-level=high || echo "Se encontraron vulnerabilidades, revisarlas luego."
+
+      - name: 4. Verificar estilo
+        run: npm run lint
+
+      - name: 5. Ejecutar tests
+        run: npm test
+
+      - name: 6. Intentar Build
+        run: npm run build
