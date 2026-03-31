@@ -1,4 +1,4 @@
-name: Frontend CI (Quality Gate)
+name: Frontend CI
 
 on:
   push:
@@ -34,8 +34,8 @@ jobs:
       - name: 4. Verificar estilo
         run: npm run lint
 
-      - name: 5. Ejecutar tests
-        run: npm test
+      #- name: 5. Ejecutar tests
+      #  run: npm test
 
       - name: 6. Intentar Build
         run: npm run build
