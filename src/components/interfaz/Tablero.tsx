@@ -1,106 +1,175 @@
 "use client";
 import React, { useState } from "react";
 
-// Definición del tipo Ficha: representa una ficha en el tablero con su ID, posición y color
+// Definición de tipos
 type Ficha = {
   id: string;
   posicion: number;
   color: string;
 };
 
-// Definición del tipo InfoCasilla: información de una casilla, incluyendo la imagen y rotación
 type InfoCasilla = {
   src: string;
   rotacion: number;
 };
 
-// Constantes para las imágenes de las casillas del tablero
+// Constantes de imágenes de las casillas
 const IMAGENES = {
   VACIA: "casilla_vacia.png",
-  HORIZONTAL: "casilla_horizontal.png",
+  VERTICAL: "casilla_vertical.png",
   CURVA: "casilla_curva.png",
   BIFURCACION: "casilla_bifurcacion.png",
 };
 
-// Mapa inicial del tablero: define qué casillas tienen imágenes específicas (las demás son jungla vacía)
 const mapaTablero: Record<number, InfoCasilla> = {
-  // Ejemplo: Casilla 1 como salida horizontal
-  1: { src: IMAGENES.HORIZONTAL, rotacion: 0 },
+  1: { src: IMAGENES.VERTICAL, rotacion: 90 },
+  2: { src: IMAGENES.VERTICAL, rotacion: 90 },
+  3: { src: IMAGENES.VERTICAL, rotacion: 90 },
+  4: { src: IMAGENES.VERTICAL, rotacion: 90 },
+  5: { src: IMAGENES.VERTICAL , rotacion: 90 },
+  6: { src: IMAGENES.VERTICAL, rotacion: 90 },
+  7: { src: IMAGENES.VERTICAL, rotacion: 90 },
+  8: { src: IMAGENES.VERTICAL, rotacion: 90 },
+  9: { src: IMAGENES.VERTICAL, rotacion: 90 },
+  10: { src: IMAGENES.CURVA, rotacion: 180 },
+  13: { src: IMAGENES.VERTICAL, rotacion: 0 },
 };
 
-// Componente principal Tablero: maneja el estado del juego, las fichas y el tablero
+// Diccionario visual: SOLO SIRVE PARA PINTAR LAS IMÁGENES
+// La lógica real de dónde acaba la ficha nos la dictará el backend en el array
+const SALTOS_ESPECIALES: Record<number, number> = {
+  17: 9,   // Serpiente 1
+  9: 3,    // Trampa encadenada
+  20: 38,  // Escalera
+};
+
+// Mini-función para crear pausas dramáticas en el código
+const esperar = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
 export default function Tablero() {
-  // Estado para las fichas del jugador: array de objetos Ficha
   const [misFichas, setMisFichas] = useState<Ficha[]>([
     { id: "Ficha 1", posicion: 1, color: "bg-red-400" },
     { id: "Ficha 2", posicion: 1, color: "bg-red-500" },
     { id: "Ficha 3", posicion: 1, color: "bg-red-600" }
   ]);
 
-  // Estado para indicar si se está tirando el dado (animación)
-  const [tirandoDado, setTirandoDado] = useState(false);
-
-  // Estado para los movimientos permitidos por ficha: mapa de ID de ficha a array de posiciones posibles
   const [movimientosPermitidos, setMovimientosPermitidos] = useState<Record<string, number[]>>({});
-
-  // Estado para la ficha seleccionada actualmente
   const [fichaSeleccionada, setFichaSeleccionada] = useState<string | null>(null);
 
-  // Función para simular la tirada de dado: activa animación y simula respuesta del backend
+  // --- LÓGICA TEMPORAL PARA PROBAR ---
   const simularTiradaDado = () => {
-    setTirandoDado(true);
     setFichaSeleccionada(null);
-
-    setTimeout(() => {
-      // Respuesta simulada del backend: movimientos posibles por ficha
-      const respuestaBackend = {
-        "Ficha 1": [2, 11],
-        "Ficha 2": [2],
-        "Ficha 3": [2]
-      };
-      setMovimientosPermitidos(respuestaBackend);
-      setTirandoDado(false);
-    }, 1000);
+    // Iluminamos las casillas 17 y 20 para que puedas hacer clic
+    setMovimientosPermitidos({
+      "Ficha 1": [17, 20],
+      "Ficha 2": [2],
+      "Ficha 3": [2]
+    });
   };
 
-  // Función para seleccionar una ficha: marca la ficha como seleccionada si tiene movimientos
   const seleccionarFicha = (idFicha: string) => {
     if (movimientosPermitidos[idFicha] && movimientosPermitidos[idFicha].length > 0) {
       setFichaSeleccionada(idFicha);
     }
   };
 
-  // Función para mover la ficha al destino seleccionado: actualiza la posición y resetea estados
-  const moverFichaAlDestino = (casillaDestino: number) => {
+  // =================================================================
+  // LÓGICA DE MOVIMIENTO ANIMADO (LISTO PARA EL BACKEND)
+  // =================================================================
+  const moverFichaAlDestino = async (casillaDestino: number) => {
     if (!fichaSeleccionada) return;
-    setMisFichas(fichas =>
-      fichas.map(f => f.id === fichaSeleccionada ? { ...f, posicion: casillaDestino } : f)
-    );
+
+    // 1. Guardamos qué ficha se mueve y bloqueamos la UI
+    const fichaActual = fichaSeleccionada;
     setMovimientosPermitidos({});
     setFichaSeleccionada(null);
+
+    // 2. SIMULACIÓN: Aquí harías tu fetch() al backend enviando la 'casillaDestino'
+    // Y el backend te devolvería la 'rutaAnimacion'
+    let rutaAnimacion = [casillaDestino]; // Por defecto, una sola parada
+
+    // Simulamos el caso que le comentaste a tu compañero:
+    if (casillaDestino === 17) {
+      rutaAnimacion = [17, 9, 3]; // La ficha va a la 17, luego baja a la 9, luego a la 3
+    } else if (casillaDestino === 20) {
+      rutaAnimacion = [20, 38]; // Escalera normal
+    }
+
+    // 3. BUCLE DE ANIMACIÓN
+    for (let i = 0; i < rutaAnimacion.length; i++) {
+      const parada = rutaAnimacion[i];
+
+      // Actualizamos la posición de la ficha
+      setMisFichas(fichas =>
+        fichas.map(f => f.id === fichaActual ? { ...f, posicion: parada } : f)
+      );
+
+      // Si no es la última parada del array, esperamos 800ms para que se vea la animación
+      if (i < rutaAnimacion.length - 1) {
+        await esperar(800);
+      }
+    }
+    
+    // Aquí el bucle ha terminado. La ficha está en su destino final.
   };
 
-  // Genera un array de números del 1 al 100 para las casillas del tablero
+  // Generamos el tablero de abajo hacia arriba
   const casillas: number[] = [];
-  
-  // Bucle que va desde la fila superior (9) hasta la inferior (0)
   for (let fila = 9; fila >= 0; fila--) {
     for (let col = 1; col <= 10; col++) {
-      // El 1 está abajo a la izquierda y el 100 arriba a la derecha.
       casillas.push(fila * 10 + col);
     }
   }
-  // Destinos iluminados: posiciones posibles para la ficha seleccionada
+
   const destinosIluminados = fichaSeleccionada ? movimientosPermitidos[fichaSeleccionada] : [];
 
-  // Verifica si hay movimientos pendientes (para deshabilitar el botón de tirar dado)
-  const hayMovimientosPendientes = Object.keys(movimientosPermitidos).length > 0;
+  // ==========================================
+  // MAGIA MATEMÁTICA: PINTAR LOS PNGs
+  // ==========================================
+  const renderizarObstaculosPNG = () => {
+    const obtenerCoordenadas = (casilla: number) => {
+      const filaReal = Math.floor((casilla - 1) / 10); 
+      const colReal = (casilla - 1) % 10; 
+      const filaCSS = 9 - filaReal; 
+      return {
+        x: colReal * 10 + 5, 
+        y: filaCSS * 10 + 5
+      };
+    };
 
-  // Renderizado del componente
+    return Object.entries(SALTOS_ESPECIALES).map(([inicio, fin]) => {
+      const start = obtenerCoordenadas(Number(inicio));
+      const end = obtenerCoordenadas(fin);
+      
+      const dx = end.x - start.x;
+      const dy = end.y - start.y;
+      
+      const longitud = Math.sqrt(dx * dx + dy * dy);
+      const angulo = Math.atan2(dy, dx) * (180 / Math.PI);
+      const esEscalera = fin > Number(inicio);
+
+      return (
+        <img
+          key={`${inicio}-${fin}`}
+          src={esEscalera ? "/escalera.png" : "/serpiente.png"} 
+          alt={esEscalera ? "Escalera" : "Serpiente"}
+          className="absolute z-30 pointer-events-none drop-shadow-xl"
+          style={{
+            left: `${start.x}%`,
+            top: `calc(${start.y}% - 4%)`,
+            width: `${longitud}%`,
+            height: '8%',
+            transformOrigin: '0% 50%',
+            transform: `rotate(${angulo}deg)`
+          }}
+        />
+      );
+    });
+  };
+
   return (
     <div className="flex flex-col items-center justify-center gap-2 h-full max-h-full w-full mx-auto p-2 min-h-0 relative">
 
-      {/* Sección del botón para tirar dados y mensaje de selección */}
       {fichaSeleccionada && (
         <div className="absolute top-4 z-50 bg-black/80 px-6 py-2 rounded-full pointer-events-none shadow-lg border border-green-500/30">
           <p className="text-green-400 font-bold animate-pulse text-lg">
@@ -109,18 +178,26 @@ export default function Tablero() {
         </div>
       )}
 
-      {/* Contenedor del tablero: grid de 10x10 casillas */}
-      <div className="h-full aspect-square max-w-full max-h-full bg-gray-900 p-1.5 rounded-2xl shadow-2xl shrink min-h-0">
+      {/* Botón temporal de prueba */}
+      <button
+        onClick={simularTiradaDado}
+        className="absolute -top-10 z-50 px-4 py-1 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded shadow transition-all"
+      >
+        Probar Saltos
+      </button>
+
+      {/* CONTENEDOR DEL TABLERO */}
+      <div className="h-full aspect-square max-w-full max-h-full bg-gray-900 p-1.5 rounded-2xl shadow-2xl shrink min-h-0 relative">
         <div className="w-full h-full grid grid-cols-10 grid-rows-10 relative overflow-hidden rounded-md">
+          
+          <div className="absolute inset-0 w-full h-full pointer-events-none z-30">
+            {renderizarObstaculosPNG()}
+          </div>
 
-          {/* Renderiza cada casilla del tablero */}
+          {/* DIBUJO DE LAS CASILLAS Y LAS FICHAS */}
           {casillas.map((num) => {
-            // Fichas en esta casilla
             const fichasAqui = misFichas.filter(f => f.posicion === num);
-            // Si esta casilla es un destino posible
             const esDestinoPosible = destinosIluminados.includes(num);
-
-            // Información de la casilla (imagen y rotación)
             const infoCasilla = mapaTablero[num] || { src: IMAGENES.VACIA, rotacion: 0 };
 
             return (
@@ -129,11 +206,10 @@ export default function Tablero() {
                 onClick={() => esDestinoPosible && moverFichaAlDestino(num)}
                 className={`
                   relative flex flex-wrap items-center justify-center gap-[2px] transition-all duration-300
-                  ${esDestinoPosible ? "cursor-pointer ring-4 ring-green-300 ring-inset animate-pulse z-30 scale-105 shadow-[0_0_15px_rgba(34,197,94,0.8)]" : ""}
+                  ${esDestinoPosible ? "cursor-pointer ring-4 ring-green-300 ring-inset animate-pulse z-40 scale-105 shadow-[0_0_15px_rgba(34,197,94,0.8)]" : ""}
                   ${!esDestinoPosible && fichaSeleccionada ? "opacity-30" : ""}
                 `}
               >
-                {/* Fondo de la casilla con imagen */}
                 <div
                   className="absolute inset-0 w-full h-full z-0 pointer-events-none scale-105"
                   style={{
@@ -143,11 +219,8 @@ export default function Tablero() {
                     transform: `rotate(${infoCasilla.rotacion}deg)`
                   }}
                 />
-                {/* Renderiza las fichas en esta casilla */}
                 {fichasAqui.map(ficha => {
-                  // Si la ficha es seleccionable (tiene movimientos)
                   const esSeleccionable = movimientosPermitidos[ficha.id] !== undefined;
-                  // Si esta ficha está seleccionada
                   const estaSeleccionada = fichaSeleccionada === ficha.id;
 
                   return (
