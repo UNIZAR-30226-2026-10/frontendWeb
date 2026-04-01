@@ -6,6 +6,7 @@ type Ficha = {
   id: string;
   posicion: number;
   color: string;
+  equipo: string;
 };
 
 type InfoCasilla = {
@@ -48,9 +49,21 @@ const esperar = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
 export default function Tablero() {
   const [misFichas, setMisFichas] = useState<Ficha[]>([
-    { id: "Ficha 1", posicion: 1, color: "bg-red-400" },
-    { id: "Ficha 2", posicion: 1, color: "bg-red-500" },
-    { id: "Ficha 3", posicion: 1, color: "bg-red-600" }
+    { id: "Ficha 1", posicion: 1, color: "bg-red-400", equipo: "miEquipo" },
+    { id: "Ficha 2", posicion: 1, color: "bg-red-500", equipo: "miEquipo" },
+    { id: "Ficha 3", posicion: 1, color: "bg-red-600", equipo: "miEquipo" },
+
+    { id: "Jugador 2 - Ficha 1", posicion: 1, color: "bg-blue-400", equipo: "equipoAzul" },
+    { id: "Jugador 2 - Ficha 2", posicion: 1, color: "bg-blue-500", equipo: "equipoAzul" },
+    { id: "Jugador 2 - Ficha 3", posicion: 1, color: "bg-blue-600", equipo: "equipoAzul" },
+
+    { id: "Jugador 3 - Ficha 1", posicion: 1, color: "bg-green-400", equipo: "equipoVerde" },
+    { id: "Jugador 3 - Ficha 2", posicion: 1, color: "bg-green-500", equipo: "equipoVerde" },
+    { id: "Jugador 3 - Ficha 3", posicion: 1, color: "bg-green-600", equipo: "equipoVerde" },
+
+    { id: "Jugador 4 - Ficha 1", posicion: 1, color: "bg-yellow-300", equipo: "equipoAmarillo" },
+    { id: "Jugador 4 - Ficha 2", posicion: 1, color: "bg-yellow-400", equipo: "equipoAmarillo" },
+    { id: "Jugador 4 - Ficha 3", posicion: 1, color: "bg-yellow-500", equipo: "equipoAmarillo" }
   ]);
 
   const [movimientosPermitidos, setMovimientosPermitidos] = useState<Record<string, number[]>>({});
@@ -63,7 +76,10 @@ export default function Tablero() {
     setMovimientosPermitidos({
       "Ficha 1": [17, 20],
       "Ficha 2": [2],
-      "Ficha 3": [2]
+      "Ficha 3": [2],
+      "Jugador 2 - Ficha 1": [2],
+      "Jugador 3 - Ficha 1": [2],
+      "Jugador 4 - Ficha 1": [2]
     });
   };
 
@@ -197,6 +213,23 @@ export default function Tablero() {
           {/* DIBUJO DE LAS CASILLAS Y LAS FICHAS */}
           {casillas.map((num) => {
             const fichasAqui = misFichas.filter(f => f.posicion === num);
+            const fichasAgrupadasPorEquipo = fichasAqui.reduce<Record<string, Ficha[]>>((grupos, ficha) => {
+              if (!grupos[ficha.equipo]) {
+                grupos[ficha.equipo] = [];
+              }
+              grupos[ficha.equipo].push(ficha);
+              return grupos;
+            }, {});
+            const fichasVisibles = Object.values(fichasAgrupadasPorEquipo).map((grupo) => {
+              const fichaSeleccionadaEnGrupo = fichaSeleccionada
+                ? grupo.find((f) => f.id === fichaSeleccionada)
+                : undefined;
+              if (fichaSeleccionadaEnGrupo) {
+                return fichaSeleccionadaEnGrupo;
+              }
+              const fichaSeleccionable = grupo.find((f) => movimientosPermitidos[f.id] !== undefined);
+              return fichaSeleccionable || grupo[0];
+            });
             const esDestinoPosible = destinosIluminados.includes(num);
             const infoCasilla = mapaTablero[num] || { src: IMAGENES.VACIA, rotacion: 0 };
 
@@ -219,9 +252,10 @@ export default function Tablero() {
                     transform: `rotate(${infoCasilla.rotacion}deg)`
                   }}
                 />
-                {fichasAqui.map(ficha => {
+                {fichasVisibles.map(ficha => {
                   const esSeleccionable = movimientosPermitidos[ficha.id] !== undefined;
                   const estaSeleccionada = fichaSeleccionada === ficha.id;
+                  const cantidadEquipoEnCasilla = fichasAgrupadasPorEquipo[ficha.equipo]?.length ?? 1;
 
                   return (
                     <div
@@ -236,7 +270,13 @@ export default function Tablero() {
                         ${estaSeleccionada ? "scale-150 ring-4 ring-blue-400 shadow-[0_0_15px_blue]" : ""}
                       `}
                       title={ficha.id}
-                    />
+                    >
+                      {cantidadEquipoEnCasilla > 1 && (
+                        <span className="absolute -top-1 -right-1 z-30 w-4 h-4 rounded-full bg-black/85 text-white text-[9px] font-bold flex items-center justify-center border border-white/60 pointer-events-none">
+                          {cantidadEquipoEnCasilla}
+                        </span>
+                      )}
+                    </div>
                   );
                 })}
               </div>
