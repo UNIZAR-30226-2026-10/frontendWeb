@@ -30,16 +30,111 @@ const IMAGENES = {
   VACIA: "casilla_vacia.png",
   NORMAL: "casilla_vertical.png", 
   CURVA: "casilla_curva.png",
+  META: "casilla_meta1.png",
   BIFURCACION: "casilla_bifurcacion.png",
 };
 
 const sparseCasillasArray = new Array(100); // Creamos array de 100 huecos
 
-for (let i = 0; i < 50; i++) {
-    sparseCasillasArray[i] = { esCurva: false, rotacion: 90, tipo: "Normal", siguientes: [i+2] };
-}
+for (let numeroCasilla = 1; numeroCasilla <= 45; numeroCasilla++) {
+  const indice = numeroCasilla - 1;
+  const fila = Math.floor((numeroCasilla - 1) / 10);
+  const enBordeDerecho = numeroCasilla % 10 === 0;
+  const enBordeIzquierdo = numeroCasilla % 10 === 1;
+  const filaPar = fila % 2 === 0;
+  const ultimaFilaCamino = Math.floor((45 - 1) / 10);
 
+  const inicioFila = filaPar ? fila * 10 + 1 : fila * 10 + 10;
+  const finFila = filaPar ? fila * 10 + 10 : fila * 10 + 1;
+
+  const esCurvaSubida = numeroCasilla === finFila && fila < ultimaFilaCamino;
+  const esCurvaBajada = numeroCasilla === inicioFila && fila > 0;
+
+  const esCurvaBorde = esCurvaSubida || esCurvaBajada;
+
+  let rotacion = 90;
+  if (esCurvaSubida) {
+    rotacion = enBordeDerecho ? 180 : 270;
+  } else if (esCurvaBajada) {
+    rotacion = enBordeDerecho ? 90 : 0;
+  }
+
+  let siguiente: number | undefined;
+  if (numeroCasilla < 45 ) {
+    if (filaPar) {
+      siguiente = enBordeDerecho ? numeroCasilla + 10 : numeroCasilla + 1;
+    } else {
+      siguiente = enBordeIzquierdo ? numeroCasilla + 10 : numeroCasilla - 1;
+    }
+  }
+
+  sparseCasillasArray[indice] = {
+    esCurva: esCurvaBorde,
+    rotacion,
+    tipo: "Normal",
+    siguientes: siguiente !== undefined ? [siguiente] : []
+  };
+}
+sparseCasillasArray[45] = { esCurva: true, rotacion: 180, tipo: "Normal", siguientes: [] };
+for (let i = 51; i <= 90; i++) {
+  const modulo = i % 10;
+  const fila = Math.floor((i - 1) / 10);
+  const esFilaInferior = (fila % 2) == 1;
+  const filaPar = fila % 2 === 0;
+  if(modulo==5){
+    sparseCasillasArray[i - 1] = {
+      esCurva: true,
+      rotacion: esFilaInferior ? 0 : 270,
+      tipo: "Curva",
+      siguientes: []
+    };
+  }
+  if(modulo !=5 && modulo !=0 && modulo !=4 && modulo !=1){
+    sparseCasillasArray[i - 1] = {
+      esCurva: false,
+      rotacion: 90,
+      tipo: "Normal",
+      siguientes: []
+    };
+  }
+  if(modulo ==0){
+    sparseCasillasArray[i - 1] = {
+      esCurva: true,
+      rotacion: esFilaInferior ? 180 : 90,
+      tipo: "Curva",
+      siguientes: []
+    };
+  }
+  if(modulo ==1){
+  sparseCasillasArray[i - 1] = {
+      esCurva: true,
+      rotacion: esFilaInferior ? 270 : 0,
+      tipo: "Curva",
+      siguientes: []
+    };
+  }
+  if(modulo ==4){
+    sparseCasillasArray[i - 1] = {
+      esCurva: true,
+      rotacion: esFilaInferior ? 90 : 180,
+      tipo: "Curva",
+      siguientes: []
+    };
+  }
+}
+sparseCasillasArray[53] = { esCurva: false, rotacion: 90, tipo: "Normal", siguientes: [51] };
+
+sparseCasillasArray[54] = { esCurva: false, rotacion: 90, tipo: "Normal", siguientes: [51] };
+sparseCasillasArray[55] = { esCurva: false, rotacion: 270, tipo: "Bifurcacion", siguientes: [56, 54] };
+sparseCasillasArray[93] = { esCurva: true, rotacion: 0, tipo: "Curva", siguientes: [95, 93] };
+for(let i = 96; i < 100; i++) {
+  sparseCasillasArray[i - 1] = { esCurva: false, rotacion: 90, tipo: "Normal", siguientes: [] };
+}
+sparseCasillasArray[94] = { esCurva: false, rotacion: 270, tipo: "Bifurcacion", siguientes: [95] };
+sparseCasillasArray[99] = { esCurva: false, rotacion: 270, tipo: "Meta", siguientes: [] };
+sparseCasillasArray[56] = { esCurva: false, rotacion: 270, tipo: "Normal", siguientes: [] };
 sparseCasillasArray[16] = { esCurva: false, rotacion: 90, tipo: "Serpiente", siguientes: [18], saltoA: 9 };
+
 
 sparseCasillasArray[8] = { esCurva: false, rotacion: 90, tipo: "Serpiente", siguientes: [10] };
 
@@ -215,11 +310,15 @@ export default function Tablero() {
             
             let imagenSrc = IMAGENES.VACIA;
             if (datosCasilla) {
-              if (datosCasilla.tipo === "Bifurcacion") {
+              if (datosCasilla.tipo === "Meta") {
+                imagenSrc = IMAGENES.META;
+              } else if (datosCasilla.tipo === "Bifurcacion") {
                 imagenSrc = IMAGENES.BIFURCACION;
               } else if (datosCasilla.esCurva) {
                 imagenSrc = IMAGENES.CURVA;
-              } else if (datosCasilla.tipo === "Normal") {
+              } else {
+                // Si el backend nos manda datos (es decir, hay camino), el suelo por defecto 
+                // es el NORMAL, sin importar si la casilla es de tipo Serpiente, Escalera o Meta.
                 imagenSrc = IMAGENES.NORMAL;
               }
             }
