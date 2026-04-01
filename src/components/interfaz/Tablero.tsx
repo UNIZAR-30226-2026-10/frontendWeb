@@ -9,42 +9,46 @@ type Ficha = {
   equipo: string;
 };
 
-type InfoCasilla = {
-  src: string;
-  rotacion: number;
-};
+//Tipos definidos en el backend
+type TipoCasilla = "Normal" | "Escalera" | "Serpiente" | "Bifurcacion" | "Meta";
 
-// Constantes de imágenes de las casillas
+interface CasillaBackend {
+  esCurva: boolean;
+  rotacion: number;
+  efecto?: string;
+  tipo: TipoCasilla;
+  siguientes: number[];
+  saltoA?: number;
+}
+
+interface SnapshotTablero {
+  casillas: (CasillaBackend | undefined)[];
+}
+
+
 const IMAGENES = {
   VACIA: "casilla_vacia.png",
-  VERTICAL: "casilla_vertical.png",
+  NORMAL: "casilla_vertical.png", 
   CURVA: "casilla_curva.png",
   BIFURCACION: "casilla_bifurcacion.png",
 };
 
-const mapaTablero: Record<number, InfoCasilla> = {
-  1: { src: IMAGENES.VERTICAL, rotacion: 90 },
-  2: { src: IMAGENES.VERTICAL, rotacion: 90 },
-  3: { src: IMAGENES.VERTICAL, rotacion: 90 },
-  4: { src: IMAGENES.VERTICAL, rotacion: 90 },
-  5: { src: IMAGENES.VERTICAL , rotacion: 90 },
-  6: { src: IMAGENES.VERTICAL, rotacion: 90 },
-  7: { src: IMAGENES.VERTICAL, rotacion: 90 },
-  8: { src: IMAGENES.VERTICAL, rotacion: 90 },
-  9: { src: IMAGENES.VERTICAL, rotacion: 90 },
-  10: { src: IMAGENES.CURVA, rotacion: 180 },
-  13: { src: IMAGENES.VERTICAL, rotacion: 0 },
+const sparseCasillasArray = new Array(100); // Creamos array de 100 huecos
+
+for (let i = 0; i < 50; i++) {
+    sparseCasillasArray[i] = { esCurva: false, rotacion: 90, tipo: "Normal", siguientes: [i+2] };
+}
+
+sparseCasillasArray[16] = { esCurva: false, rotacion: 90, tipo: "Serpiente", siguientes: [18], saltoA: 9 };
+
+sparseCasillasArray[8] = { esCurva: false, rotacion: 90, tipo: "Serpiente", siguientes: [10] };
+
+
+// Aquí es donde en el futuro habrá un fetch(). 
+const MOCK_BACKEND_DATA: SnapshotTablero = {
+    casillas: sparseCasillasArray
 };
 
-// Diccionario visual: SOLO SIRVE PARA PINTAR LAS IMÁGENES
-// La lógica real de dónde acaba la ficha nos la dictará el backend en el array
-const SALTOS_ESPECIALES: Record<number, number> = {
-  17: 9,   // Serpiente 1
-  9: 3,    // Trampa encadenada
-  20: 38,  // Escalera
-};
-
-// Mini-función para crear pausas dramáticas en el código
 const esperar = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
 export default function Tablero() {
@@ -69,10 +73,17 @@ export default function Tablero() {
   const [movimientosPermitidos, setMovimientosPermitidos] = useState<Record<string, number[]>>({});
   const [fichaSeleccionada, setFichaSeleccionada] = useState<string | null>(null);
 
-  // --- LÓGICA TEMPORAL PARA PROBAR ---
+  const saltosDinamicos: Record<number, number> = {};
+  MOCK_BACKEND_DATA.casillas?.forEach((casilla, index) => {
+    if (casilla && casilla.saltoA !== undefined) {
+      saltosDinamicos[index + 1] = casilla.saltoA;
+    }
+  });
+
+
+  //LÓGICA TEMPORAL
   const simularTiradaDado = () => {
     setFichaSeleccionada(null);
-    // Iluminamos las casillas 17 y 20 para que puedas hacer clic
     setMovimientosPermitidos({
       "Ficha 1": [17, 20],
       "Ficha 2": [2],
@@ -89,44 +100,32 @@ export default function Tablero() {
     }
   };
 
-  // =================================================================
-  // LÓGICA DE MOVIMIENTO ANIMADO (LISTO PARA EL BACKEND)
-  // =================================================================
   const moverFichaAlDestino = async (casillaDestino: number) => {
     if (!fichaSeleccionada) return;
 
-    // 1. Guardamos qué ficha se mueve y bloqueamos la UI
     const fichaActual = fichaSeleccionada;
     setMovimientosPermitidos({});
     setFichaSeleccionada(null);
 
-    // 2. SIMULACIÓN: Aquí harías tu fetch() al backend enviando la 'casillaDestino'
-    // Y el backend te devolvería la 'rutaAnimacion'
-    let rutaAnimacion = [casillaDestino]; // Por defecto, una sola parada
+    let rutaAnimacion = [casillaDestino];
 
-    // Simulamos el caso que le comentaste a tu compañero:
     if (casillaDestino === 17) {
-      rutaAnimacion = [17, 9, 3]; // La ficha va a la 17, luego baja a la 9, luego a la 3
+      rutaAnimacion = [17, 9, 3]; 
     } else if (casillaDestino === 20) {
-      rutaAnimacion = [20, 38]; // Escalera normal
+      rutaAnimacion = [20, 38]; 
     }
 
-    // 3. BUCLE DE ANIMACIÓN
     for (let i = 0; i < rutaAnimacion.length; i++) {
       const parada = rutaAnimacion[i];
 
-      // Actualizamos la posición de la ficha
       setMisFichas(fichas =>
         fichas.map(f => f.id === fichaActual ? { ...f, posicion: parada } : f)
       );
 
-      // Si no es la última parada del array, esperamos 800ms para que se vea la animación
       if (i < rutaAnimacion.length - 1) {
         await esperar(800);
       }
     }
-    
-    // Aquí el bucle ha terminado. La ficha está en su destino final.
   };
 
   // Generamos el tablero de abajo hacia arriba
@@ -139,9 +138,6 @@ export default function Tablero() {
 
   const destinosIluminados = fichaSeleccionada ? movimientosPermitidos[fichaSeleccionada] : [];
 
-  // ==========================================
-  // MAGIA MATEMÁTICA: PINTAR LOS PNGs
-  // ==========================================
   const renderizarObstaculosPNG = () => {
     const obtenerCoordenadas = (casilla: number) => {
       const filaReal = Math.floor((casilla - 1) / 10); 
@@ -153,7 +149,8 @@ export default function Tablero() {
       };
     };
 
-    return Object.entries(SALTOS_ESPECIALES).map(([inicio, fin]) => {
+    // Usamos el saltosDinamicos que hemos generado a partir del JSON del backend
+    return Object.entries(saltosDinamicos).map(([inicio, fin]) => {
       const start = obtenerCoordenadas(Number(inicio));
       const end = obtenerCoordenadas(fin);
       
@@ -172,9 +169,9 @@ export default function Tablero() {
           className="absolute z-30 pointer-events-none drop-shadow-xl"
           style={{
             left: `${start.x}%`,
-            top: `calc(${start.y}% - 4%)`,
+            top: `calc(${start.y}% - 9%)`,
             width: `${longitud}%`,
-            height: '8%',
+            height: '18%',
             transformOrigin: '0% 50%',
             transform: `rotate(${angulo}deg)`
           }}
@@ -213,6 +210,22 @@ export default function Tablero() {
           {/* DIBUJO DE LAS CASILLAS Y LAS FICHAS */}
           {casillas.map((num) => {
             const fichasAqui = misFichas.filter(f => f.posicion === num);
+        
+            const datosCasilla = MOCK_BACKEND_DATA.casillas?.[num - 1]; // num empieza en 1, el array en 0
+            
+            let imagenSrc = IMAGENES.VACIA;
+            if (datosCasilla) {
+              if (datosCasilla.tipo === "Bifurcacion") {
+                imagenSrc = IMAGENES.BIFURCACION;
+              } else if (datosCasilla.esCurva) {
+                imagenSrc = IMAGENES.CURVA;
+              } else if (datosCasilla.tipo === "Normal") {
+                imagenSrc = IMAGENES.NORMAL;
+              }
+            }
+
+            const rotacion = datosCasilla ? datosCasilla.rotacion : 0;
+
             const fichasAgrupadasPorEquipo = fichasAqui.reduce<Record<string, Ficha[]>>((grupos, ficha) => {
               if (!grupos[ficha.equipo]) {
                 grupos[ficha.equipo] = [];
@@ -220,18 +233,15 @@ export default function Tablero() {
               grupos[ficha.equipo].push(ficha);
               return grupos;
             }, {});
+            
             const fichasVisibles = Object.values(fichasAgrupadasPorEquipo).map((grupo) => {
-              const fichaSeleccionadaEnGrupo = fichaSeleccionada
-                ? grupo.find((f) => f.id === fichaSeleccionada)
-                : undefined;
-              if (fichaSeleccionadaEnGrupo) {
-                return fichaSeleccionadaEnGrupo;
-              }
-              const fichaSeleccionable = grupo.find((f) => movimientosPermitidos[f.id] !== undefined);
-              return fichaSeleccionable || grupo[0];
+                const tieneFichaSeleccionada = grupo.find(f => f.id === fichaSeleccionada);
+                if(tieneFichaSeleccionada) return tieneFichaSeleccionada;
+                return grupo[0];
             });
+
+
             const esDestinoPosible = destinosIluminados.includes(num);
-            const infoCasilla = mapaTablero[num] || { src: IMAGENES.VACIA, rotacion: 0 };
 
             return (
               <div
@@ -246,12 +256,13 @@ export default function Tablero() {
                 <div
                   className="absolute inset-0 w-full h-full z-0 pointer-events-none scale-105"
                   style={{
-                    backgroundImage: `url(${infoCasilla.src})`,
+                    backgroundImage: `url(${imagenSrc})`,
                     backgroundSize: '100% 100%',
                     backgroundPosition: 'center',
-                    transform: `rotate(${infoCasilla.rotacion}deg)`
+                    transform: `rotate(${rotacion}deg)`
                   }}
                 />
+                
                 {fichasVisibles.map(ficha => {
                   const esSeleccionable = movimientosPermitidos[ficha.id] !== undefined;
                   const estaSeleccionada = fichaSeleccionada === ficha.id;
