@@ -1,7 +1,12 @@
+"use client";
+
 import { ListaJugadores } from "@/components/interfaz/ListaJugadores";
 import { MazoVisual } from "@/components/interfaz/MazoPartida";
 import Tablero from "@/components/interfaz/Tablero";
 import { DadoPartida } from "@/components/interfaz/DadoPartida";
+import { useMemo, useState } from "react";
+
+const EQUIPOS_TURNO = ["miEquipo", "equipoAzul", "equipoVerde", "equipoAmarillo"];
 
 const jugadoresEjemplo = [
   { nombreJugador: "Ana", esTurno: true, esLider: true },
@@ -11,6 +16,28 @@ const jugadoresEjemplo = [
 ];
 
 export default function Home() {
+  const [equipoActualIndex, setEquipoActualIndex] = useState(0);
+
+  const equipoActual = EQUIPOS_TURNO[equipoActualIndex];
+
+  const jugadoresEjemplo = useMemo(
+    () => [
+      { nombreJugador: "Ana", esTurno: equipoActual === "miEquipo", esLider: true, colorFichas: "bg-red-400" },
+      { nombreJugador: "Luis", esTurno: equipoActual === "equipoAzul", esLider: false, colorFichas: "bg-blue-400" },
+      { nombreJugador: "Marta", esTurno: equipoActual === "equipoVerde", esLider: false, colorFichas: "bg-green-400" },
+      { nombreJugador: "Diego", esTurno: equipoActual === "equipoAmarillo", esLider: false, colorFichas: "bg-yellow-400" },
+    ],
+    [equipoActual]
+  );
+
+  const avanzarTurno = () => {
+    setEquipoActualIndex((indice) => (indice + 1) % EQUIPOS_TURNO.length);
+  };
+
+  const reiniciarTurno = () => {
+    setEquipoActualIndex(0);
+  };
+
   return (
     <div className="w-full h-full flex flex-row p-4 md:p-4 gap-6 justify-between items-stretch bg-blue-700 min-h-0">
       
@@ -33,7 +60,11 @@ export default function Home() {
       {/* ================= COLUMNA CENTRAL (TABLERO REAL) ================= */}
       <div className="flex-1 flex items-center justify-center p-2 min-h-0 h-full">
         <div className="w-full h-full flex items-center justify-center max-h-[95vh]">
-          <Tablero />
+          <Tablero
+            equipoActual={equipoActual}
+            onAvanzarTurno={avanzarTurno}
+            onResetTurno={reiniciarTurno}
+          />
         </div>
       </div>
 

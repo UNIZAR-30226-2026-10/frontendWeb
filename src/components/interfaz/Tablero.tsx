@@ -25,6 +25,12 @@ interface SnapshotTablero {
   casillas: (CasillaBackend | undefined)[];
 }
 
+interface TableroProps {
+  equipoActual: string;
+  onAvanzarTurno: () => void;
+  onResetTurno: () => void;
+}
+
 
 const IMAGENES = {
   VACIA: "casilla_vacia.png",
@@ -36,7 +42,7 @@ const IMAGENES = {
 
 const sparseCasillasArray = new Array(100); // Creamos array de 100 huecos
 
-for (let numeroCasilla = 1; numeroCasilla <= 45; numeroCasilla++) {
+for (let numeroCasilla = 1; numeroCasilla < 45; numeroCasilla++) {
   const indice = numeroCasilla - 1;
   const fila = Math.floor((numeroCasilla - 1) / 10);
   const enBordeDerecho = numeroCasilla % 10 === 0;
@@ -74,8 +80,9 @@ for (let numeroCasilla = 1; numeroCasilla <= 45; numeroCasilla++) {
     tipo: "Normal",
     siguientes: siguiente !== undefined ? [siguiente] : []
   };
-}
-sparseCasillasArray[45] = { esCurva: true, rotacion: 180, tipo: "Normal", siguientes: [] };
+} 
+sparseCasillasArray[44] = { esCurva: false, rotacion: 90, tipo: "Normal", siguientes: [46] };
+sparseCasillasArray[45] = { esCurva: true, rotacion: 180, tipo: "Normal", siguientes: [56] };
 for (let i = 51; i <= 90; i++) {
   const modulo = i % 10;
   const fila = Math.floor((i - 1) / 10);
@@ -85,16 +92,24 @@ for (let i = 51; i <= 90; i++) {
     sparseCasillasArray[i - 1] = {
       esCurva: true,
       rotacion: esFilaInferior ? 0 : 270,
-      tipo: "Curva",
-      siguientes: []
+      tipo: "Normal",
+      siguientes: esFilaInferior ? [i + 1] : [i + 10]
     };
   }
-  if(modulo !=5 && modulo !=0 && modulo !=4 && modulo !=1){
+  if(modulo < 5 && modulo > 1){
     sparseCasillasArray[i - 1] = {
       esCurva: false,
       rotacion: 90,
       tipo: "Normal",
-      siguientes: []
+      siguientes: filaPar ? [i + 1] : [i - 1]
+    };
+  }
+  if (modulo > 5 && modulo <= 9){
+    sparseCasillasArray[i - 1] = {
+      esCurva: false,
+      rotacion: 90,
+      tipo: "Normal",
+      siguientes: filaPar ? [i - 1] : [i + 1]
     };
   }
   if(modulo ==0){
@@ -102,7 +117,7 @@ for (let i = 51; i <= 90; i++) {
       esCurva: true,
       rotacion: esFilaInferior ? 180 : 90,
       tipo: "Curva",
-      siguientes: []
+      siguientes: esFilaInferior ? [i + 10] : [i - 1]
     };
   }
   if(modulo ==1){
@@ -110,7 +125,7 @@ for (let i = 51; i <= 90; i++) {
       esCurva: true,
       rotacion: esFilaInferior ? 270 : 0,
       tipo: "Curva",
-      siguientes: []
+      siguientes: esFilaInferior ? [i + 10] : [i + 1]
     };
   }
   if(modulo ==4){
@@ -118,25 +133,31 @@ for (let i = 51; i <= 90; i++) {
       esCurva: true,
       rotacion: esFilaInferior ? 90 : 180,
       tipo: "Curva",
-      siguientes: []
+      siguientes: esFilaInferior ? [i - 1] : [i + 10]
     };
   }
 }
-sparseCasillasArray[53] = { esCurva: false, rotacion: 90, tipo: "Normal", siguientes: [51] };
-
-sparseCasillasArray[54] = { esCurva: false, rotacion: 90, tipo: "Normal", siguientes: [51] };
-sparseCasillasArray[55] = { esCurva: false, rotacion: 270, tipo: "Bifurcacion", siguientes: [56, 54] };
-sparseCasillasArray[93] = { esCurva: true, rotacion: 0, tipo: "Curva", siguientes: [95, 93] };
+sparseCasillasArray[53] = { esCurva: false, rotacion: 90, tipo: "Normal", siguientes: [53] };
+sparseCasillasArray[54] = { esCurva: false, rotacion: 90, tipo: "Normal", siguientes: [54] };
+sparseCasillasArray[55] = { esCurva: false, rotacion: 270, tipo: "Bifurcacion", siguientes: [57, 55] };
+sparseCasillasArray[93] = { esCurva: true, rotacion: 0, tipo: "Curva", siguientes: [95] };
 for(let i = 96; i < 100; i++) {
-  sparseCasillasArray[i - 1] = { esCurva: false, rotacion: 90, tipo: "Normal", siguientes: [] };
+  sparseCasillasArray[i - 1] = { esCurva: false, rotacion: 90, tipo: "Normal", siguientes: [i+1] };
 }
-sparseCasillasArray[94] = { esCurva: false, rotacion: 270, tipo: "Bifurcacion", siguientes: [95] };
+sparseCasillasArray[94] = { esCurva: false, rotacion: 270, tipo: "Bifurcacion", siguientes: [96] };
 sparseCasillasArray[99] = { esCurva: false, rotacion: 270, tipo: "Meta", siguientes: [] };
-sparseCasillasArray[56] = { esCurva: false, rotacion: 270, tipo: "Normal", siguientes: [] };
-sparseCasillasArray[16] = { esCurva: false, rotacion: 90, tipo: "Serpiente", siguientes: [18], saltoA: 9 };
-
-
-sparseCasillasArray[8] = { esCurva: false, rotacion: 90, tipo: "Serpiente", siguientes: [10] };
+//serpientes
+sparseCasillasArray[16] = { esCurva: false, rotacion: 90, tipo: "Serpiente", siguientes: [16], saltoA: 9 };
+sparseCasillasArray[53] = { esCurva: false, rotacion: 90, tipo: "Serpiente", siguientes: [53], saltoA: 43 };
+sparseCasillasArray[67] = { esCurva: false, rotacion: 90, tipo: "Serpiente", siguientes: [67], saltoA: 19 };
+sparseCasillasArray[82] = { esCurva: false, rotacion: 90, tipo: "Serpiente", siguientes: [82], saltoA: 56 };
+sparseCasillasArray[98] = { esCurva: false, rotacion: 90, tipo: "Serpiente", siguientes: [100], saltoA: 25 };
+//escaleras
+sparseCasillasArray[6] = { esCurva: false, rotacion: 90, tipo: "Escalera", siguientes: [8], saltoA: 26 };
+sparseCasillasArray[14] = { esCurva: false, rotacion: 90, tipo: "Escalera", siguientes: [14], saltoA: 31 };
+sparseCasillasArray[50] = { esCurva: true, rotacion: 270, tipo: "Escalera", siguientes: [61], saltoA: 73 };
+sparseCasillasArray[36] = { esCurva: false, rotacion: 90, tipo: "Escalera", siguientes: [36], saltoA: 98 };
+sparseCasillasArray[64] = { esCurva: true, rotacion: 270, tipo: "Escalera", siguientes: [75], saltoA: 84 };
 
 
 // Aquí es donde en el futuro habrá un fetch(). 
@@ -144,9 +165,82 @@ const MOCK_BACKEND_DATA: SnapshotTablero = {
     casillas: sparseCasillasArray
 };
 
+const obtenerDestinosTrasTirada = (casillaInicio: number, pasos: number): number[] => {
+  const destinos = new Set<number>();
+
+  const obtenerAnteriores = (casillaObjetivo: number): number[] => {
+    const anteriores: number[] = [];
+    MOCK_BACKEND_DATA.casillas.forEach((casilla, index) => {
+      if (casilla?.siguientes.includes(casillaObjetivo)) {
+        anteriores.push(index + 1);
+      }
+    });
+    return anteriores;
+  };
+
+  const obtenerReboteDesdeMeta = (casillaMeta: number, pasosSobrantes: number): number[] => {
+    if (pasosSobrantes === 0) {
+      return [casillaMeta];
+    }
+
+    const anteriores = obtenerAnteriores(casillaMeta);
+    if (anteriores.length === 0) {
+      return [casillaMeta];
+    }
+
+    return Array.from(
+      new Set(
+        anteriores.flatMap((anterior) => obtenerReboteDesdeMeta(anterior, pasosSobrantes - 1))
+      )
+    );
+  };
+
+  const recorrer = (casillaActual: number, pasosRestantes: number, direccion: "adelante" | "atras" = "adelante") => {
+    const datosCasilla = MOCK_BACKEND_DATA.casillas[casillaActual - 1];
+    const siguientes = datosCasilla?.siguientes ?? [];
+
+    if (pasosRestantes === 0) {
+      destinos.add(casillaActual);
+      return;
+    }
+
+    if (direccion === "atras") {
+      const anteriores = obtenerAnteriores(casillaActual);
+      anteriores.forEach((anterior) => recorrer(anterior, pasosRestantes - 1, "atras"));
+      return;
+    }
+
+    if (datosCasilla?.tipo === "Meta") {
+      obtenerReboteDesdeMeta(casillaActual, pasosRestantes).forEach((destino) => destinos.add(destino));
+      return;
+    }
+
+    // Si llegamos a una bifurcación con pasos pendientes, calculamos cada rama
+    // con los pasos que quedan tras elegir una salida.
+    if (pasosRestantes > 0 && datosCasilla?.tipo === "Bifurcacion" && siguientes.length > 1) {
+      const pasosTrasElegirRama = pasosRestantes - 1;
+
+      if (pasosTrasElegirRama <= 0) {
+        siguientes.forEach((opcion) => destinos.add(opcion));
+        return;
+      }
+
+      siguientes.forEach((opcion) => recorrer(opcion, pasosTrasElegirRama));
+      return;
+    }
+
+    siguientes.forEach((siguiente) => recorrer(siguiente, pasosRestantes - 1));
+  };
+
+  recorrer(casillaInicio, pasos);
+  destinos.delete(casillaInicio);
+
+  return Array.from(destinos);
+};
+
 const esperar = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
-export default function Tablero() {
+export default function Tablero({ equipoActual, onAvanzarTurno, onResetTurno }: TableroProps) {
   const [misFichas, setMisFichas] = useState<Ficha[]>([
     { id: "Ficha 1", posicion: 1, color: "bg-red-400", equipo: "miEquipo" },
     { id: "Ficha 2", posicion: 1, color: "bg-red-500", equipo: "miEquipo" },
@@ -167,6 +261,7 @@ export default function Tablero() {
 
   const [movimientosPermitidos, setMovimientosPermitidos] = useState<Record<string, number[]>>({});
   const [fichaSeleccionada, setFichaSeleccionada] = useState<string | null>(null);
+  const [valorDado, setValorDado] = useState<number | null>(null);
 
   const saltosDinamicos: Record<number, number> = {};
   MOCK_BACKEND_DATA.casillas?.forEach((casilla, index) => {
@@ -179,17 +274,34 @@ export default function Tablero() {
   //LÓGICA TEMPORAL
   const simularTiradaDado = () => {
     setFichaSeleccionada(null);
-    setMovimientosPermitidos({
-      "Ficha 1": [17, 20],
-      "Ficha 2": [2],
-      "Ficha 3": [2],
-      "Jugador 2 - Ficha 1": [2],
-      "Jugador 3 - Ficha 1": [2],
-      "Jugador 4 - Ficha 1": [2]
-    });
+
+    const tirada = Math.floor(Math.random() * 6) + 1;
+    setValorDado(tirada);
+
+    setMovimientosPermitidos(
+      Object.fromEntries(
+        misFichas.map((ficha) => {
+          if (ficha.equipo !== equipoActual) {
+            return [ficha.id, []];
+          }
+
+          const casillaActual = MOCK_BACKEND_DATA.casillas[ficha.posicion - 1];
+          if (casillaActual?.tipo === "Meta") {
+            return [ficha.id, []];
+          }
+          return [ficha.id, obtenerDestinosTrasTirada(ficha.posicion, tirada)];
+        })
+      )
+    );
   };
 
   const seleccionarFicha = (idFicha: string) => {
+    const ficha = misFichas.find((f) => f.id === idFicha);
+
+    if (ficha?.equipo !== equipoActual) {
+      return;
+    }
+
     if (movimientosPermitidos[idFicha] && movimientosPermitidos[idFicha].length > 0) {
       setFichaSeleccionada(idFicha);
     }
@@ -199,29 +311,50 @@ export default function Tablero() {
     if (!fichaSeleccionada) return;
 
     const fichaActual = fichaSeleccionada;
+    const fichaActualData = misFichas.find((ficha) => ficha.id === fichaActual);
+    const casillaDeFichaActual = fichaActualData
+      ? MOCK_BACKEND_DATA.casillas[fichaActualData.posicion - 1]
+      : undefined;
+
+    if (casillaDeFichaActual?.tipo === "Meta") {
+      setMovimientosPermitidos({});
+      setFichaSeleccionada(null);
+      return;
+    }
+
+    const datosCasilla = MOCK_BACKEND_DATA.casillas[casillaDestino - 1];
+
     setMovimientosPermitidos({});
     setFichaSeleccionada(null);
 
-    let rutaAnimacion = [casillaDestino];
+    const posicionFinal = datosCasilla?.saltoA ?? casillaDestino;
 
-    if (casillaDestino === 17) {
-      rutaAnimacion = [17, 9, 3]; 
-    } else if (casillaDestino === 20) {
-      rutaAnimacion = [20, 38]; 
-    }
-
-    for (let i = 0; i < rutaAnimacion.length; i++) {
-      const parada = rutaAnimacion[i];
-
-      setMisFichas(fichas =>
-        fichas.map(f => f.id === fichaActual ? { ...f, posicion: parada } : f)
+    // Si hay saltoA, mostrar animación: primero aparece en casillaDestino, luego baja
+    if (datosCasilla?.saltoA) {
+      setMisFichas((fichas) =>
+        fichas.map((ficha) => (ficha.id === fichaActual ? { ...ficha, posicion: casillaDestino } : ficha))
       );
-
-      if (i < rutaAnimacion.length - 1) {
-        await esperar(800);
-      }
+      await esperar(800);
     }
+
+    setMisFichas((fichas) =>
+      fichas.map((ficha) => (ficha.id === fichaActual ? { ...ficha, posicion: posicionFinal } : ficha))
+    );
+
+    setFichaSeleccionada(null);
+    setMovimientosPermitidos({});
+    setValorDado(null);
+    onAvanzarTurno();
   };
+
+  const enviarFichasACasa = () => {
+    setFichaSeleccionada(null);
+    setMovimientosPermitidos({});
+    setValorDado(null);
+    setMisFichas((fichas) => fichas.map((ficha) => ({ ...ficha, posicion: 1 })));
+    onResetTurno();
+  };
+
 
   // Generamos el tablero de abajo hacia arriba
   const casillas: number[] = [];
@@ -246,27 +379,31 @@ export default function Tablero() {
 
     // Usamos el saltosDinamicos que hemos generado a partir del JSON del backend
     return Object.entries(saltosDinamicos).map(([inicio, fin]) => {
-      const start = obtenerCoordenadas(Number(inicio));
+      const inicioNumero = Number(inicio);
+      const start = obtenerCoordenadas(inicioNumero);
       const end = obtenerCoordenadas(fin);
+      const tipoInicio = MOCK_BACKEND_DATA.casillas[inicioNumero - 1]?.tipo;
       
       const dx = end.x - start.x;
       const dy = end.y - start.y;
       
       const longitud = Math.sqrt(dx * dx + dy * dy);
       const angulo = Math.atan2(dy, dx) * (180 / Math.PI);
-      const esEscalera = fin > Number(inicio);
+      const esEscalera = tipoInicio === "Escalera";
+      const esSerpiente = tipoInicio === "Serpiente";
+      const rotacionExtraSerpiente = esSerpiente && (fin%10 < inicioNumero%10) ? 180 : 0;
 
       return (
         <img
           key={`${inicio}-${fin}`}
-          src={esEscalera ? "/escalera.png" : "/serpiente.png"} 
+          src={!esEscalera&& rotacionExtraSerpiente ? "/serpienteba.png" : esEscalera ? "/escalera.png" : "/serpiente.png"}
           alt={esEscalera ? "Escalera" : "Serpiente"}
           className="absolute z-30 pointer-events-none drop-shadow-xl"
           style={{
             left: `${start.x}%`,
-            top: `calc(${start.y}% - 9%)`,
+            top: esEscalera ? `calc(${start.y}% - 4%)` : `calc(${start.y}% - 9%)`,
             width: `${longitud}%`,
-            height: '18%',
+            height: esEscalera ? '7%' : '18%',
             transformOrigin: '0% 50%',
             transform: `rotate(${angulo}deg)`
           }}
@@ -281,7 +418,7 @@ export default function Tablero() {
       {fichaSeleccionada && (
         <div className="absolute top-4 z-50 bg-black/80 px-6 py-2 rounded-full pointer-events-none shadow-lg border border-green-500/30">
           <p className="text-green-400 font-bold animate-pulse text-lg">
-            Moviendo {fichaSeleccionada}. ¡Elige una casilla verde!
+            Moviendo {fichaSeleccionada}. {valorDado !== null ? `Dado: ${valorDado}.` : ""} ¡Elige una casilla verde!
           </p>
         </div>
       )}
@@ -291,8 +428,16 @@ export default function Tablero() {
         onClick={simularTiradaDado}
         className="absolute -top-10 z-50 px-4 py-1 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded shadow transition-all"
       >
-        Probar Saltos
+        Tirar dado{valorDado !== null ? ` (${valorDado})` : ""}
       </button>
+
+      <button
+        onClick={enviarFichasACasa}
+        className="absolute -top-10 left-40 z-50 px-4 py-1 bg-red-600 hover:bg-red-500 text-white font-bold rounded shadow transition-all"
+      >
+        Reiniciar
+      </button>
+
 
       {/* CONTENEDOR DEL TABLERO */}
       <div className="h-full aspect-square max-w-full max-h-full bg-gray-900 p-1.5 rounded-2xl shadow-2xl shrink min-h-0 relative">
@@ -363,7 +508,7 @@ export default function Tablero() {
                 />
                 
                 {fichasVisibles.map(ficha => {
-                  const esSeleccionable = movimientosPermitidos[ficha.id] !== undefined;
+                  const esSeleccionable = (movimientosPermitidos[ficha.id]?.length ?? 0) > 0;
                   const estaSeleccionada = fichaSeleccionada === ficha.id;
                   const cantidadEquipoEnCasilla = fichasAgrupadasPorEquipo[ficha.equipo]?.length ?? 1;
 
