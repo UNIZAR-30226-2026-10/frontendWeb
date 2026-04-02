@@ -4,6 +4,7 @@ import { ListaJugadores } from "@/components/interfaz/ListaJugadores";
 import { MazoVisual } from "@/components/interfaz/MazoPartida";
 import Tablero from "@/components/interfaz/Tablero";
 import { DadoPartida } from "@/components/interfaz/DadoPartida";
+import { ModalCarta } from "@/components/interfaz/CartaPartida";
 import { useMemo, useState } from "react";
 
 const EQUIPOS_TURNO = ["miEquipo", "equipoAzul", "equipoVerde", "equipoAmarillo"];
@@ -16,9 +17,13 @@ const jugadoresEjemplo = [
 ];
 
 export default function Home() {
+  const [cartaEnFoco, setCartaEnFoco] = useState<any | null>(null);
   const [equipoActualIndex, setEquipoActualIndex] = useState(0);
+  const [valorDado, setValorDado] = useState<number | null>(null);
+  const [cartaJugadaEnEsteTurno, setCartaJugadaEnEsteTurno] = useState(false);
 
   const equipoActual = EQUIPOS_TURNO[equipoActualIndex];
+  const esMiTurno = equipoActual === "miEquipo";
 
   const jugadoresEjemplo = useMemo(
     () => [
@@ -31,66 +36,92 @@ export default function Home() {
   );
 
   const avanzarTurno = () => {
+    setValorDado(null);
+    setCartaJugadaEnEsteTurno(false);
     setEquipoActualIndex((indice) => (indice + 1) % EQUIPOS_TURNO.length);
   };
 
-  const reiniciarTurno = () => {
-    setEquipoActualIndex(0);
+  const manejarTirada = (valor: number) => {
+    setValorDado(valor);
+  };
+
+  const manejarUsoDeCarta = (carta: any) => {
+    // Aquí pondremos la lógica de Moisés después
+    if (cartaJugadaEnEsteTurno) {
+    alert("Ya has jugado una carta en este turno.");
+    return;
+    }
+
+    console.log("Activando efecto de:", carta.nombre);
+  
+   // Marcamos que ya se usó la carta del turno
+    setCartaJugadaEnEsteTurno(true);
+  
+    // Cerramos el modal
+    setCartaEnFoco(null);
   };
 
   return (
-    <div className="w-full h-full flex flex-row p-4 md:p-4 gap-6 justify-between items-stretch bg-blue-700 min-h-0">
+    <div className="w-full h-full flex flex-row p-4 gap-6 justify-between items-stretch bg-blue-700 min-h-0">
       
-      {/* ================= COLUMNA IZQUIERDA ================= */}
-
-      <div className="flex flex-col w-48 lg:w-52 shrink-0 h-full pb-0 pr-2 gap-2">
-
-        <div className="flex-none pt-0">
-          <ListaJugadores jugadores={jugadoresEjemplo} />
-        </div>
-
+      {/* COLUMNA IZQUIERDA */}
+      <div className="flex flex-col w-48 lg:w-52 shrink-0 h-full gap-2">
+        <ListaJugadores jugadores={jugadoresEjemplo} />
         <div className="flex flex-col gap-1 min-h-0">
-          <h2 className="text-white text-sm lg:text-base font-bold drop-shadow-md">Mano: (3/4)</h2>
-          <div className="w-full relative">
-             <MazoVisual />
-          </div>
+          <h2 className="text-white text-sm font-bold">Mano: (3/4)</h2>
+          <MazoVisual onSelectCarta={setCartaEnFoco} />
         </div>
       </div>
 
-      {/* ================= COLUMNA CENTRAL (TABLERO REAL) ================= */}
+      {/* COLUMNA CENTRAL */}
       <div className="flex-1 flex items-center justify-center p-2 min-h-0 h-full">
-        <div className="w-full h-full flex items-center justify-center max-h-[95vh]">
-          <Tablero
-            equipoActual={equipoActual}
-            onAvanzarTurno={avanzarTurno}
-            onResetTurno={reiniciarTurno}
+        <Tablero
+          equipoActual={equipoActual}
+          onAvanzarTurno={avanzarTurno}
+          onResetTurno={() => { setValorDado(null); setEquipoActualIndex(0); setCartaJugadaEnEsteTurno(false); }}
+          valorDadoExterno={valorDado} // Nueva prop
+          onTirarDadoManual={manejarTirada} // Para sincronizar si el tablero tira el dado
+        />
+      </div>
+
+      {/* COLUMNA DERECHA */}
+      <div className="flex flex-col justify-evenly items-center w-60 lg:w-64 shrink-0 h-full pb-4">
+        {/* Perfil Jugador */}
+        <div className="bg-yellow-500 rounded-[2rem] p-4 w-full flex flex-col items-center shadow-lg border-b-8 border-yellow-600">
+          <span className="text-3xl bg-white rounded-full p-2 border-4 border-black mb-2">🐍</span>
+          <h2 className="text-white text-3xl font-bold">Tú</h2>
+        </div>
+
+      
+
+        {/* LÓGICA DEL DADO INTEGRADA */}
+        <div className="flex flex-col items-center gap-2 w-full">
+          <div className="text-center mb-2">
+            <h2 className="text-white text-2xl font-bold">Tu Turno</h2>
+            <p className="text-blue-200 text-xs">*Haz click en el dado</p>
+          </div>
+          
+          <DadoPartida 
+            resultado={valorDado}
+            onTirar={() => {
+                // Solo permitimos tirar si no hay un valor activo (o según tu lógica de juego)
+                if (valorDado === null) {
+                    const tirada = Math.floor(Math.random() * 6) + 1;
+                    manejarTirada(tirada);
+                }
+            }}
+            deshabilitado={valorDado !== null} // Opcional: bloquear tras tirar
           />
         </div>
       </div>
 
-      {/* ================= COLUMNA DERECHA ================= */}
-      <div className="flex flex-col justify-evenly items-center w-60 lg:w-64 shrink-0 h-full pb-4">
-
-        <div className="bg-yellow-500 rounded-[2rem] p-4 w-full flex flex-col items-center shadow-lg border-b-8 border-yellow-600 shrink-0">
-          <div className="w-20 h-20 bg-white rounded-full border-4 border-black mb-2 flex items-center justify-center shadow-inner">
-            <span className="text-3xl">🐍</span>
-          </div>
-          <h2 className="text-white text-3xl font-bold drop-shadow-md">Tú</h2>
-          <p className="text-white font-bold text-sm lg:text-base mt-1">
-            <span className="underline">Mazo:</span> Lategame
-          </p>
-        </div>
-
-        <div className="flex flex-col items-center gap-4 w-full shrink-0">
-          <div className="text-center">
-            <h2 className="text-white text-2xl lg:text-3xl font-bold drop-shadow-sm">Lanzar dado</h2>
-            <p className="text-blue-200 text-xs lg:text-sm font-bold">*Terminará tu turno</p>
-          </div>
-          <DadoPartida />
-        </div>
-
-      </div>
-
+      <ModalCarta 
+        carta={cartaEnFoco} 
+        onClose={() => setCartaEnFoco(null)}
+        onJugar={manejarUsoDeCarta}
+        esMiTurno={esMiTurno}
+        yaJugadoCarta={cartaJugadaEnEsteTurno}
+      />
     </div>
   );
 }

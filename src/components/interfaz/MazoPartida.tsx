@@ -1,6 +1,12 @@
 import React from 'react';
 
-export const MazoVisual: React.FC = () => {
+// 1. Definimos la forma de las props que el componente va a recibir
+interface MazoVisualProps {
+  onSelectCarta: (carta: any) => void;
+}
+
+// 2. Le decimos a React.FC que use esas props: React.FC<MazoVisualProps>
+export const MazoVisual: React.FC<MazoVisualProps> = ({ onSelectCarta }) => {
   const mano = [
     { id: 1, nombre: "Moises", img: "/moises2.png", efecto: "Te saltas el bloqueo", vacia: false },
     { id: 2, nombre: "Moises", img: "/moises2.png", efecto: "Te saltas el bloqueo", vacia: false },
@@ -16,7 +22,6 @@ export const MazoVisual: React.FC = () => {
           return (
             <div 
               key={carta.id} 
-              // aspect-[2/3] fuerza a que el hueco tenga la proporción exacta de una carta real
               className="w-full aspect-[2/3] border-2 border-dashed border-white/40 rounded-lg flex items-center justify-center bg-black/20"
             >
               <span className="text-white/30 text-xs font-bold uppercase tracking-widest">+ Carta</span>
@@ -27,6 +32,8 @@ export const MazoVisual: React.FC = () => {
         return (
           <div 
             key={carta.id} 
+            // 3. Añadimos el evento onClick para avisar al padre qué carta se eligió
+            onClick={() => onSelectCarta(carta)}
             className="w-full aspect-[2/3] bg-black border-2 border-blue-600 rounded-lg shadow-md flex flex-col items-center justify-between p-2 hover:scale-105 transition-transform cursor-pointer hover:border-blue-400 hover:shadow-[0_0_15px_rgba(37,99,235,0.6)] z-10"
           >
             {/* Título de la carta */}

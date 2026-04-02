@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
 // Definición de tipos
 type Ficha = {
@@ -29,6 +29,8 @@ interface TableroProps {
   equipoActual: string;
   onAvanzarTurno: () => void;
   onResetTurno: () => void;
+  valorDadoExterno: number | null;
+  onTirarDadoManual: (valor: number) => void;
 }
 
 
@@ -240,7 +242,7 @@ const obtenerDestinosTrasTirada = (casillaInicio: number, pasos: number): number
 
 const esperar = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
-export default function Tablero({ equipoActual, onAvanzarTurno, onResetTurno }: TableroProps) {
+export default function Tablero({ equipoActual, onAvanzarTurno, onResetTurno, valorDadoExterno, onTirarDadoManual }: TableroProps) {
   const [misFichas, setMisFichas] = useState<Ficha[]>([
     { id: "Ficha 1", posicion: 1, color: "bg-red-400", equipo: "miEquipo" },
     { id: "Ficha 2", posicion: 1, color: "bg-red-500", equipo: "miEquipo" },
@@ -261,7 +263,8 @@ export default function Tablero({ equipoActual, onAvanzarTurno, onResetTurno }: 
 
   const [movimientosPermitidos, setMovimientosPermitidos] = useState<Record<string, number[]>>({});
   const [fichaSeleccionada, setFichaSeleccionada] = useState<string | null>(null);
-  const [valorDado, setValorDado] = useState<number | null>(null);
+  const [confirmacionEscalera, setConfirmacionEscalera] = useState<{ fichaId: string; 
+    casillaBase: number; casillaSalto: number} | null>(null);
 
   const saltosDinamicos: Record<number, number> = {};
   MOCK_BACKEND_DATA.casillas?.forEach((casilla, index) => {
@@ -270,30 +273,38 @@ export default function Tablero({ equipoActual, onAvanzarTurno, onResetTurno }: 
     }
   });
 
+  // Funcion para tirar el dado, se usa useEffect para evitar loops infinitos al cargar
+  useEffect(() => {
+  // Si no hay valor de dado (es null), reseteamos los movimientos
+  if (valorDadoExterno === null) {
+    setMovimientosPermitidos({});
+    return;
+  }
 
-  //LÓGICA TEMPORAL
-  const simularTiradaDado = () => {
-    setFichaSeleccionada(null);
+  // Si hay un valor (alguien tiró el dado), calculamos destinos
+  setFichaSeleccionada(null);
 
-    const tirada = Math.floor(Math.random() * 6) + 1;
-    setValorDado(tirada);
+  const nuevosMovimientos = Object.fromEntries(
+    misFichas.map((ficha) => {
+      // 1. Solo fichas del equipo que tiene el turno
+      if (ficha.equipo !== equipoActual) {
+        return [ficha.id, []];
+      }
 
-    setMovimientosPermitidos(
-      Object.fromEntries(
-        misFichas.map((ficha) => {
-          if (ficha.equipo !== equipoActual) {
-            return [ficha.id, []];
-          }
+      // 2. Si la ficha ya está en la Meta, no se mueve
+      const casillaActual = MOCK_BACKEND_DATA.casillas[ficha.posicion - 1];
+      if (casillaActual?.tipo === "Meta") {
+        return [ficha.id, []];
+      }
 
-          const casillaActual = MOCK_BACKEND_DATA.casillas[ficha.posicion - 1];
-          if (casillaActual?.tipo === "Meta") {
-            return [ficha.id, []];
-          }
-          return [ficha.id, obtenerDestinosTrasTirada(ficha.posicion, tirada)];
-        })
-      )
-    );
-  };
+      // 3. Calculamos los destinos posibles para esta ficha con el valor del dado
+      return [ficha.id, obtenerDestinosTrasTirada(ficha.posicion, valorDadoExterno)];
+    })
+  );
+
+  setMovimientosPermitidos(nuevosMovimientos);
+
+}, [valorDadoExterno, equipoActual, misFichas]);
 
   const seleccionarFicha = (idFicha: string) => {
     const ficha = misFichas.find((f) => f.id === idFicha);
@@ -307,50 +318,47 @@ export default function Tablero({ equipoActual, onAvanzarTurno, onResetTurno }: 
     }
   };
 
-  const moverFichaAlDestino = async (casillaDestino: number) => {
-    if (!fichaSeleccionada) return;
-
-    const fichaActual = fichaSeleccionada;
-    const fichaActualData = misFichas.find((ficha) => ficha.id === fichaActual);
-    const casillaDeFichaActual = fichaActualData
-      ? MOCK_BACKEND_DATA.casillas[fichaActualData.posicion - 1]
-      : undefined;
-
-    if (casillaDeFichaActual?.tipo === "Meta") {
-      setMovimientosPermitidos({});
-      setFichaSeleccionada(null);
-      return;
-    }
-
-    const datosCasilla = MOCK_BACKEND_DATA.casillas[casillaDestino - 1];
-
+  const ejecutarMovimientoFinal = async (fichaId: string, base: number, final: number) => {
     setMovimientosPermitidos({});
     setFichaSeleccionada(null);
 
-    const posicionFinal = datosCasilla?.saltoA ?? casillaDestino;
-
-    // Si hay saltoA, mostrar animación: primero aparece en casillaDestino, luego baja
-    if (datosCasilla?.saltoA) {
-      setMisFichas((fichas) =>
-        fichas.map((ficha) => (ficha.id === fichaActual ? { ...ficha, posicion: casillaDestino } : ficha))
-      );
+    // Si hay salto (escalera aceptada o serpiente), hacemos la animación
+    if (base !== final) {
+      setMisFichas(f => f.map(fi => fi.id === fichaId ? { ...fi, posicion: base } : fi));
       await esperar(800);
     }
 
-    setMisFichas((fichas) =>
-      fichas.map((ficha) => (ficha.id === fichaActual ? { ...ficha, posicion: posicionFinal } : ficha))
-    );
+    // Movemos a la posición definitiva
+    setMisFichas(f => f.map(fi => fi.id === fichaId ? { ...fi, posicion: final } : fi));
 
-    setFichaSeleccionada(null);
-    setMovimientosPermitidos({});
-    setValorDado(null);
+    onTirarDadoManual(null as any);
     onAvanzarTurno();
   };
+
+  const moverFichaAlDestino = async (casillaDestino: number) => {
+  if (!fichaSeleccionada) return;
+
+  const fichaActual = fichaSeleccionada;
+  const datosCasilla = MOCK_BACKEND_DATA.casillas[casillaDestino - 1];
+
+  // DETECTAR ESCALERA
+  if (datosCasilla?.tipo === "Escalera" && datosCasilla.saltoA) {
+    setConfirmacionEscalera({
+      fichaId: fichaActual,
+      casillaBase: casillaDestino,
+      casillaSalto: datosCasilla.saltoA
+    });
+    return; // Detenemos aquí para esperar al jugador
+  }
+
+  // Si no es escalera, se mueve normal (incluye serpientes automáticas)
+  ejecutarMovimientoFinal(fichaActual, casillaDestino, datosCasilla?.saltoA ?? casillaDestino);
+};
 
   const enviarFichasACasa = () => {
     setFichaSeleccionada(null);
     setMovimientosPermitidos({});
-    setValorDado(null);
+    onTirarDadoManual(null as any);
     setMisFichas((fichas) => fichas.map((ficha) => ({ ...ficha, posicion: 1 })));
     onResetTurno();
   };
@@ -418,18 +426,42 @@ export default function Tablero({ equipoActual, onAvanzarTurno, onResetTurno }: 
       {fichaSeleccionada && (
         <div className="absolute top-4 z-50 bg-black/80 px-6 py-2 rounded-full pointer-events-none shadow-lg border border-green-500/30">
           <p className="text-green-400 font-bold animate-pulse text-lg">
-            Moviendo {fichaSeleccionada}. {valorDado !== null ? `Dado: ${valorDado}.` : ""} ¡Elige una casilla verde!
+            Moviendo {fichaSeleccionada}. {valorDadoExterno !== null ? `Dado: ${valorDadoExterno}.` : ""} ¡Elige una casilla verde!
           </p>
         </div>
       )}
 
-      {/* Botón temporal de prueba */}
-      <button
-        onClick={simularTiradaDado}
-        className="absolute -top-10 z-50 px-4 py-1 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded shadow transition-all"
-      >
-        Tirar dado{valorDado !== null ? ` (${valorDado})` : ""}
-      </button>
+
+      {confirmacionEscalera && (
+      <div className="absolute inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm rounded-2xl">
+        <div className="bg-slate-800 border-2 border-yellow-500 p-6 rounded-2xl shadow-2xl flex flex-col items-center gap-4 animate-in zoom-in duration-300">
+          <span className="text-4xl">🪜</span>
+          <h3 className="text-white font-bold text-center">
+            ¡Has caído en una escalera!<br/>
+            <span className="text-yellow-400 text-sm italic">
+              ¿Quieres subir a la casilla {confirmacionEscalera.casillaSalto}?
+            </span>
+          </h3>
+          <div className="flex gap-4 w-full">
+            <button
+              onClick={() => {
+                ejecutarMovimientoFinal(confirmacionEscalera.fichaId, confirmacionEscalera.casillaBase, confirmacionEscalera.casillaSalto);
+                setConfirmacionEscalera(null);
+              }}
+              className="flex-1 py-2 bg-green-600 hover:bg-green-500 text-white font-bold rounded-lg transition-colors shadow-lg"
+            > SÍ, SUBIR </button>
+            <button
+              onClick={() => {
+                ejecutarMovimientoFinal(confirmacionEscalera.fichaId, confirmacionEscalera.casillaBase, confirmacionEscalera.casillaBase);
+                setConfirmacionEscalera(null);
+              }}
+              className="flex-1 py-2 bg-red-600 hover:bg-red-500 text-white font-bold rounded-lg transition-colors shadow-lg"
+            > NO, QUEDARME </button>
+          </div>
+        </div>
+      </div>
+    )}
+
 
       <button
         onClick={enviarFichasACasa}
@@ -507,6 +539,10 @@ export default function Tablero({ equipoActual, onAvanzarTurno, onResetTurno }: 
                   }}
                 />
                 
+                <span className="absolute top-0.5 left-1 text-[8px] lg:text-[10px] font-bold text-white/50 z-10 pointer-events-none select-none">
+                  {num}
+                </span>
+
                 {fichasVisibles.map(ficha => {
                   const esSeleccionable = (movimientosPermitidos[ficha.id]?.length ?? 0) > 0;
                   const estaSeleccionada = fichaSeleccionada === ficha.id;
