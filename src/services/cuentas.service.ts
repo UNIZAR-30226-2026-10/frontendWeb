@@ -2,20 +2,17 @@
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
 
-// Si tu backend devuelve algún dato al loguearse (como un token o el perfil),
-// lo ideal es crear una interfaz. Por ahora ponemos una genérica.
 export interface CuentaResponse {
   message?: string;
-  // token?: string; 
 }
 
 export const CuentaService = {
   
   login: async (email: string, password: string): Promise<CuentaResponse> => {
-    const response = await fetch(`${API_URL}/sessions`, {
+    const response = await fetch(`${API_URL}/auth/sessions`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      credentials: 'include', // ¡Recuerda las cookies!
+      credentials: 'include', 
       body: JSON.stringify({ email, password }),
     });
     
@@ -26,13 +23,21 @@ export const CuentaService = {
   },
 
   register: async (email: string, username: string, password: string): Promise<CuentaResponse> => {
-    const response = await fetch(`${API_URL}/users`, {
+    const response = await fetch(`${API_URL}/auth/new_users`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, username, password }),
     });
     
-    const data = await response.json();
+    const text = await response.text();
+    let data;
+    
+    try {
+      data = JSON.parse(text); 
+    } catch (e) {
+      data = { message: text }; 
+    }
+    
     if (!response.ok) throw new Error(data.error || data.message || 'Error al crear la cuenta');
     
     return data as CuentaResponse;
