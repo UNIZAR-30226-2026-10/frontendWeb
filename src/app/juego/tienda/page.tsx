@@ -32,7 +32,7 @@ export default function Tienda() {
           Tienda
         </h1>
         <div className="absolute right-0 w-40 h-16 bg-gray-800 rounded-2xl flex items-center justify-center text-xl shadow-md">
-          <span>Sep logo {tienda.sepDisponible}</span>
+          <span>Sep {tienda.sepDisponible}</span>
         </div>
       </div>
 
