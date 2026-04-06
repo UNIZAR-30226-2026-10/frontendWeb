@@ -9,7 +9,7 @@ export interface CuentaResponse {
 export const CuentaService = {
   
   login: async (email: string, password: string): Promise<CuentaResponse> => {
-    const response = await fetch(`${API_URL}/auth/sessions`, {
+    const response = await fetch(`${API_URL}/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include', 
