@@ -16,14 +16,14 @@ export default function Home() {
   }
 
   return (
-    <main className="w-full h-full flex flex-col p-4 md:p-8 overflow-y-auto">
-      <div className="flex items-center justify-center text-white text-3xl font-bold shrink-0 mb-8">
+    <main className="w-full h-full flex flex-col p-4 md:p-8 overflow-y-auto ">
+      <div className="flex items-center justify-center text-white text-3xl font-bold shrink-0 mb-8 ">
         <h1>Logros ({logros.length})</h1>
       </div>
 
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-4 ">
         {logros.length === 0 ? (
-          <p className="text-gray-400 mt-4 text-center text-lg">No hay logros disponibles.</p>
+          <p className="text-gray-400 mt-4 text-center text-lg ">No hay logros disponibles.</p>
         ) : (
           logros.map((logro) => (
             <SlotLogro

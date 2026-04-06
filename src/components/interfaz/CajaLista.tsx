@@ -5,7 +5,7 @@ import React from 'react'
 
 export const CajaLista = ({ children }: { children: React.ReactNode }) => {
   return (
-    <div className="bg-gray-700 border-amber-400 border-2 rounded-lg shadow-md p-4 mb-4">
+    <div className="bg-[#1a237e] border-amber-400 border-2 rounded-lg shadow-md p-4 mb-4">
          {/* Aquí va el contenido específico de cada lista, como partidas o mazos */}
          {children}
     </div>

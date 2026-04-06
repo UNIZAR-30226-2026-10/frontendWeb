@@ -1,6 +1,7 @@
 // src/app/juego/mazos/editarmazos/page.tsx
 'use client';
 import { DisplayCarta } from "@/components/interfaz/DisplayCarta";
+import ErrorMazo from "@/components/interfaz/ErrorMazo";
 import { useEditorMazos } from "@/hooks/useEditorMazos";
 
 export default function EditorMazosPage() {
@@ -13,7 +14,8 @@ export default function EditorMazosPage() {
     nombreMazo, setNombreMazo,
     limiteMazo,
     isLoading, isSaving,
-    getCantidad, addCarta, removeCarta, guardarMazo
+    getCantidad, addCarta, removeCarta, guardarMazo,
+    errorMazo, cerrarError
   } = useEditorMazos(emailUsuario);
 
   if (isLoading) {
@@ -25,8 +27,17 @@ export default function EditorMazosPage() {
   }
 
   return (
-    <main className="w-full h-full flex flex-col p-4 md:p-8 overflow-y-auto bg-[#0a0f2c]">
+    <main className="w-full h-full flex flex-col p-4 md:p-8 overflow-y-auto bg-[#0a0f2c] custom-scroll">
       
+      {errorMazo.abierto && (
+        <ErrorMazo 
+          mensaje={errorMazo.mensaje} 
+          onClose={cerrarError} 
+        />
+      )}
+
+
+
       {/* CABECERA: Título, Input y Contador */}
       <div className="flex flex-col items-center justify-center text-white shrink-0 mb-12 gap-4">
         <h1 className="text-4xl font-bold tracking-tight">Editor de Mazos</h1>
