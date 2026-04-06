@@ -32,7 +32,7 @@ export default function Perfil() {
         </h1>
       </div>
 
-      <div className="relative bg-[#1a237e] border-2 border-yellow-400 rounded-4xl p-8 shadow-xl flex flex-col gap-8 max-w-5xl mx-auto w-full">
+      <div className="relative bg-[#283F9F] border-2 border-yellow-400 rounded-4xl p-8 shadow-xl flex flex-col gap-8 max-w-5xl mx-auto w-full">
         
         <div className="absolute top-6 right-8 text-2xl font-bold text-white">
           {perfil.victorias}W/{perfil.derrotas}L

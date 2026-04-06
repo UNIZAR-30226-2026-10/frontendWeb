@@ -22,7 +22,7 @@ export default function MisMazosPage() {
         {decks.length < 8 && (
           <Link 
             href="/juego/mazos/editarmazos" 
-            className="flex rounded-lg bg-[#1a237e] border-amber-400 border-2 font-sans font-bold w-60 h-14 items-center justify-center text-white hover:bg-[#1a237e]/80 gap-3 shadow-md transition-colors group"
+            className="flex rounded-lg bg-[#283F9F] border-amber-400 border-2 font-sans font-bold w-60 h-14 items-center justify-center text-white hover:bg-[#1a237e]/80 gap-3 shadow-md transition-colors group"
           >  
             <div className="border-2 border-white/70 rounded-full w-6 h-6 flex items-center justify-center text-xl font-normal leading-none pb-[2px]">
               +

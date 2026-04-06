@@ -10,7 +10,7 @@ interface DesplegableTiendaProps {
 const DesplegableTienda = (props: DesplegableTiendaProps) => {
   const [abierto, setAbierto] = useState(props.estaAbierto);
   return (
-    <div className="bg-[#1a237e] text-white p-4 rounded-lg border-amber-500 border-2">
+    <div className="bg-[#283F9F] text-white p-4 rounded-lg border-amber-500 border-2">
         <div className="flex items-center justify-between cursor-pointer" onClick={() => setAbierto(!abierto)}>
             <h1 className="text-xl">{props.nombreSeccion}</h1>
             <button 
