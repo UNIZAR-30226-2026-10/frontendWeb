@@ -3,7 +3,7 @@ import Link from 'next/link'
 
 const BarraSuperior = () => {
   return (
-    <nav className="flex h-full text-xl font-sans font-bold bg-[#1a237e] shadow-2xl">
+    <nav className="flex h-full text-xl font-sans font-bold bg-[#283F9F] shadow-2xl">
         <Link href="/juego" className="flex-1 pt-5 basis-xs flex justify-center text-white"> ⚔️Jugar </Link>
         <Link href="/juego/mazos" className="flex-1 pt-5 basis-xs border-l-4 flex justify-center border-yellow-400 text-white"> 🃏Mazos </Link>
         <Link href="/juego/logros" className="flex-1 pt-5 basis-xs border-l-4 flex justify-center border-yellow-400 text-white"> 🏆Logros </Link>

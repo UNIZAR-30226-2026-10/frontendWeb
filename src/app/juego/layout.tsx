@@ -8,7 +8,7 @@ export default function MainLayout({
 }) {
   return (
 
-    <div className="flex h-screen w-screen bg-blue-700 text-white font-sans overflow-hidden">
+    <div className="flex h-screen w-screen bg-[var(--background)] text-white font-sans overflow-hidden">
       
       {/* Zona izquierda (Header + Contenido) */}
       <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
@@ -17,12 +17,12 @@ export default function MainLayout({
           <BarraSuperior />
         </header>
         {/* CONTENIDO PRINCIPAL DE LA PÁGINA */}
-        <main className="flex-1 min-h-0 flex flex-col bg-blue-600 shadow-inner overflow-hidden">
+        <main className="flex-1 min-h-0 flex flex-col bg-[var(--background)] shadow-inner overflow-hidden">
           {children}
         </main>
       </div>
       {/* Barra de amigos */}
-      <aside className="w-80 bg-blue-800 border-l-4 border-yellow-400 flex flex-col shrink-0">
+      <aside className="w-80 bg-[var(--background)] border-l-4 border-yellow-400 flex flex-col shrink-0">
         <BarraAmigos />
       </aside>
       

@@ -8,7 +8,7 @@ const BarraAmigos = () => {
   const { amigos, isLoading, error } = useAmigos('admin@juego.com');
 
   return (
-    <div className='flex flex-col bg-[#1a237e] h-screen w-80 shadow-2xl'>
+    <div className='flex flex-col bg-[#283F9F] h-screen w-80 shadow-2xl'>
       <div className="flex items-center justify-center gap-2 pt-6">
         <span className="text-white text-2xl">👤</span>
         <h1 className='text-3xl font-bold text-white'>Amigos</h1>

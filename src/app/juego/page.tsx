@@ -6,10 +6,22 @@ import React, { useState } from "react";
 import HuecoJugador from "@/components/interfaz/HuecoJugador";
 import PopupSalirLobby from "@/components/interfaz/PopupSalirLobby"; 
 
+// Componentes para cuando esté conectado con la API (COMENTADOS POR AHORA)
+// import SelectorMazo from "@/components/interfaz/SelectorMazo";
+// import SelectorTablero from "@/components/interfaz/SelectorTablero";
+// import { useLobby } from "@/hooks/useLobby";
+
 export default function JuegoPrincipalPage() {
   const router = useRouter(); 
+  
+  // Estado del popup (Tu código)
   const [mostrarPopupSalir, setMostrarPopupSalir] = useState(false);
 
+  // Estados para mazo y tablero cuando esté conectado con la API
+  // const [mazoElegido, setMazoElegido] = useState("Mazo de Fuego");
+  // const [tableroElegido, setTableroElegido] = useState("Tablero Clásico");
+
+  // --- LÓGICA HARDCODEADA PARA EL VÍDEO ---
   const error = null;
   const huecos = [
     { idJugador: "yo", nombre: "Tú" },
@@ -20,7 +32,7 @@ export default function JuegoPrincipalPage() {
   const miLobbyCreadorId = "yo"; 
 
   const manejarSalida = () => {
-    // Aqui se implementa la conexion con la API para abandonar el lobby.
+    // Aquí se implementa la conexión con la API para abandonar el lobby.
     setMostrarPopupSalir(false);
     router.push('/juego'); 
   };
@@ -28,14 +40,15 @@ export default function JuegoPrincipalPage() {
   return (
     <main className="w-full h-full flex flex-col p-4 md:p-8 overflow-y-auto bg-[#295ce5] relative">
       
+      {/* POPUP DE SALIDA */}
       <PopupSalirLobby 
         isOpen={mostrarPopupSalir} 
         onClose={() => setMostrarPopupSalir(false)} 
         onConfirm={manejarSalida} 
       />
 
+      {/* CABECERA CON BOTÓN SALIR */}
       <div className="relative flex justify-center items-center text-3xl mb-2 shrink-0 text-white h-12">
-        
         <button 
           onClick={() => setMostrarPopupSalir(true)}
           className="absolute left-0 text-gray-200 hover:text-white hover:scale-110 transition-all cursor-pointer"
@@ -76,9 +89,9 @@ export default function JuegoPrincipalPage() {
         </div>
 
         {/* COLUMNA CENTRAL */}
-        <div className="flex flex-col items-center justify-center gap-4 min-w-[200px] w-full max-w-[250px] shrink-0 text-white h-full overflow-y-auto py-2 overflow-y-hidden">
+        <div className="flex flex-col items-center justify-center gap-4 min-w-[200px] w-full max-w-[250px] shrink-0 text-white h-full overflow-y-auto py-2">
           
-          {/* CARTA MAZO */}
+          {/* CARTA MAZO HARDCODEADA PARA EL VÍDEO */}
           <div className="bg-[#263c85] border-[#EFB810] border-white rounded-xl px-4 py-3 w-full flex justify-between items-center shadow-lg cursor-pointer">
             <div className="flex flex-col">
               <p className="font-bold text-2xl leading-none">Mazo</p>
@@ -89,6 +102,13 @@ export default function JuegoPrincipalPage() {
             </div>
           </div>
 
+          {/* --- SELECTOR DE MAZO DE GITHUB PARA CUANDO ESTÉ CONECTADO CON LA API
+          <SelectorMazo 
+            mazoSeleccionado={mazoElegido} 
+            onMazoSeleccionado={(mazo) => setMazoElegido(mazo)} 
+          />
+          */}
+
           {/* CARTA TABLERO */}
           <div className="bg-[#263c85] border-[2px] border-[#EFB810] rounded-xl p-3 w-full aspect-square max-h-[220px] flex flex-col items-center shadow-lg relative cursor-pointer">
             <p className="font-bold text-xl mb-2">Tablero</p>
@@ -97,9 +117,16 @@ export default function JuegoPrincipalPage() {
             </div>
           </div>
 
+          {/*SELECTOR DE TABLERO PARA CUANDO ESTÉ CONECTADO CON LA API 
+          <SelectorTablero 
+            tableroSeleccionado={tableroElegido}
+            onTableroSeleccionado={(t) => setTableroElegido(t)}
+          />
+          */}
+
           {/* BOTÓN COMENZAR PARTIDA */}
             <button 
-              className="w-full bg-[#00c5cd] hover:bg-[#00aeb5] text-black font-extrabold py-3 px-4 rounded-lg border-[#EFB810] border-white shadow-lg text-lg mt-2 transition-colors"
+              className="w-full bg-[#2078B4] hover:bg-[#00aeb5] text-white font-bold py-3 px-4 rounded-lg border-[#EFB810] border-white shadow-lg text-lg mt-2 transition-colors"
               onClick={() => router.push('/partida')}
             >
               Comenzar Partida

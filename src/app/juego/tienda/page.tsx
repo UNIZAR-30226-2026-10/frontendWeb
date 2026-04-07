@@ -31,7 +31,7 @@ export default function Tienda() {
         <h1 className="text-center font-bold"> 
           Tienda
         </h1>
-        <div className="absolute right-0 w-40 h-16 bg-gray-800 rounded-2xl flex items-center justify-center text-xl shadow-md">
+        <div className="absolute right-0 w-40 h-16 bg-[#283F9F] border-amber-400 border-2 rounded-2xl flex items-center justify-center text-xl shadow-md">
           <span>Sep {tienda.sepDisponible}</span>
         </div>
       </div>

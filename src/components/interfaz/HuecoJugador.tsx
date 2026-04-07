@@ -13,7 +13,7 @@ const HuecoJugador: React.FC<HuecoJugadorProps> = ({estaOcupado,esLider,nomJugad
     const [hayBot,setHayBot] = useState(false);
     if(hayBot) {
         return (
-        <div className="bg-[#eab308] w-60 h-60 rounded-4xl relative flex items-center justify-center text-white text-3xl font-bold font-sans">
+        <div className="bg-[#EEB716] w-60 h-60 rounded-4xl relative flex items-center justify-center text-white text-3xl font-bold font-sans">
                 
                 <div>Bot</div>
                <button
