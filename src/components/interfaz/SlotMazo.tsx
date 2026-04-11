@@ -42,7 +42,10 @@ export const SlotMazo = (props: SlotMazoProps) => {
         
         <ul className="flex list-inside text-xl text-white">
           {props.previewCartas.map((carta, index) => (
-            <li key={index} className="mr-2">{carta},</li>
+            <li key={index} className="mr-2">
+              {carta}
+              {index < props.previewCartas.length - 1 ? ',' : ''}
+            </li>
           ))}
         </ul>
       </div>

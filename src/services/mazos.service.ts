@@ -11,8 +11,8 @@ export const DecksService = {
 
     // 2. Devolvemos unos datos de prueba (Mocks) para que puedas ver tu diseño
     return [
-      { id: '1', deck_name: 'Mazo de Fuego', is_in_use: false, cards: ['Bola de Fuego', 'Dragón', 'Escudo'] },
-      { id: '2', deck_name: 'Mazo Tóxico', is_in_use: true, cards: ['Veneno', 'Serpiente', 'Trampa'] }
+      { id: '1', deck_name: 'Mazo táctico', is_in_use: false, cards: ['Moises', 'Wild Frank', 'Dado dorado'] },
+      { id: '2', deck_name: 'Mazo Tóxico', is_in_use: true, cards: ['Parca', 'Agujero de serpiente', 'Bolsillo roto'] }
     ];
 
     /* --- GUARDA EL CÓDIGO REAL COMENTADO PARA EL FUTURO ---
