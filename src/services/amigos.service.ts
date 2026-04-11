@@ -6,7 +6,6 @@ export const AmigosService = {
   getAmigos: async (email: string): Promise<Amigo[]> => {
     // 1. Simulamos el tiempo de carga de internet (medio segundo)
     await new Promise(resolve => setTimeout(resolve, 500));
-
     // 2. Devolvemos unos datos de prueba (Mocks) para que puedas ver tu diseño
     return [
       { id: '1', nombre: 'EscaladorMaestro', estado: 'online', avatar: '/Icono Cofre.jpg' },
