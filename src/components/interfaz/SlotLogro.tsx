@@ -11,7 +11,7 @@ interface SlotLogroProps {
 export const SlotLogro = (props: SlotLogroProps) => {
   return (
     <CajaLista>
-        <div className='flex text-white justify-between items-center '>
+        <div className='flex text-white justify-between items-center font-bold'>
             <div className='flex flex-col gap-4'>
                 <h2 className='text-2xl font-bold'>{props.nombreLogro}</h2>
                 <p className='text-xl'>{props.descripciónLogro}</p>

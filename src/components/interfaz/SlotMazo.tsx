@@ -19,7 +19,7 @@ export const SlotMazo = (props: SlotMazoProps) => {
     <CajaLista>
       <div className="flex flex-col font-sans gap-4">
         <div className="flex text-2xl justify-between">
-            <h1 className="text-white text-3xl">{props.nombreMazo} {props.mazoEnUso ? "(En uso)" : ""}</h1>
+            <h1 className="text-white text-3xl font-bold">{props.nombreMazo} {props.mazoEnUso ? "(En uso)" : ""}</h1>
             <div className="flex items-center gap-10 pt-6">
               <Link href="/juego/mazos/editarmazos" className="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-500">
                 Editar
@@ -40,7 +40,7 @@ export const SlotMazo = (props: SlotMazoProps) => {
             </div>
         </div>
         
-        <ul className="flex list-inside text-xl text-white">
+        <ul className="flex list-inside text-xl text-white font-bold">
           {props.previewCartas.map((carta, index) => (
             <li key={index} className="mr-2">
               {carta}

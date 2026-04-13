@@ -1,16 +1,34 @@
+'use client';
+
 import ItemTienda from "@/types/itemTienda";
+import React from 'react';
 
-import React from 'react'
-
-const SlotTienda = (props: { item: ItemTienda }) => {
-  return (
-    <div className="bg-gray-800 p-4 rounded-lg shadow-md border-2 border-yellow-500">
-      <h2 className="text-xl font-bold text-white">{props.item.nombre}</h2>
-        {/*poner la imagen del item*/}
-      <h2 className="text-white text-center">Imagen</h2>
-      <p className="text-white text-center"> SEP {props.item.precio}</p>
-    </div>
-  )
+interface SlotTiendaProps {
+  item: ItemTienda;
+  onSelect: (item: ItemTienda) => void;
 }
 
-export default SlotTienda
+const SlotTienda: React.FC<SlotTiendaProps> = ({ item, onSelect }) => {
+  return (
+    <div 
+      onClick={() => onSelect(item)}
+      className="bg-[#1a2a6c] p-4 rounded-2xl font-bold shadow-lg border-2 border-white/5 hover:border-amber-400 hover:scale-105 transition-all cursor-pointer group flex flex-col items-center"
+    >
+      <div className="w-full aspect-square bg-white/10 rounded-xl mb-4 flex items-center justify-center text-5xl group-hover:bg-white/20 transition-colors">
+        {/* Aquí puedes usar item.imagen si existe */}
+        🎭
+      </div>
+      
+      <h2 className="text-white text-center text-sm md:text-base mb-2 line-clamp-2 uppercase">
+        {item.nombre}
+      </h2>
+      
+      <div className="mt-auto bg-black/30 w-full py-1 rounded-lg border border-white/10 flex justify-center items-center gap-2">
+        <span className="text-amber-400 text-xs">SEP</span>
+        <span className="text-white">{item.precio}</span>
+      </div>
+    </div>
+  );
+};
+
+export default SlotTienda;

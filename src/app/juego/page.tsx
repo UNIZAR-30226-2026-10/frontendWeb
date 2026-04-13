@@ -38,7 +38,7 @@ export default function JuegoPrincipalPage() {
   };
 
   return (
-    <main className="w-full h-full flex flex-col p-4 md:p-8 overflow-y-auto bg-[#295ce5] relative">
+    <main className="w-full h-full flex flex-col p-4 md:p-8 overflow-y-auto relative">
       
       {/* POPUP DE SALIDA */}
       <PopupSalirLobby 
@@ -59,7 +59,7 @@ export default function JuegoPrincipalPage() {
           </svg>
         </button>
 
-        <div className="flex gap-12">
+        <div className="flex justify-center items-center gap-12 text-3xl mb-2 shrink-0">
           <h1 className="flex underline font-bold cursor-pointer">Crear Partida</h1>
           <Link href="/juego/continuarpartida" className="text-center font-bold hover:text-gray-300">
             Continuar
