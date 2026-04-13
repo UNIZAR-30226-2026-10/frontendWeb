@@ -404,7 +404,7 @@ export default function Tablero({ equipoActual, onAvanzarTurno, onResetTurno, va
       return (
         <img
           key={`${inicio}-${fin}`}
-          src={!esEscalera&& rotacionExtraSerpiente ? "/serpienteba.png" : esEscalera ? "/escalera.png" : "/serpiente.png"}
+          src={!esEscalera&& rotacionExtraSerpiente ? "/serpienteba.png" : esEscalera ? "/escaleramagnate.png" : "/serpienteColec.png"}
           alt={esEscalera ? "Escalera" : "Serpiente"}
           className="absolute z-30 pointer-events-none drop-shadow-xl"
           style={{
