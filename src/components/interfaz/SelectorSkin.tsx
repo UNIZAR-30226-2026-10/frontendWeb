@@ -1,13 +1,13 @@
 'use client';
 import React from 'react';
 
-interface Skin { id: string; nombre: string; }
+import { Cosmetico } from '@/types/perfil';
 
 interface Props {
   titulo: string;
-  items: Skin[];
+  items: Cosmetico[];
   onClose: () => void;
-  onSelect: (skin: Skin) => void;
+  onSelect: (item: Cosmetico) => void;
   skinSeleccionadaId?: string;
 }
 

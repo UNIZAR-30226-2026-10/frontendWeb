@@ -12,6 +12,7 @@ interface SlotMazoProps {
   previewCartas: string[];
   mazoEnUso: boolean;
   onDelete: (id: string) => void;
+  onSelect: (id: string) => void;
 }
 
 export const SlotMazo = (props: SlotMazoProps) => {

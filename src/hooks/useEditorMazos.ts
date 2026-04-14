@@ -1,79 +1,86 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { CardsService } from '@/services/cartas.service';
-import { DecksService } from '@/services/mazos.service'; 
-import Carta from '@/types/carta';
+import { MazoService } from '@/services/mazos.service';
+import { Carta } from '@/types/mazo';
 
-export const useEditorMazos = (email: string) => {
-  const router = useRouter();
+export const useEditorMazos = (email: string, deckId?: string) => {
   const [cartasDisponibles, setCartasDisponibles] = useState<Carta[]>([]);
   const [cartasSeleccionadas, setCartasSeleccionadas] = useState<string[]>([]);
   const [nombreMazo, setNombreMazo] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
-  const [errorMazo, setErrorMazo] = useState<{ abierto: boolean; mensaje: string }>({
-    abierto: false,
-    mensaje: ''
-  });
+  const [errorMazo, setErrorMazo] = useState({ abierto: false, mensaje: '' });
 
   const limiteMazo = 10;
-  const maxCopiasPorCarta = 2;
 
+  // Cargar datos iniciales
   useEffect(() => {
-    if (!email) return;
-    CardsService.getUserCards(email)
-      .then(setCartasDisponibles)
-      .finally(() => setIsLoading(false));
-  }, [email]);
+    const cargarDatos = async () => {
+      try {
+        setIsLoading(true);
+        // Aquí cargarías TODAS las cartas que existen en el juego (Catálogo)
+        // const catalogo = await CardsService.getAllCards();
+        // setCartasDisponibles(catalogo);
 
-  const getCantidad = (nombre: string) => cartasSeleccionadas.filter(c => c === nombre).length;
-
-  // Función para abrir el modal
-  const lanzarError = (msj: string) => setErrorMazo({ abierto: true, mensaje: msj });
-  // Función para cerrar el modal
-  const cerrarError = () => setErrorMazo({ abierto: false, mensaje: '' });
+        // Si estamos editando uno existente, cargamos sus datos
+        if (deckId) {
+          const mazoAEditar = await MazoService.getMazoById(email, deckId);
+          setNombreMazo(mazoAEditar.deck_name);
+          setCartasSeleccionadas(mazoAEditar.cards);
+        }
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    cargarDatos();
+  }, [email, deckId]);
 
   const addCarta = (nombre: string) => {
-    const cantidadActual = getCantidad(nombre);
-    if (cantidadActual >= maxCopiasPorCarta) return; 
-    
-    if (cartasSeleccionadas.length >= limiteMazo) {
-      lanzarError(`¡El mazo ya tiene el máximo de ${limiteMazo} cartas!`); // Reemplazo de alert
-      return;
+    if (cartasSeleccionadas.length < limiteMazo) {
+      setCartasSeleccionadas([...cartasSeleccionadas, nombre]);
+    } else {
+      setErrorMazo({ abierto: true, mensaje: '¡El mazo ya está lleno!' });
     }
-    setCartasSeleccionadas([...cartasSeleccionadas, nombre]);
   };
 
   const removeCarta = (nombre: string) => {
     const index = cartasSeleccionadas.indexOf(nombre);
     if (index > -1) {
-      const nuevasCartas = [...cartasSeleccionadas];
-      nuevasCartas.splice(index, 1);
-      setCartasSeleccionadas(nuevasCartas);
+      const nuevas = [...cartasSeleccionadas];
+      nuevas.splice(index, 1);
+      setCartasSeleccionadas(nuevas);
     }
   };
 
   const guardarMazo = async () => {
-    if (!nombreMazo.trim()) return lanzarError('Por favor, ponle un nombre a tu mazo.');
-    if (cartasSeleccionadas.length === 0) return lanzarError('El mazo no puede estar vacío.');
-
+    if (!nombreMazo.trim()) {
+      setErrorMazo({ abierto: true, mensaje: 'Ponle un nombre al mazo' });
+      return;
+    }
+    
     try {
       setIsSaving(true);
-      await DecksService.createDeck(email, nombreMazo, cartasSeleccionadas);
-      router.push('/juego/mazos');
-    } catch (err: any) {
-      lanzarError(err.message || 'Error al guardar el mazo');
+      if (deckId) {
+        await MazoService.updateMazo(email, deckId, nombreMazo, cartasSeleccionadas);
+      } else {
+        await MazoService.createMazo(email, nombreMazo, cartasSeleccionadas);
+      }
+      alert("¡Mazo guardado con éxito!");
+    } catch (err) {
+      setErrorMazo({ abierto: true, mensaje: 'Error al guardar' });
     } finally {
       setIsSaving(false);
     }
   };
 
   return {
-    cartasDisponibles, cartasSeleccionadas,
+    cartasDisponibles,
+    cartasSeleccionadas,
     nombreMazo, setNombreMazo,
-    limiteMazo, isLoading, isSaving,
-    getCantidad, addCarta, removeCarta, guardarMazo,
-    errorMazo, cerrarError // 
+    limiteMazo,
+    isLoading, isSaving,
+    getCantidad: (nombre: string) => cartasSeleccionadas.filter(n => n === nombre).length,
+    addCarta, removeCarta, guardarMazo,
+    errorMazo, cerrarError: () => setErrorMazo({ ...errorMazo, abierto: false })
   };
 };

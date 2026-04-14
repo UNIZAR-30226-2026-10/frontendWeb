@@ -1,7 +1,7 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { PerfilUI } from '@/types/perfil';
+import { useEffect, useState, useCallback } from 'react';
+import { PerfilUI, Cosmetico } from '@/types/perfil';
 import { PerfilService } from '@/services/perfil.service';
 
 export const usePerfil = (email: string) => {
@@ -9,29 +9,37 @@ export const usePerfil = (email: string) => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (!email) return;
-
-    const fetchPerfil = async () => {
-      try {
-        setIsLoading(true);
-        setError(null);
-
-        const perfilData = await PerfilService.getPerfil(email);
-        setPerfil(perfilData);
-      } catch (err: any) {
-        setError(err.message || 'Error al cargar el perfil');
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchPerfil();
+  const fetchPerfil = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      const data = await PerfilService.getPerfil(email);
+      setPerfil(data);
+    } catch (err: any) {
+      setError(err.message || 'Error al cargar el perfil');
+    } finally {
+      setIsLoading(false);
+    }
   }, [email]);
 
-  return {
-    perfil,
-    isLoading,
-    error,
+  const actualizarEquipamiento = async (nuevoItem: Cosmetico) => {
+    if (!perfil) return;
+    try {
+      const exito = await PerfilService.equiparCosmetico(email, nuevoItem.id);
+      if (exito) {
+        // Actualización optimista: cambiamos la UI antes de re-descargar
+        const nuevosEquipados = perfil.cosmeticos.map(c => 
+          c.tipo === nuevoItem.tipo ? nuevoItem : c
+        );
+        setPerfil({ ...perfil, cosmeticos: nuevosEquipados });
+      }
+    } catch (err) {
+      alert("No se pudo equipar el item en el servidor.");
+    }
   };
+
+  useEffect(() => {
+    if (email) fetchPerfil();
+  }, [email, fetchPerfil]);
+
+  return { perfil, isLoading, error, actualizarEquipamiento, refresh: fetchPerfil };
 };

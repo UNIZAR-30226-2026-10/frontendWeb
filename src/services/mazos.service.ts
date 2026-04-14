@@ -1,71 +1,45 @@
-// src/services/decks.service.ts
-import { Deck } from '../types/mazo';
+import { Mazo, Carta } from '@/types/mazo';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
 
-export const DecksService = {
-
-  getDecks: async (email: string): Promise<Deck[]> => {
-    // 1. Simulamos el tiempo de carga de internet (medio segundo)
-    await new Promise(resolve => setTimeout(resolve, 500));
-
-    // 2. Devolvemos unos datos de prueba (Mocks) para que puedas ver tu diseño
+export const MazoService = {
+  // Obtener todos los mazos
+  getMazos: async (email: string): Promise<Mazo[]> => {
+    await new Promise(resolve => setTimeout(resolve, 500)); // Simulación
     return [
-      { id: '1', deck_name: 'Mazo táctico', is_in_use: false, cards: ['Moises', 'Wild Frank', 'Dado dorado'] },
-      { id: '2', deck_name: 'Mazo Tóxico', is_in_use: true, cards: ['Parca', 'Agujero de serpiente', 'Bolsillo roto'] }
+      { id: '1', deck_name: 'Mazo Inicial', is_in_use: true, cards: ['Fuego', 'Rápido'] },
+      { id: '2', deck_name: 'Táctica de Serpiente', is_in_use: false, cards: ['Veneno', 'Salto'] }
     ];
-
-    /* --- GUARDA EL CÓDIGO REAL COMENTADO PARA EL FUTURO ---
-    const response = await fetch(`${API_URL}/users/${email}/decks`, {
-      // credentials: 'include' 
-    });
-    
-    // Es buena práctica comprobar si es OK antes del .json() para evitar el error del DOCTYPE
-    if (!response.ok) {
-      throw new Error('Error al obtener los mazos o API no encontrada');
-    }
-    
-    const data = await response.json();
-    return data as Deck[];
-    -------------------------------------------------------- */
+    /* REAL: 
+    const res = await fetch(`${API_URL}/users/${email}/decks`);
+    return res.json(); 
+    */
   },
 
-  getDeckCards: async (email: string, deckId: string): Promise<any> => {
-    const response = await fetch(`${API_URL}/users/${email}/decks/${deckId}/cards`);
-    const data = await response.json();
-    if (!response.ok) throw new Error(data.error || 'Error al obtener las cartas del mazo');
-    return data;
+  // Obtener un mazo por ID (para editar)
+  getMazoById: async (email: string, deckId: string): Promise<Mazo> => {
+    // Simulación: En la realidad buscarías el mazo específico
+    return { id: deckId, deck_name: 'Mazo Recuperado', is_in_use: false, cards: ['Fuego'] };
   },
 
-  createDeck: async (email: string, deckName: string, cards: string[]): Promise<Deck> => {
-    const response = await fetch(`${API_URL}/users/${email}/decks`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ deck_name: deckName, cards }),
-    });
-    const data = await response.json();
-    if (!response.ok) throw new Error(data.error || 'Error al crear el mazo (quizás hay cartas ilegales)');
-    return data as Deck;
+  // Crear, Actualizar, Borrar y Equipar
+  createMazo: async (email: string, name: string, cards: string[]) => {
+    console.log("API: Creando mazo", name);
+    return true;
   },
 
-  updateDeck: async (email: string, deckId: string, deckName: string, cards: string[]): Promise<Deck> => {
-    const response = await fetch(`${API_URL}/users/${email}/decks/${deckId}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ deck_name: deckName, cards }),
-    });
-    const data = await response.json();
-    if (!response.ok) throw new Error(data.error || 'Error al modificar el mazo');
-    return data as Deck;
+  updateMazo: async (email: string, id: string, name: string, cards: string[]) => {
+    console.log("API: Actualizando mazo", id);
+    return true;
   },
 
-  deleteDeck: async (email: string, deckId: string): Promise<void> => {
-    const response = await fetch(`${API_URL}/users/${email}/decks/${deckId}`, {
-      method: 'DELETE',
-    });
-    if (!response.ok) {
-      const data = await response.json();
-      throw new Error(data.error || 'Error al borrar el mazo');
-    }
+  deleteMazo: async (email: string, id: string) => {
+    console.log("API: Borrando mazo", id);
+    return true;
+  },
+
+  setMainMazo: async (email: string, id: string) => {
+    console.log("API: Equipando mazo", id);
+    return true;
   }
 };

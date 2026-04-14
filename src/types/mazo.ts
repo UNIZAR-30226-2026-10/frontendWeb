@@ -1,13 +1,15 @@
-// src/types/deck.ts
-
-export interface CartaResumen {
-  // Ajusta esto según lo que devuelva tu backend exactamente
+export interface Carta {
   nombre: string;
+  tipo: string;
+  rareza: string;
+  imagen: string;
+  descripcion: string;
+  efecto: string;
 }
 
-export interface Deck {
-  id: string; // El deck-id
+export interface Mazo {
+  id: string;
   deck_name: string;
-  cards: CartaResumen[] | string[]; 
-  is_in_use?: boolean; // Para saber si lo está usando en partida
+  cards: string[]; // Nombres de las cartas
+  is_in_use: boolean;
 }
