@@ -42,7 +42,7 @@ const IMAGENES = {
   BIFURCACION: "casilla_bifurcacion.png",
 };
 
-const sparseCasillasArray = new Array(100); // Creamos array de 100 huecos
+const sparseCasillasArray = new Array(100);
 
 for (let numeroCasilla = 1; numeroCasilla < 45; numeroCasilla++) {
   const indice = numeroCasilla - 1;
@@ -148,6 +148,7 @@ for(let i = 96; i < 100; i++) {
 }
 sparseCasillasArray[94] = { esCurva: false, rotacion: 270, tipo: "Bifurcacion", siguientes: [96] };
 sparseCasillasArray[99] = { esCurva: false, rotacion: 270, tipo: "Meta", siguientes: [] };
+
 //serpientes
 sparseCasillasArray[16] = { esCurva: false, rotacion: 90, tipo: "Serpiente", siguientes: [16], saltoA: 9 };
 sparseCasillasArray[53] = { esCurva: false, rotacion: 90, tipo: "Serpiente", siguientes: [53], saltoA: 43 };
@@ -162,7 +163,6 @@ sparseCasillasArray[36] = { esCurva: false, rotacion: 90, tipo: "Escalera", sigu
 sparseCasillasArray[64] = { esCurva: true, rotacion: 270, tipo: "Escalera", siguientes: [75], saltoA: 84 };
 
 
-// Aquí es donde en el futuro habrá un fetch(). 
 const MOCK_BACKEND_DATA: SnapshotTablero = {
     casillas: sparseCasillasArray
 };
@@ -181,20 +181,10 @@ const obtenerDestinosTrasTirada = (casillaInicio: number, pasos: number): number
   };
 
   const obtenerReboteDesdeMeta = (casillaMeta: number, pasosSobrantes: number): number[] => {
-    if (pasosSobrantes === 0) {
-      return [casillaMeta];
-    }
-
+    if (pasosSobrantes === 0) return [casillaMeta];
     const anteriores = obtenerAnteriores(casillaMeta);
-    if (anteriores.length === 0) {
-      return [casillaMeta];
-    }
-
-    return Array.from(
-      new Set(
-        anteriores.flatMap((anterior) => obtenerReboteDesdeMeta(anterior, pasosSobrantes - 1))
-      )
-    );
+    if (anteriores.length === 0) return [casillaMeta];
+    return Array.from(new Set(anteriores.flatMap((anterior) => obtenerReboteDesdeMeta(anterior, pasosSobrantes - 1))));
   };
 
   const recorrer = (casillaActual: number, pasosRestantes: number, direccion: "adelante" | "atras" = "adelante") => {
@@ -217,16 +207,12 @@ const obtenerDestinosTrasTirada = (casillaInicio: number, pasos: number): number
       return;
     }
 
-    // Si llegamos a una bifurcación con pasos pendientes, calculamos cada rama
-    // con los pasos que quedan tras elegir una salida.
     if (pasosRestantes > 0 && datosCasilla?.tipo === "Bifurcacion" && siguientes.length > 1) {
       const pasosTrasElegirRama = pasosRestantes - 1;
-
       if (pasosTrasElegirRama <= 0) {
         siguientes.forEach((opcion) => destinos.add(opcion));
         return;
       }
-
       siguientes.forEach((opcion) => recorrer(opcion, pasosTrasElegirRama));
       return;
     }
@@ -247,15 +233,12 @@ export default function Tablero({ equipoActual, onAvanzarTurno, onResetTurno, va
     { id: "Ficha 1", posicion: 1, color: "bg-red-400", equipo: "miEquipo" },
     { id: "Ficha 2", posicion: 1, color: "bg-red-500", equipo: "miEquipo" },
     { id: "Ficha 3", posicion: 1, color: "bg-red-600", equipo: "miEquipo" },
-
     { id: "Jugador 2 - Ficha 1", posicion: 1, color: "bg-blue-400", equipo: "equipoAzul" },
     { id: "Jugador 2 - Ficha 2", posicion: 1, color: "bg-blue-500", equipo: "equipoAzul" },
     { id: "Jugador 2 - Ficha 3", posicion: 1, color: "bg-blue-600", equipo: "equipoAzul" },
-
     { id: "Jugador 3 - Ficha 1", posicion: 1, color: "bg-green-400", equipo: "equipoVerde" },
     { id: "Jugador 3 - Ficha 2", posicion: 1, color: "bg-green-500", equipo: "equipoVerde" },
     { id: "Jugador 3 - Ficha 3", posicion: 1, color: "bg-green-600", equipo: "equipoVerde" },
-
     { id: "Jugador 4 - Ficha 1", posicion: 1, color: "bg-yellow-300", equipo: "equipoAmarillo" },
     { id: "Jugador 4 - Ficha 2", posicion: 1, color: "bg-yellow-400", equipo: "equipoAmarillo" },
     { id: "Jugador 4 - Ficha 3", posicion: 1, color: "bg-yellow-500", equipo: "equipoAmarillo" }
@@ -263,8 +246,7 @@ export default function Tablero({ equipoActual, onAvanzarTurno, onResetTurno, va
 
   const [movimientosPermitidos, setMovimientosPermitidos] = useState<Record<string, number[]>>({});
   const [fichaSeleccionada, setFichaSeleccionada] = useState<string | null>(null);
-  const [confirmacionEscalera, setConfirmacionEscalera] = useState<{ fichaId: string; 
-    casillaBase: number; casillaSalto: number} | null>(null);
+  const [confirmacionEscalera, setConfirmacionEscalera] = useState<{ fichaId: string; casillaBase: number; casillaSalto: number} | null>(null);
 
   const saltosDinamicos: Record<number, number> = {};
   MOCK_BACKEND_DATA.casillas?.forEach((casilla, index) => {
@@ -273,46 +255,27 @@ export default function Tablero({ equipoActual, onAvanzarTurno, onResetTurno, va
     }
   });
 
-  // Funcion para tirar el dado, se usa useEffect para evitar loops infinitos al cargar
   useEffect(() => {
-  // Si no hay valor de dado (es null), reseteamos los movimientos
-  if (valorDadoExterno === null) {
-    setMovimientosPermitidos({});
-    return;
-  }
+    if (valorDadoExterno === null) {
+      setMovimientosPermitidos({});
+      return;
+    }
+    setFichaSeleccionada(null);
 
-  // Si hay un valor (alguien tiró el dado), calculamos destinos
-  setFichaSeleccionada(null);
-
-  const nuevosMovimientos = Object.fromEntries(
-    misFichas.map((ficha) => {
-      // 1. Solo fichas del equipo que tiene el turno
-      if (ficha.equipo !== equipoActual) {
-        return [ficha.id, []];
-      }
-
-      // 2. Si la ficha ya está en la Meta, no se mueve
-      const casillaActual = MOCK_BACKEND_DATA.casillas[ficha.posicion - 1];
-      if (casillaActual?.tipo === "Meta") {
-        return [ficha.id, []];
-      }
-
-      // 3. Calculamos los destinos posibles para esta ficha con el valor del dado
-      return [ficha.id, obtenerDestinosTrasTirada(ficha.posicion, valorDadoExterno)];
-    })
-  );
-
-  setMovimientosPermitidos(nuevosMovimientos);
-
-}, [valorDadoExterno, equipoActual, misFichas]);
+    const nuevosMovimientos = Object.fromEntries(
+      misFichas.map((ficha) => {
+        if (ficha.equipo !== equipoActual) return [ficha.id, []];
+        const casillaActual = MOCK_BACKEND_DATA.casillas[ficha.posicion - 1];
+        if (casillaActual?.tipo === "Meta") return [ficha.id, []];
+        return [ficha.id, obtenerDestinosTrasTirada(ficha.posicion, valorDadoExterno)];
+      })
+    );
+    setMovimientosPermitidos(nuevosMovimientos);
+  }, [valorDadoExterno, equipoActual, misFichas]);
 
   const seleccionarFicha = (idFicha: string) => {
     const ficha = misFichas.find((f) => f.id === idFicha);
-
-    if (ficha?.equipo !== equipoActual) {
-      return;
-    }
-
+    if (ficha?.equipo !== equipoActual) return;
     if (movimientosPermitidos[idFicha] && movimientosPermitidos[idFicha].length > 0) {
       setFichaSeleccionada(idFicha);
     }
@@ -321,39 +284,26 @@ export default function Tablero({ equipoActual, onAvanzarTurno, onResetTurno, va
   const ejecutarMovimientoFinal = async (fichaId: string, base: number, final: number) => {
     setMovimientosPermitidos({});
     setFichaSeleccionada(null);
-
-    // Si hay salto (escalera aceptada o serpiente), hacemos la animación
     if (base !== final) {
       setMisFichas(f => f.map(fi => fi.id === fichaId ? { ...fi, posicion: base } : fi));
       await esperar(800);
     }
-
-    // Movemos a la posición definitiva
     setMisFichas(f => f.map(fi => fi.id === fichaId ? { ...fi, posicion: final } : fi));
-
     onTirarDadoManual(null as any);
     onAvanzarTurno();
   };
 
   const moverFichaAlDestino = async (casillaDestino: number) => {
-  if (!fichaSeleccionada) return;
+    if (!fichaSeleccionada) return;
+    const fichaActual = fichaSeleccionada;
+    const datosCasilla = MOCK_BACKEND_DATA.casillas[casillaDestino - 1];
 
-  const fichaActual = fichaSeleccionada;
-  const datosCasilla = MOCK_BACKEND_DATA.casillas[casillaDestino - 1];
-
-  // DETECTAR ESCALERA
-  if (datosCasilla?.tipo === "Escalera" && datosCasilla.saltoA) {
-    setConfirmacionEscalera({
-      fichaId: fichaActual,
-      casillaBase: casillaDestino,
-      casillaSalto: datosCasilla.saltoA
-    });
-    return; // Detenemos aquí para esperar al jugador
-  }
-
-  // Si no es escalera, se mueve normal (incluye serpientes automáticas)
-  ejecutarMovimientoFinal(fichaActual, casillaDestino, datosCasilla?.saltoA ?? casillaDestino);
-};
+    if (datosCasilla?.tipo === "Escalera" && datosCasilla.saltoA) {
+      setConfirmacionEscalera({ fichaId: fichaActual, casillaBase: casillaDestino, casillaSalto: datosCasilla.saltoA });
+      return; 
+    }
+    ejecutarMovimientoFinal(fichaActual, casillaDestino, datosCasilla?.saltoA ?? casillaDestino);
+  };
 
   const enviarFichasACasa = () => {
     setFichaSeleccionada(null);
@@ -363,8 +313,6 @@ export default function Tablero({ equipoActual, onAvanzarTurno, onResetTurno, va
     onResetTurno();
   };
 
-
-  // Generamos el tablero de abajo hacia arriba
   const casillas: number[] = [];
   for (let fila = 9; fila >= 0; fila--) {
     for (let col = 1; col <= 10; col++) {
@@ -385,7 +333,6 @@ export default function Tablero({ equipoActual, onAvanzarTurno, onResetTurno, va
       };
     };
 
-    // Usamos el saltosDinamicos que hemos generado a partir del JSON del backend
     return Object.entries(saltosDinamicos).map(([inicio, fin]) => {
       const inicioNumero = Number(inicio);
       const start = obtenerCoordenadas(inicioNumero);
@@ -398,31 +345,141 @@ export default function Tablero({ equipoActual, onAvanzarTurno, onResetTurno, va
       const longitud = Math.sqrt(dx * dx + dy * dy);
       const angulo = Math.atan2(dy, dx) * (180 / Math.PI);
       const esEscalera = tipoInicio === "Escalera";
-      const esSerpiente = tipoInicio === "Serpiente";
-      const rotacionExtraSerpiente = esSerpiente && (fin%10 < inicioNumero%10) ? 180 : 0;
 
-      return (
-        <img
-          key={`${inicio}-${fin}`}
-          src={!esEscalera&& rotacionExtraSerpiente ? "/serpienteba.png" : esEscalera ? "/escaleramagnate.png" : "/serpienteColec.png"}
-          alt={esEscalera ? "Escalera" : "Serpiente"}
-          className="absolute z-30 pointer-events-none drop-shadow-xl"
-          style={{
-            left: `${start.x}%`,
-            top: esEscalera ? `calc(${start.y}% - 4%)` : `calc(${start.y}% - 9%)`,
-            width: `${longitud}%`,
-            height: esEscalera ? '7%' : '18%',
-            transformOrigin: '0% 50%',
-            transform: `rotate(${angulo}deg)`
-          }}
-        />
-      );
+      if (esEscalera) {
+        // --- LÓGICA DE ESCALERA EN 3 PARTES (HORIZONTAL) CORREGIDA ---
+        const flipScale = dx < 0 ? ' scaleY(-1)' : '';
+        
+        // 1. REDUCIMOS EL GROSOR. Prueba con '8%' o '10%' para que se vea natural.
+        const grosorEscalera = '8%'; 
+
+        return (
+          <div
+            key={`${inicio}-${fin}`}
+            className="absolute z-30 pointer-events-none drop-shadow-xl flex flex-row items-center justify-between"
+            style={{
+              left: `${start.x}%`,
+              top: `${start.y}%`,
+              width: `${longitud}%`,
+              height: grosorEscalera, // Grosor controlado
+              transformOrigin: '0% 50%',
+              transform: `translateY(-50%) rotate(${angulo}deg)${flipScale}`
+            }}
+          >
+                <div
+  className="h-full flex-shrink-0 overflow-hidden"
+>
+  <img
+    src="/escalera_base.png"
+    alt="Tope"
+    className="h-full max-w-none"
+    style={{
+      width: "100%",
+      height: "89%",
+      transform:"translateY(7%) translateX(8%)"
+    }}
+  />
+</div>
+            
+            {/* CUERPO (Peldaños) - Escala proporcional al alto y repite */}
+            <div
+        className="h-full flex-1"
+        style={{
+          backgroundImage: "url(/escalera_cuerpo.png)",
+          backgroundRepeat: "repeat-x",
+          backgroundSize: "13px",
+          backgroundPosition: "left center",
+        }}
+      />
+            
+            {/* TOPE (Puntas) - Escalado a la altura y centrada */}
+                            <div
+  className="h-full flex-shrink-0 overflow-hidden"
+>
+  <img
+    src="/escalera_tope.png"
+    alt="Tope"
+    className="h-full max-w-none"
+    style={{
+      width: "100%",
+      height: "89%",
+      transform:"translateY(7%) translateX(-7%)"
+    }}
+  />
+</div>
+          </div>
+        );
+      } else {
+   const flipScale = dx < 0 ? " scaleY(-1)" : "";
+
+  const altoSerpiente = "6.5%";
+  const anchoCabeza = "52px";
+  const anchoCola = "70px";
+  const patronCuerpo = "22px 44%";
+
+  return (
+    <div
+      key={`${inicio}-${fin}`}
+      className="absolute z-30 pointer-events-none drop-shadow-xl flex flex-row items-center"
+      style={{
+        left: `${start.x}%`,
+        top: `${start.y}%`,
+        width: `${longitud}%`,
+        height: altoSerpiente,
+        transformOrigin: "0% 50%",
+        transform: `translateY(-50%) rotate(${angulo}deg)${flipScale}`,
+      }}
+    >
+
+      <div
+  className="h-full flex-shrink-0 overflow-hidden"
+  style={{ width: anchoCabeza }}
+>
+  <img
+    src="/serpiente_futuro_cabeza.png"
+    alt="Cabeza"
+    className="h-full max-w-none"
+    style={{
+      width: "100%",
+      height: "50%",
+      transform:"translateY(46%) translateX(1%)"
+    }}
+  />
+</div>
+
+      <div
+        className="h-full flex-1"
+        style={{
+          backgroundImage: "url(/serpiente_futuro_cuerpo.png)",
+          backgroundRepeat: "repeat-x",
+          backgroundSize: patronCuerpo,
+          backgroundPosition: "left center",
+        }}
+      />
+
+      <div
+  className="h-full flex-shrink-0 overflow-hidden"
+  style={{ width: anchoCola }}
+>
+  <img
+    src="/serpiente_futuro_cola.png"
+    alt="Cola"
+    className="h-full max-w-none"
+    style={{
+      width: "140%",
+      height: "113%",
+      transform: "translateX(-29%)translateY(-5%)",
+    }}
+  />
+</div>
+    </div>
+  );
+      }
     });
   };
 
   return (
     <div className="flex flex-col items-center justify-center gap-2 h-full max-h-full w-full mx-auto p-2 min-h-0 relative">
-
       {fichaSeleccionada && (
         <div className="absolute top-4 z-50 bg-black/80 px-6 py-2 rounded-full pointer-events-none shadow-lg border border-green-500/30">
           <p className="text-green-400 font-bold animate-pulse text-lg">
@@ -430,7 +487,6 @@ export default function Tablero({ equipoActual, onAvanzarTurno, onResetTurno, va
           </p>
         </div>
       )}
-
 
       {confirmacionEscalera && (
       <div className="absolute inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm rounded-2xl">
@@ -443,69 +499,37 @@ export default function Tablero({ equipoActual, onAvanzarTurno, onResetTurno, va
             </span>
           </h3>
           <div className="flex gap-4 w-full">
-            <button
-              onClick={() => {
-                ejecutarMovimientoFinal(confirmacionEscalera.fichaId, confirmacionEscalera.casillaBase, confirmacionEscalera.casillaSalto);
-                setConfirmacionEscalera(null);
-              }}
-              className="flex-1 py-2 bg-green-600 hover:bg-green-500 text-white font-bold rounded-lg transition-colors shadow-lg"
-            > SÍ, SUBIR </button>
-            <button
-              onClick={() => {
-                ejecutarMovimientoFinal(confirmacionEscalera.fichaId, confirmacionEscalera.casillaBase, confirmacionEscalera.casillaBase);
-                setConfirmacionEscalera(null);
-              }}
-              className="flex-1 py-2 bg-red-600 hover:bg-red-500 text-white font-bold rounded-lg transition-colors shadow-lg"
-            > NO, QUEDARME </button>
+            <button onClick={() => { ejecutarMovimientoFinal(confirmacionEscalera.fichaId, confirmacionEscalera.casillaBase, confirmacionEscalera.casillaSalto); setConfirmacionEscalera(null); }} className="flex-1 py-2 bg-green-600 hover:bg-green-500 text-white font-bold rounded-lg transition-colors shadow-lg"> SÍ, SUBIR </button>
+            <button onClick={() => { ejecutarMovimientoFinal(confirmacionEscalera.fichaId, confirmacionEscalera.casillaBase, confirmacionEscalera.casillaBase); setConfirmacionEscalera(null); }} className="flex-1 py-2 bg-red-600 hover:bg-red-500 text-white font-bold rounded-lg transition-colors shadow-lg"> NO, QUEDARME </button>
           </div>
         </div>
       </div>
-    )}
+      )}
 
-
-      <button
-        onClick={enviarFichasACasa}
-        className="absolute -top-10 left-40 z-50 px-4 py-1 bg-red-600 hover:bg-red-500 text-white font-bold rounded shadow transition-all"
-      >
+      <button onClick={enviarFichasACasa} className="absolute -top-10 left-40 z-50 px-4 py-1 bg-red-600 hover:bg-red-500 text-white font-bold rounded shadow transition-all">
         Reiniciar
       </button>
 
-
-      {/* CONTENEDOR DEL TABLERO */}
       <div className="h-full aspect-square max-w-full max-h-full bg-gray-900 p-1.5 rounded-2xl shadow-2xl shrink min-h-0 relative">
         <div className="w-full h-full grid grid-cols-10 grid-rows-10 relative overflow-hidden rounded-md">
-          
           <div className="absolute inset-0 w-full h-full pointer-events-none z-30">
             {renderizarObstaculosPNG()}
           </div>
-
-          {/* DIBUJO DE LAS CASILLAS Y LAS FICHAS */}
           {casillas.map((num) => {
             const fichasAqui = misFichas.filter(f => f.posicion === num);
-        
-            const datosCasilla = MOCK_BACKEND_DATA.casillas?.[num - 1]; // num empieza en 1, el array en 0
+            const datosCasilla = MOCK_BACKEND_DATA.casillas?.[num - 1];
             
             let imagenSrc = IMAGENES.VACIA;
             if (datosCasilla) {
-              if (datosCasilla.tipo === "Meta") {
-                imagenSrc = IMAGENES.META;
-              } else if (datosCasilla.tipo === "Bifurcacion") {
-                imagenSrc = IMAGENES.BIFURCACION;
-              } else if (datosCasilla.esCurva) {
-                imagenSrc = IMAGENES.CURVA;
-              } else {
-                // Si el backend nos manda datos (es decir, hay camino), el suelo por defecto 
-                // es el NORMAL, sin importar si la casilla es de tipo Serpiente, Escalera o Meta.
-                imagenSrc = IMAGENES.NORMAL;
-              }
+              if (datosCasilla.tipo === "Meta") imagenSrc = IMAGENES.META;
+              else if (datosCasilla.tipo === "Bifurcacion") imagenSrc = IMAGENES.BIFURCACION;
+              else if (datosCasilla.esCurva) imagenSrc = IMAGENES.CURVA;
+              else imagenSrc = IMAGENES.NORMAL;
             }
 
             const rotacion = datosCasilla ? datosCasilla.rotacion : 0;
-
             const fichasAgrupadasPorEquipo = fichasAqui.reduce<Record<string, Ficha[]>>((grupos, ficha) => {
-              if (!grupos[ficha.equipo]) {
-                grupos[ficha.equipo] = [];
-              }
+              if (!grupos[ficha.equipo]) grupos[ficha.equipo] = [];
               grupos[ficha.equipo].push(ficha);
               return grupos;
             }, {});
@@ -516,57 +540,20 @@ export default function Tablero({ equipoActual, onAvanzarTurno, onResetTurno, va
                 return grupo[0];
             });
 
-
             const esDestinoPosible = destinosIluminados.includes(num);
 
             return (
-              <div
-                key={num}
-                onClick={() => esDestinoPosible && moverFichaAlDestino(num)}
-                className={`
-                  relative flex flex-wrap items-center justify-center gap-[2px] transition-all duration-300
-                  ${esDestinoPosible ? "cursor-pointer ring-4 ring-green-300 ring-inset animate-pulse z-40 scale-105 shadow-[0_0_15px_rgba(34,197,94,0.8)]" : ""}
-                  ${!esDestinoPosible && fichaSeleccionada ? "opacity-30" : ""}
-                `}
-              >
-                <div
-                  className="absolute inset-0 w-full h-full z-0 pointer-events-none scale-105"
-                  style={{
-                    backgroundImage: `url(${imagenSrc})`,
-                    backgroundSize: '100% 100%',
-                    backgroundPosition: 'center',
-                    transform: `rotate(${rotacion}deg)`
-                  }}
-                />
-                
-                <span className="absolute top-0.5 left-1 text-[8px] lg:text-[10px] font-bold text-white/50 z-10 pointer-events-none select-none">
-                  {num}
-                </span>
-
+              <div key={num} onClick={() => esDestinoPosible && moverFichaAlDestino(num)} className={`relative flex flex-wrap items-center justify-center gap-[2px] transition-all duration-300 ${esDestinoPosible ? "cursor-pointer ring-4 ring-green-300 ring-inset animate-pulse z-40 scale-105 shadow-[0_0_15px_rgba(34,197,94,0.8)]" : ""} ${!esDestinoPosible && fichaSeleccionada ? "opacity-30" : ""}`}>
+                <div className="absolute inset-0 w-full h-full z-0 pointer-events-none scale-105" style={{ backgroundImage: `url(${imagenSrc})`, backgroundSize: '100% 100%', backgroundPosition: 'center', transform: `rotate(${rotacion}deg)` }} />
+                <span className="absolute top-0.5 left-1 text-[8px] lg:text-[10px] font-bold text-white/50 z-10 pointer-events-none select-none">{num}</span>
                 {fichasVisibles.map(ficha => {
                   const esSeleccionable = (movimientosPermitidos[ficha.id]?.length ?? 0) > 0;
                   const estaSeleccionada = fichaSeleccionada === ficha.id;
                   const cantidadEquipoEnCasilla = fichasAgrupadasPorEquipo[ficha.equipo]?.length ?? 1;
 
                   return (
-                    <div
-                      key={ficha.id}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        seleccionarFicha(ficha.id);
-                      }}
-                      className={`
-                        w-[38%] aspect-square rounded-full ${ficha.color} border border-white/80 shadow-md transition-all z-20 relative
-                        ${esSeleccionable && !fichaSeleccionada ? "cursor-pointer ring-2 ring-yellow-400 hover:scale-110" : ""}
-                        ${estaSeleccionada ? "scale-150 ring-4 ring-blue-400 shadow-[0_0_15px_blue]" : ""}
-                      `}
-                      title={ficha.id}
-                    >
-                      {cantidadEquipoEnCasilla > 1 && (
-                        <span className="absolute -top-1 -right-1 z-30 w-4 h-4 rounded-full bg-black/85 text-white text-[9px] font-bold flex items-center justify-center border border-white/60 pointer-events-none">
-                          {cantidadEquipoEnCasilla}
-                        </span>
-                      )}
+                    <div key={ficha.id} onClick={(e) => { e.stopPropagation(); seleccionarFicha(ficha.id); }} className={`w-[38%] aspect-square rounded-full ${ficha.color} border border-white/80 shadow-md transition-all z-20 relative ${esSeleccionable && !fichaSeleccionada ? "cursor-pointer ring-2 ring-yellow-400 hover:scale-110" : ""} ${estaSeleccionada ? "scale-150 ring-4 ring-blue-400 shadow-[0_0_15px_blue]" : ""}`} title={ficha.id}>
+                      {cantidadEquipoEnCasilla > 1 && ( <span className="absolute -top-1 -right-1 z-30 w-4 h-4 rounded-full bg-black/85 text-white text-[9px] font-bold flex items-center justify-center border border-white/60 pointer-events-none">{cantidadEquipoEnCasilla}</span> )}
                     </div>
                   );
                 })}
