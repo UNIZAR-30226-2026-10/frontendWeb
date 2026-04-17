@@ -1,6 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { CuentaService } from '@/services/cuentas.service';
 
 interface userContextType {
   userEmail: string | null;
@@ -12,33 +13,50 @@ const userContext = createContext<userContextType | undefined>(undefined);
 
 export function UserProvider({ children }: { children: ReactNode }) {
   const [userEmail, setUserEmailState] = useState<string | null>(null);
-  const [isCargandoMemoria, setIsCargandoMemoria] = useState(true);
+  const [isCargando, setIsCargando] = useState(true);
 
-  // 1. Al cargar la web (o hacer F5), buscamos en la "memoria a largo plazo"
   useEffect(() => {
-    const emailGuardado = localStorage.getItem('userEmail');
-    if (emailGuardado) {
-      setUserEmailState(emailGuardado);
-    }
-    setIsCargandoMemoria(false); // Ya hemos terminado de buscar
+    const intentarAutoLogin = async () => {
+      try {
+        // Intentamos validar la cookie en el backend
+        const data = await CuentaService.cookieLogin();
+        setUserEmailState(data.email);
+        localStorage.setItem('userEmail', data.email);
+      } catch (error) {
+        // Si falla (no hay cookie o expiró), miramos si hay algo en localStorage por si acaso
+        const emailGuardado = localStorage.getItem('userEmail');
+        if (emailGuardado) setUserEmailState(emailGuardado);
+      } finally {
+        setIsCargando(false);
+      }
+    };
+
+    intentarAutoLogin();
   }, []);
 
-  // 2. Función mejorada para guardar sesión
   const setUserEmail = (email: string) => {
-    setUserEmailState(email); // Lo guarda en la memoria rápida (React)
-    localStorage.setItem('userEmail', email); // Lo guarda en la memoria a largo plazo (Navegador)
+    setUserEmailState(email);
+    localStorage.setItem('userEmail', email);
   };
 
-  // 3. Función para cerrar sesión y limpiar todo
-  const logout = () => {
-    setUserEmailState(null);
-    localStorage.removeItem('userEmail');
+  const logout = async () => {
+    try {
+      // 1. Avisamos al backend para que borre las cookies 'session' y 'autologin'
+      await CuentaService.logout();
+    } catch (error) {
+      console.error("Error cerrando sesión en servidor, limpiando local de todos modos", error);
+    } finally {
+      // 2. Limpiamos rastro local
+      setUserEmailState(null);
+      localStorage.removeItem('userEmail');
+      // 3. Redirigimos a la raíz (donde está el login)
+      window.location.href = "/"; 
+    }
   };
 
   return (
     <userContext.Provider value={{ userEmail, setUserEmail, logout }}>
-      {/* Evitamos dibujar la web hasta que hayamos revisado el LocalStorage, así evitamos parpadeos */}
-      {!isCargandoMemoria && children}
+      {!isCargando && children}
     </userContext.Provider>
   );
 }

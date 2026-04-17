@@ -41,5 +41,29 @@ export const CuentaService = {
     if (!response.ok) throw new Error(data.error || data.message || 'Error al crear la cuenta');
     
     return data as CuentaResponse;
-  }
+  },
+
+  cookieLogin: async (): Promise<{ email: string; username: string }> => {
+    const response = await fetch(`${API_URL}/auth/cookie_login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include', // CRUCIAL: Envía las cookies al servidor
+    });
+
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || 'Sesión no válida');
+
+    return data;
+  },
+
+  logout: async (): Promise<void> => {
+    const response = await fetch(`${API_URL}/auth/logout`, {
+      method: 'POST',
+      credentials: 'include', // Para que el servidor sepa qué sesión cerrar
+    });
+
+    if (!response.ok) {
+      throw new Error('Error al cerrar sesión en el servidor');
+    }
+  },
 };

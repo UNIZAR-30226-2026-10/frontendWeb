@@ -7,34 +7,22 @@ import { usePerfil } from '@/hooks/usePerfil';
 import { useUser } from '@/context/userContext';
 
 export default function Perfil() {
-
-  const { userEmail } = useUser(); 
-  
+  const { userEmail, logout } = useUser(); 
   const { perfil, isLoading, error, actualizarEquipamiento } = usePerfil(userEmail || "");
-  
   const [tipoEdicion, setTipoEdicion] = useState<string | null>(null);
 
-  if (!userEmail) {
-    return (
-      <main className="w-full h-full flex items-center justify-center bg-[#283F9F]">
-        <p className="text-white text-xl font-bold uppercase">Por favor, inicia sesión para ver tu perfil</p>
-      </main>
-    );
-  }
+    
+  if (!userEmail) return null;
 
   if (isLoading) {
     return <div className="text-white text-center mt-10 text-2xl w-full font-bold">Cargando Perfil...</div>;
   }
 
-  if (error) {
-    return (
-      <main className="w-full h-full flex items-center justify-center bg-[#283F9F]">
-        <p className="text-red-400 text-xl font-bold uppercase">Error de la API: {error}</p>
-      </main>
-    );
-  }
-
-  if (!perfil) return null;
+  if (error || !perfil) return (
+    <main className="w-full h-full flex items-center justify-center bg-[#283F9F]">
+      <p className="text-red-400 text-xl font-bold uppercase">{error}</p>
+    </main>
+  );
 
   return (
     <main className="w-full h-full flex flex-col p-4 md:p-6 overflow-hidden relative items-center justify-center">
@@ -53,9 +41,10 @@ export default function Perfil() {
         />
       )}
 
+      {/* Título con tipografía original */}
       <h1 className="text-white text-3xl font-bold mb-6 shrink-0">Perfil</h1>
 
-      {/* Caja de Perfil */}
+      {/* Caja de Perfil Original */}
       <div className="relative bg-[#283F9F] border-4 border-yellow-400 rounded-[2rem] p-8 shadow-xl flex flex-col gap-6 max-w-5xl w-full">
         
         <div className="absolute top-6 right-8 text-2xl font-bold text-white">
@@ -90,9 +79,20 @@ export default function Perfil() {
           </div>
         </div>
 
-        {/* Separador y Cosméticos */}
+        {/* BOTÓN DE LOGOUT (Encima de la línea, visible y presente) */}
+        <div className="flex justify-end -mb-4 pr-2">
+          <button
+            onClick={logout}
+            className="text-white/90 hover:text-amber-400 text-sm font-bold uppercase tracking-widest transition-all flex items-center gap-2 group"
+          >
+            <span className="text-lg transition-transform group-hover:scale-110">⎋</span> 
+            Cerrar Sesión
+          </button>
+        </div>
+
+        {/* Separador y Cosméticos Originales */}
         <div className="mt-2 border-t border-white/20 pt-6">
-          <h2 className="text-2xl font-bold mb-6 text-white uppercase tracking-tighter">Cosméticos:</h2>
+          <h2 className="text-2xl font-bold mb-6 text-white">Cosmeticos:</h2>
           
           <div className="flex flex-row flex-wrap justify-around gap-4">
             {perfil.cosmeticos.map((cosmetic) => (

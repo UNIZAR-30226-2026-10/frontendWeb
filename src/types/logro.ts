@@ -29,23 +29,13 @@ export interface AchievementApi {
 
 export interface UserStatsApi {
   SEP?: number;
-  sep?: number;
-  ELO?: number;
-  elo?: number;
-  partidasJugadas?: number;
-  matchesPlayed?: number;
   victorias?: number;
-  wins?: number;
   derrotas?: number;
-  losses?: number;
-  cartasJugadas?: number;
-  cardsPlayed?: number;
-  cartasColeccionadas?: number;
-  cardsCollected?: number;
-  logros?: Array<string | { nombre?: string; name?: string; id?: string }>;
-  achievements?: Array<string | { nombre?: string; name?: string; id?: string }>;
-  completedAchievements?: Array<string | { nombre?: string; name?: string; id?: string }>;
-  completed_achievements?: Array<string | { nombre?: string; name?: string; id?: string }>;
+  CartasJugadas?: number;    // Coincide con el backend
+  PartidasJugadas?: number;  // Coincide con el backend
+  NumeroAmigos?: number;
+  CartasLegendarias?: number;
+  LogrosCompletados?: string[];
 }
 
 export interface LogroUI {
@@ -55,4 +45,5 @@ export interface LogroUI {
   progresoLogro: number;
   metaLogro: number;
   recompensaLogro: string;
+  completado?: boolean;
 }
