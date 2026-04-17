@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { CuentaService } from '@/services/cuentas.service'; 
+import { useUser} from '@/context/userContext';
 
 export const useAuth = () => {
   const [email, setEmail] = useState('');
@@ -11,6 +12,7 @@ export const useAuth = () => {
   const [isLoading, setIsLoading] = useState(false);
   
   const router = useRouter();
+  const { setUserEmail } = useUser();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -20,6 +22,7 @@ export const useAuth = () => {
     try {
       // 2. Usamos el método dentro del objeto
       await CuentaService.login(email, password);
+      setUserEmail(email); // Guardamos el email en el contexto
       router.push('/juego');
     } catch (err: any) {
       setError(err.message || 'Error de conexión con el servidor.');

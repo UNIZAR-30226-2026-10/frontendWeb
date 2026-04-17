@@ -4,27 +4,42 @@ import React, { useState } from 'react';
 import SlotSelectorSkin from '@/components/interfaz/SlotSelectorSkin';
 import SelectorSkin from '@/components/interfaz/SelectorSkin';
 import { usePerfil } from '@/hooks/usePerfil';
+import { useUser } from '@/context/userContext';
 
 export default function Perfil() {
-  const emailUsuario = "admin@juego.com"; // Simulación de usuario logueado
-  const { perfil, isLoading, error, actualizarEquipamiento } = usePerfil(emailUsuario);
+
+  const { userEmail } = useUser(); 
+  
+  const { perfil, isLoading, error, actualizarEquipamiento } = usePerfil(userEmail || "");
   
   const [tipoEdicion, setTipoEdicion] = useState<string | null>(null);
+
+  if (!userEmail) {
+    return (
+      <main className="w-full h-full flex items-center justify-center bg-[#283F9F]">
+        <p className="text-white text-xl font-bold uppercase">Por favor, inicia sesión para ver tu perfil</p>
+      </main>
+    );
+  }
 
   if (isLoading) {
     return <div className="text-white text-center mt-10 text-2xl w-full font-bold">Cargando Perfil...</div>;
   }
 
-  if (error || !perfil) return (
-    <main className="w-full h-full flex items-center justify-center bg-[#283F9F]">
-      <p className="text-red-400 text-xl font-bold uppercase">{error}</p>
-    </main>
-  );
+  if (error) {
+    return (
+      <main className="w-full h-full flex items-center justify-center bg-[#283F9F]">
+        <p className="text-red-400 text-xl font-bold uppercase">Error de la API: {error}</p>
+      </main>
+    );
+  }
+
+  if (!perfil) return null;
 
   return (
     <main className="w-full h-full flex flex-col p-4 md:p-6 overflow-hidden relative items-center justify-center">
       
-      {/* Selector/Popup (Llama a actualizarEquipamiento del Hook) */}
+      {/* Selector/Popup */}
       {tipoEdicion && (
         <SelectorSkin 
           titulo={tipoEdicion}
@@ -40,7 +55,7 @@ export default function Perfil() {
 
       <h1 className="text-white text-3xl font-bold mb-6 shrink-0">Perfil</h1>
 
-      {/* Caja de Perfil (Estética Original) */}
+      {/* Caja de Perfil */}
       <div className="relative bg-[#283F9F] border-4 border-yellow-400 rounded-[2rem] p-8 shadow-xl flex flex-col gap-6 max-w-5xl w-full">
         
         <div className="absolute top-6 right-8 text-2xl font-bold text-white">

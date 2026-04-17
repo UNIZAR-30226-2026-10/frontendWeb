@@ -2,17 +2,27 @@
 
 import SlotLogro from '@/components/interfaz/SlotLogro';
 import { useLogros } from '@/hooks/useLogros';
+import { useUser } from '@/context/userContext'; 
 
 export default function Home() {
-  const emailDelUsuario = 'admin@juego.com';
-  const { logros, isLoading, error } = useLogros(emailDelUsuario);
+  const { userEmail } = useUser(); 
+  
+  const { logros, isLoading, error } = useLogros(userEmail || '');
+
+  if (!userEmail) {
+    return <div className="text-white text-center mt-10 text-2xl w-full font-bold">Por favor, inicia sesión para ver tus logros.</div>;
+  }
 
   if (isLoading) {
-    return <div className="text-white text-center mt-10 text-2xl w-full">Cargando logros...</div>;
+    return <div className="text-white text-center mt-10 text-2xl w-full font-bold">Cargando logros...</div>;
   }
 
   if (error) {
-    return <div className="text-red-500 text-center mt-10 w-full">Error: {error}</div>;
+    return (
+      <main className="w-full h-full flex items-center justify-center">
+        <div className="text-red-500 text-center text-xl font-bold uppercase">Error de la API: {error}</div>
+      </main>
+    );
   }
 
   return (
@@ -23,7 +33,7 @@ export default function Home() {
 
       <div className="flex flex-col gap-4 ">
         {logros.length === 0 ? (
-          <p className="text-gray-400 mt-4 text-center text-lg ">No hay logros disponibles.</p>
+          <p className="text-gray-400 mt-4 text-center text-lg font-bold">No tienes logros disponibles o la lista está vacía.</p>
         ) : (
           logros.map((logro) => (
             <SlotLogro
