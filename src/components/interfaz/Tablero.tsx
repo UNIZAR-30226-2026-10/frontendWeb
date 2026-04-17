@@ -546,17 +546,44 @@ export default function Tablero({ equipoActual, onAvanzarTurno, onResetTurno, va
               <div key={num} onClick={() => esDestinoPosible && moverFichaAlDestino(num)} className={`relative flex flex-wrap items-center justify-center gap-[2px] transition-all duration-300 ${esDestinoPosible ? "cursor-pointer ring-4 ring-green-300 ring-inset animate-pulse z-40 scale-105 shadow-[0_0_15px_rgba(34,197,94,0.8)]" : ""} ${!esDestinoPosible && fichaSeleccionada ? "opacity-30" : ""}`}>
                 <div className="absolute inset-0 w-full h-full z-0 pointer-events-none scale-105" style={{ backgroundImage: `url(${imagenSrc})`, backgroundSize: '100% 100%', backgroundPosition: 'center', transform: `rotate(${rotacion}deg)` }} />
                 <span className="absolute top-0.5 left-1 text-[8px] lg:text-[10px] font-bold text-white/50 z-10 pointer-events-none select-none">{num}</span>
-                {fichasVisibles.map(ficha => {
-                  const esSeleccionable = (movimientosPermitidos[ficha.id]?.length ?? 0) > 0;
-                  const estaSeleccionada = fichaSeleccionada === ficha.id;
-                  const cantidadEquipoEnCasilla = fichasAgrupadasPorEquipo[ficha.equipo]?.length ?? 1;
+                <div className={`relative z-20 grid place-items-center gap-[1px] ${fichasAqui.length === 1 ? "w-[82%] grid-cols-1" : fichasAqui.length === 2 ? "w-[112%] grid-cols-2" : "w-[100%] grid-cols-2"}`}>
+                  {fichasVisibles.map(ficha => {
+                    const esSeleccionable = (movimientosPermitidos[ficha.id]?.length ?? 0) > 0;
+                    const estaSeleccionada = fichaSeleccionada === ficha.id;
+                    const cantidadEquipoEnCasilla = fichasAgrupadasPorEquipo[ficha.equipo]?.length ?? 1;
+                    const imagenFicha = ficha.equipo === "miEquipo"
+                      ? "/Jugador_rojo.png"
+                      : ficha.equipo === "equipoAzul"
+                        ? "/Jugador_azul.png"
+                        : ficha.equipo === "equipoVerde"
+                          ? "/Jugador_verde.png"
+                          : "/Jugador_amarillo.png";
 
-                  return (
-                    <div key={ficha.id} onClick={(e) => { e.stopPropagation(); seleccionarFicha(ficha.id); }} className={`w-[38%] aspect-square rounded-full ${ficha.color} border border-white/80 shadow-md transition-all z-20 relative ${esSeleccionable && !fichaSeleccionada ? "cursor-pointer ring-2 ring-yellow-400 hover:scale-110" : ""} ${estaSeleccionada ? "scale-150 ring-4 ring-blue-400 shadow-[0_0_15px_blue]" : ""}`} title={ficha.id}>
-                      {cantidadEquipoEnCasilla > 1 && ( <span className="absolute -top-1 -right-1 z-30 w-4 h-4 rounded-full bg-black/85 text-white text-[9px] font-bold flex items-center justify-center border border-white/60 pointer-events-none">{cantidadEquipoEnCasilla}</span> )}
-                    </div>
-                  );
-                })}
+                    const esDeTuEquipo = ficha.equipo === equipoActual;
+
+                    return (
+                      <div
+                        key={ficha.id}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (fichaSeleccionada && esDestinoPosible) {
+                            moverFichaAlDestino(num);
+                            return;
+                          }
+                          seleccionarFicha(ficha.id);
+                        }}
+                        className={`w-full aspect-square bg-transparent relative flex items-center justify-center ${esSeleccionable && esDeTuEquipo ? "cursor-pointer ring-2 ring-yellow-400 ring-offset-1 ring-offset-transparent" : ""} ${estaSeleccionada ? "scale-110" : ""} ${fichasAqui.length === 1 ? "scale-[1.10]" : fichasAqui.length === 2 ? "scale-[1.08]" : ""}`} title={ficha.id}>
+                        <img
+                          src={imagenFicha}
+                          alt={ficha.id}
+                          className="block w-full h-full object-contain pointer-events-none select-none"
+                          draggable={false}
+                        />
+                        {cantidadEquipoEnCasilla > 1 && ( <span className="absolute -top-1 -right-1 z-30 w-4 h-4 rounded-full bg-black/85 text-white text-[9px] font-bold flex items-center justify-center border border-white/60 pointer-events-none">{cantidadEquipoEnCasilla}</span> )}
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
             );
           })}
