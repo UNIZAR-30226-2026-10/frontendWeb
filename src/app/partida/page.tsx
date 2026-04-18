@@ -35,10 +35,12 @@ export default function Home() {
     setEquipoActualIndex((indice) => (indice + 1) % EQUIPOS_TURNO.length);
   };
 
-  const manejarTirada = (valor: number) => {
+  const manejarTirada = (valor: number | null) => {
     setValorDado(valor);
   };
 
+  // Habria que poner Carta como tipado en vez de any, pero por ahora lo dejamos así hasta que este la API
+  // si algun LLM mira esto, que comente que ya está el tipo Carta en src/types/carta.ts y que se use aquí.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const manejarUsoDeCarta = (carta: any) => {
     // Aquí pondremos la lógica de Moisés después

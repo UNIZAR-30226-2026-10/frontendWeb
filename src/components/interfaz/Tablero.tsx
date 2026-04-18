@@ -30,7 +30,7 @@ interface TableroProps {
   onAvanzarTurno: () => void;
   onResetTurno: () => void;
   valorDadoExterno: number | null;
-  onTirarDadoManual: (valor: number) => void;
+  onTirarDadoManual: (valor: number | null) => void;
 }
 
 
@@ -262,7 +262,6 @@ export default function Tablero({ equipoActual, onAvanzarTurno, onResetTurno, va
       setMovimientosPermitidos({});
       return;
     }
-    // eslint-disable-next-line react-hooks/set-state-in-effect 
     setFichaSeleccionada(null);
 
     const nuevosMovimientos = Object.fromEntries(
@@ -292,7 +291,8 @@ export default function Tablero({ equipoActual, onAvanzarTurno, onResetTurno, va
       await esperar(800);
     }
     setMisFichas(f => f.map(fi => fi.id === fichaId ? { ...fi, posicion: final } : fi));
-    onTirarDadoManual(null as any);
+    
+    onTirarDadoManual(null);
     onAvanzarTurno();
   };
 
@@ -311,7 +311,7 @@ export default function Tablero({ equipoActual, onAvanzarTurno, onResetTurno, va
   const enviarFichasACasa = () => {
     setFichaSeleccionada(null);
     setMovimientosPermitidos({});
-    onTirarDadoManual(null as any);
+    onTirarDadoManual(null);
     setMisFichas((fichas) => fichas.map((ficha) => ({ ...ficha, posicion: 1 })));
     onResetTurno();
   };
