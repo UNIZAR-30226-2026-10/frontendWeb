@@ -35,7 +35,7 @@ export const ModalCarta: React.FC<ModalCartaProps> = ({
         </h2>
 
         <div className="w-full flex-1 flex items-center justify-center min-h-0 overflow-hidden">
-          <img src={carta.img} className="max-w-full max-h-[45vh] object-contain drop-shadow-[0_0_15px_rgba(255,255,255,0.2)]" alt={carta.nombre} />
+          <img src={carta.imagen} className="max-w-full max-h-[45vh] object-contain drop-shadow-[0_0_15px_rgba(255,255,255,0.2)]" alt={carta.nombre} />
         </div>
 
         <div className="shrink-0 bg-blue-950/60 p-3 rounded-xl border border-blue-800/50 w-full">

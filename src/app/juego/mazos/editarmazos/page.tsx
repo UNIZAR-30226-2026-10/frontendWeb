@@ -23,7 +23,7 @@ const cartasEjemplo: Carta[] = [
     nombre: "Carta Común 1",
     tipo: "Bufo",
     rareza: "comun",
-    img: "url1",
+    imagen: "url1",
     descripcion: "Descripción de la carta común 1",
     efecto: "Efecto 1"
   },
@@ -31,7 +31,7 @@ const cartasEjemplo: Carta[] = [
     nombre: "Carta Rara 1",
     tipo: "Debuff",
     rareza: "rara",
-    img: "url2",
+    imagen: "url2",
     descripcion: "Descripción de la carta rara 1",
     efecto: "Efecto 2"
   },
@@ -39,7 +39,7 @@ const cartasEjemplo: Carta[] = [
     nombre: "Carta Épica 1",
     tipo: "Tablero",
     rareza: "epica",
-    img: "url3",
+    imagen: "url3",
     descripcion: "Descripción de la carta épica 1",
     efecto: "Efecto 3"
   },
@@ -47,7 +47,7 @@ const cartasEjemplo: Carta[] = [
     nombre: "Carta Legendaria 1",
     tipo: "Bufo",
     rareza: "legendaria",
-    img: "url4",
+    imagen: "url4",
     descripcion: "Descripción de la carta legendaria 1",
     efecto: "Efecto 4"
   },
@@ -55,7 +55,7 @@ const cartasEjemplo: Carta[] = [
     nombre: "Carta Común 2",
     tipo: "Tablero",
     rareza: "comun",
-    img: "url5",
+    imagen: "url5",
     descripcion: "Descripción de la carta común 2",
     efecto: "Efecto 5"
   },
@@ -63,7 +63,7 @@ const cartasEjemplo: Carta[] = [
     nombre: "Carta Rara 2",
     tipo: "Bufo",
     rareza: "rara",
-    img: "url6",
+    imagen: "url6",
     descripcion: "Descripción de la carta rara 2",
     efecto: "Efecto 6"
   },
@@ -71,7 +71,7 @@ const cartasEjemplo: Carta[] = [
     nombre: "Carta Épica 2",
     tipo: "Debuff",
     rareza: "epica",
-    img: "url7",
+    imagen: "url7",
     descripcion: "Descripción de la carta épica 2",
     efecto: "Efecto 7"
   },
@@ -79,7 +79,7 @@ const cartasEjemplo: Carta[] = [
     nombre: "Carta Legendaria 2",
     tipo: "Bufo",
     rareza: "legendaria",
-    img: "url8",
+    imagen: "url8",
     descripcion: "Descripción de la carta legendaria 2",
     efecto: "Efecto 8"
   }
