@@ -8,10 +8,10 @@ interface MazoVisualProps {
 // 2. Le decimos a React.FC que use esas props: React.FC<MazoVisualProps>
 export const MazoVisual: React.FC<MazoVisualProps> = ({ onSelectCarta }) => {
   const mano = [
-    { id: 1, nombre: "Moises", img: "/moises2.png", efecto: "Te saltas el bloqueo", tipo: "Acción", rareza: "Común", descripcion: "Carta que permite saltar bloqueos", vacia: false },
-    { id: 2, nombre: "Moises", img: "/moises2.png", efecto: "Te saltas el bloqueo", tipo: "Acción", rareza: "Común", descripcion: "Carta que permite saltar bloqueos", vacia: false },
-    { id: 3, nombre: "Moises", img: "/moises2.png", efecto: "Te saltas el bloqueo", tipo: "Acción", rareza: "Común", descripcion: "Carta que permite saltar bloqueos", vacia: false },
-    { id: 4, nombre: "", img: "", efecto: "", tipo: "", rareza: "", descripcion: "", vacia: true }, // Hueco vacío
+    { id: 1, nombre: "Moises", imagen: "/moises2.png", efecto: "Te saltas el bloqueo", tipo: "Acción", rareza: "Común", descripcion: "Carta que permite saltar bloqueos", vacia: false },
+    { id: 2, nombre: "Moises", imagen: "/moises2.png", efecto: "Te saltas el bloqueo", tipo: "Acción", rareza: "Común", descripcion: "Carta que permite saltar bloqueos", vacia: false },
+    { id: 3, nombre: "Moises", imagen: "/moises2.png", efecto: "Te saltas el bloqueo", tipo: "Acción", rareza: "Común", descripcion: "Carta que permite saltar bloqueos", vacia: false },
+    { id: 4, nombre: "", imagen: "", efecto: "", tipo: "", rareza: "", descripcion: "", vacia: true }, // Hueco vacío
   ];
 
   return (
@@ -44,7 +44,7 @@ export const MazoVisual: React.FC<MazoVisualProps> = ({ onSelectCarta }) => {
             {/* Imagen */}
             <div className="flex-1 w-full relative flex items-center justify-center py-1">
               <img
-                src={carta.img}
+                src={carta.imagen}
                 alt={carta.nombre}
                 className="max-h-full max-w-full object-contain drop-shadow-md"
               />
