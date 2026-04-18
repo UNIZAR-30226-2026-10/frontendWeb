@@ -1,13 +1,7 @@
-// src/components/interfaz/DisplayCarta.tsx
 import Carta from "@/types/carta";
 import React from 'react'
 
-interface DisplayCartaProps {
-  carta: Carta;
-  cantidad?: number;
-}
-
-export const DisplayCarta = ({ carta, cantidad = 0 }: DisplayCartaProps) => {
+export const DisplayCarta = ({ carta , cantidad = 0 }: { carta: Carta, cantidad?: number }) => {
   const getBorderClass = (rareza: string) => {
     switch (rareza.toLowerCase()) {
       case 'comun': return 'border-green-500';

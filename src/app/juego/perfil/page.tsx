@@ -48,7 +48,7 @@ export default function Perfil() {
       <div className="relative bg-[#283F9F] border-4 border-yellow-400 rounded-[2rem] p-8 shadow-xl flex flex-col gap-6 max-w-5xl w-full">
         
         <div className="absolute top-6 right-8 text-2xl font-bold text-white">
-          {perfil.victorias}W/{perfil.derrotas}L
+          35W/12L
         </div>
 
         <div className="flex flex-row items-center gap-8 mt-4">

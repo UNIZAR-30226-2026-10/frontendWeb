@@ -1,10 +1,8 @@
-// src/components/interfaz/SlotMazo.tsx
 "use client"
 import React from 'react'
 import CajaLista from './CajaLista';
 import Link from 'next/link';
-
-// 1. AQUÍ ESTÁ LA MAGIA: Actualizamos los Props para que TypeScript no se queje
+{/*Habrá que cambiar esto para que use la clase mazo*/}
 interface SlotMazoProps {
   id: string; 
   nombreMazo: string;
@@ -14,7 +12,6 @@ interface SlotMazoProps {
   onDelete: (id: string) => void;
   onSelect: (id: string) => void;
 }
-
 export const SlotMazo = (props: SlotMazoProps) => {
   return (
     <CajaLista>

@@ -25,7 +25,6 @@ export default function MainLayout({
       <aside className="w-80 bg-[var(--background)] border-l-4 border-yellow-400 flex flex-col shrink-0">
         <BarraAmigos />
       </aside>
-      
     </div>
   );
 }

@@ -36,7 +36,7 @@ export default function JuegoPrincipalPage() {
     setMostrarPopupSalir(false);
     router.push('/juego'); 
   };
-
+  
   return (
     <main className="w-full h-full flex flex-col p-4 md:p-8 overflow-y-auto relative">
       
@@ -132,7 +132,6 @@ export default function JuegoPrincipalPage() {
               Comenzar Partida
             </button>
         </div>       
-
         {/* COLUMNA DERECHA */}
         <div className="flex flex-col justify-center gap-4 h-full w-full max-w-[300px] min-h-0">
           <div className="flex-1 min-h-0 flex flex-col justify-center">
