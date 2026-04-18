@@ -256,12 +256,13 @@ export default function Tablero({ equipoActual, onAvanzarTurno, onResetTurno, va
   });
 
   useEffect(() => {
-    // Comentario para dejar pasar el check de eslint
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (valorDadoExterno === null) {
+      // Comentario para dejar pasar el check de eslint
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setMovimientosPermitidos({});
       return;
     }
+    // eslint-disable-next-line react-hooks/set-state-in-effect 
     setFichaSeleccionada(null);
 
     const nuevosMovimientos = Object.fromEntries(

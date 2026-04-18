@@ -1,17 +1,17 @@
 import React from 'react';
-
+import Carta from '../../types/carta';
 // 1. Definimos la forma de las props que el componente va a recibir
 interface MazoVisualProps {
-  onSelectCarta: (carta: any) => void;
+  onSelectCarta: (carta: Carta) => void;
 }
 
 // 2. Le decimos a React.FC que use esas props: React.FC<MazoVisualProps>
 export const MazoVisual: React.FC<MazoVisualProps> = ({ onSelectCarta }) => {
   const mano = [
-    { id: 1, nombre: "Moises", img: "/moises2.png", efecto: "Te saltas el bloqueo", vacia: false },
-    { id: 2, nombre: "Moises", img: "/moises2.png", efecto: "Te saltas el bloqueo", vacia: false },
-    { id: 3, nombre: "Moises", img: "/moises2.png", efecto: "Te saltas el bloqueo", vacia: false },
-    { id: 4, nombre: "", img: "", efecto: "", vacia: true }, // Hueco vacío
+    { id: 1, nombre: "Moises", img: "/moises2.png", efecto: "Te saltas el bloqueo", tipo: "Acción", rareza: "Común", descripcion: "Carta que permite saltar bloqueos", vacia: false },
+    { id: 2, nombre: "Moises", img: "/moises2.png", efecto: "Te saltas el bloqueo", tipo: "Acción", rareza: "Común", descripcion: "Carta que permite saltar bloqueos", vacia: false },
+    { id: 3, nombre: "Moises", img: "/moises2.png", efecto: "Te saltas el bloqueo", tipo: "Acción", rareza: "Común", descripcion: "Carta que permite saltar bloqueos", vacia: false },
+    { id: 4, nombre: "", img: "", efecto: "", tipo: "", rareza: "", descripcion: "", vacia: true }, // Hueco vacío
   ];
 
   return (
