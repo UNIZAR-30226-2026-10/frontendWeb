@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/dist/client/link";
 import { DisplayCarta } from "@/components/interfaz/DisplayCarta";
 import ErrorMazo from "@/components/interfaz/ErrorMazo";
