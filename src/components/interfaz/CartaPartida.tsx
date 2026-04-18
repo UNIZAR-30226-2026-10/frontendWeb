@@ -1,12 +1,6 @@
 "use client";
 import React from 'react';
-
-interface Carta {
-  id: number;
-  nombre: string;
-  img: string;
-  efecto: string;
-}
+import Carta from '@/types/carta';
 
 interface ModalCartaProps {
   carta: Carta | null;
@@ -45,7 +39,7 @@ export const ModalCarta: React.FC<ModalCartaProps> = ({
         </div>
 
         <div className="shrink-0 bg-blue-950/60 p-3 rounded-xl border border-blue-800/50 w-full">
-          <p className="text-blue-100 text-center text-sm italic leading-tight">"{carta.efecto}"</p>
+          <p className="text-blue-100 text-center text-sm italic leading-tight">&quot;{carta.efecto}&quot;</p>
         </div>
 
         <div className="shrink-0 w-full">

@@ -19,7 +19,7 @@ export const useMazos = (email: string) => {
   try {
     await MazoService.deleteMazo(email, id);
     setDecks(prev => prev.filter(d => d.id !== id));
-  } catch (err: any) {
+  } catch (err: unknown) {
     alert("Error al borrar el mazo en el servidor");
   }
 };
@@ -29,6 +29,8 @@ export const useMazos = (email: string) => {
     setDecks(prev => prev.map(d => ({ ...d, is_in_use: d.id === id })));
   };
 
+  //Comentario para evit que eslint se queje de que no se usa fetchDecks, aunque realmente sí se usa en el useEffect
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { fetchDecks(); }, [email]);
 
   return { decks, isLoading, handleDelete, handleSelect };

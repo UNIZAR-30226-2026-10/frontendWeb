@@ -34,7 +34,7 @@ export const DisplayCarta = ({ carta , cantidad = 0 }: { carta: Carta, cantidad?
       </div>
       
       <p className="text-white mt-2 text-sm h-12 overflow-hidden italic text-center">
-        "{carta.descripcion}"
+        &quot;{carta.descripcion}&quot;
       </p>
     </div>
   )

@@ -43,8 +43,8 @@ export const useLogros = (email: string) => {
       });
 
       setLogros(logrosProcesados);
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError((err as Error).message || 'Error al cargar los logros');
     } finally {
       setIsLoading(false);
     }
@@ -55,8 +55,8 @@ export const useLogros = (email: string) => {
       await LogrosService.reclamarLogro(email, id);
       await fetchLogros(); // Refrescamos la lista
       return true;
-    } catch (err: any) {
-      alert(err.message);
+    } catch (err: unknown) {
+      alert((err as Error).message);
       return false;
     }
   };

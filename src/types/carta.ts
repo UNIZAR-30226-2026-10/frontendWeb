@@ -2,7 +2,7 @@ interface Carta {
     nombre: string;
     tipo: string;
     rareza: string;
-    imagen: string; //URL de la imagen de la carta
+    img: string; //URL de la imagen de la carta
     descripcion: string;
     efecto: string;
 }

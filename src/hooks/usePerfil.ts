@@ -14,8 +14,8 @@ export const usePerfil = (email: string) => {
       setIsLoading(true);
       const data = await PerfilService.getPerfil(email);
       setPerfil(data);
-    } catch (err: any) {
-      setError(err.message || 'Error al cargar el perfil');
+    } catch (err: unknown) {
+      setError((err as Error).message || 'Error al cargar el perfil');
     } finally {
       setIsLoading(false);
     }

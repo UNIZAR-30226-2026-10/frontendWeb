@@ -47,9 +47,9 @@ export const useAmigos = (email: string) => {
         if (isMounted) {
           setAmigos(amigosList);
         }
-      } catch (err: any) {
+      } catch (err: unknown) {
         if (isMounted) {
-          setError(err.message || 'Error al cargar los amigos');
+          setError((err as Error).message || 'Error al cargar los amigos');
         }
       } finally {
         if (isMounted) {

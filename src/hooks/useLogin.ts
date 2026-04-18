@@ -24,8 +24,8 @@ export const useAuth = () => {
       await CuentaService.login(email, password);
       setUserEmail(email); // Guardamos el email en el contexto
       router.push('/juego');
-    } catch (err: any) {
-      setError(err.message || 'Error de conexión con el servidor.');
+    } catch (err: unknown) {
+      setError((err as Error).message || 'Error de conexión con el servidor.');
     } finally {
       setIsLoading(false);
     }

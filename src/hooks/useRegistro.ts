@@ -35,8 +35,8 @@ export const useRegister = () => {
       // 2. Llamamos al método dentro del objeto
       await CuentaService.register(email, username, password);
       router.push('/'); 
-    } catch (err: any) {
-      setError(err.message || 'Error al conectar con el servidor.');
+    } catch (err: unknown) {
+      setError((err as Error).message || 'Error al conectar con el servidor.');
     } finally {
       setIsLoading(false);
     }

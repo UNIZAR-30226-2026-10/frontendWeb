@@ -3,21 +3,15 @@
 import { ListaJugadores } from "@/components/interfaz/ListaJugadores";
 import { MazoVisual } from "@/components/interfaz/MazoPartida";
 import Tablero from "@/components/interfaz/Tablero";
+import Carta  from "@/types/carta";
 import { DadoPartida } from "@/components/interfaz/DadoPartida";
 import { ModalCarta } from "@/components/interfaz/CartaPartida";
 import { useMemo, useState } from "react";
 
 const EQUIPOS_TURNO = ["miEquipo", "equipoAzul", "equipoVerde", "equipoAmarillo"];
 
-const jugadoresEjemplo = [
-  { nombreJugador: "Ana", esTurno: true, esLider: true },
-  { nombreJugador: "Luis", esTurno: false, esLider: false },
-  { nombreJugador: "Marta", esTurno: false, esLider: false },
-  { nombreJugador: "Diego", esTurno: false, esLider: false },
-];
-
 export default function Home() {
-  const [cartaEnFoco, setCartaEnFoco] = useState<any | null>(null);
+  const [cartaEnFoco, setCartaEnFoco] = useState<Carta | null>(null);
   const [equipoActualIndex, setEquipoActualIndex] = useState(0);
   const [valorDado, setValorDado] = useState<number | null>(null);
   const [cartaJugadaEnEsteTurno, setCartaJugadaEnEsteTurno] = useState(false);
@@ -45,6 +39,7 @@ export default function Home() {
     setValorDado(valor);
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const manejarUsoDeCarta = (carta: any) => {
     // Aquí pondremos la lógica de Moisés después
     if (cartaJugadaEnEsteTurno) {

@@ -19,8 +19,8 @@ export const useTienda = (email: string) => {
 
         const tiendaData = await TiendaService.getTienda(email);
         setTienda(tiendaData);
-      } catch (err: any) {
-        setError(err.message || 'Error al cargar la tienda');
+      } catch (err: unknown) {
+        setError((err as Error).message || 'Error al cargar la tienda');
       } finally {
         setIsLoading(false);
       }

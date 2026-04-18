@@ -26,7 +26,7 @@ export const BorrarMazoConfirmar: React.FC<Props> = ({ isOpen, nombreMazo, onCon
         
         <p className="text-gray-200 text-center mb-10 text-xl font-medium leading-relaxed">
           ¿Estás seguro que quieres borrar el mazo: <br />
-          <span className="text-amber-400 font-black text-2xl">"{nombreMazo}"</span>?
+          <span className="text-amber-400 font-black text-2xl">&quot;{nombreMazo}&quot;</span>?
         </p>
 
         <div className="flex gap-4">
