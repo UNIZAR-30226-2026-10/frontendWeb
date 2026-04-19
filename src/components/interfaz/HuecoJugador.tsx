@@ -13,7 +13,7 @@ const HuecoJugador: React.FC<HuecoJugadorProps> = ({estaOcupado,esLider,nomJugad
     const [hayBot,setHayBot] = useState(false);
     if(hayBot) {
         return (
-        <div className="bg-[#eab308] w-60 h-60 rounded-4xl relative flex items-center justify-center text-white text-3xl font-bold font-sans">
+        <div className="bg-[#EEB716] w-60 h-60 rounded-4xl relative flex items-center justify-center text-white text-3xl font-bold font-sans">
                 
                 <div>Bot</div>
                <button
@@ -42,7 +42,7 @@ const HuecoJugador: React.FC<HuecoJugadorProps> = ({estaOcupado,esLider,nomJugad
     return (
       <div className="bg-[#eab308] w-60 h-60 rounded-4xl flex flex-col items-center justify-center relative">
         {esLider && (
-          <div className="-top-6 left-0 text-6xl text-white transform -rotate-12">(corona)</div>
+          <div className="-top-6 left-0 text-6xl text-white transform -rotate-12">👑</div>
         )}
         <div className="bg-white rounded-full w-24 h-24 flex items-center justify-center mb-3 border-4 border-black overflow-hidden">
           {iconoJugador ? (

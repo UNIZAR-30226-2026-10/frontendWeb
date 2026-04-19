@@ -1,15 +1,15 @@
 @import "tailwindcss";
 
 :root {
-  --background: #3F69FF;
-  --foreground: #EFB810;
+  --background: #111A2C;
+  --foreground: #EEB716;
 }
 
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #3F69FF;
-    --foreground: #EFB810;
+    --background: #111A2C;
+    --foreground: #EEB716;
   }
 }
 
@@ -17,4 +17,39 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+nextjs-portal {
+  display: none !important;
+}
+
+
+@layer utilities {
+  /* Estilizando la barra de scroll personalizada */
+  .custom-scroll::-webkit-scrollbar {
+    width: 6px; /* Barra fina y elegante */
+  }
+
+  .custom-scroll::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.1); /* Fondo del carril casi invisible */
+    border-radius: 10px;
+  }
+
+  .custom-scroll::-webkit-scrollbar-thumb {
+    /* Color principal de la barra: un blanco con transparencia */
+    background: rgba(255, 255, 255, 0.2); 
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.1); /* Un pequeño brillo */
+  }
+
+  .custom-scroll::-webkit-scrollbar-thumb:hover {
+    /* Resalta cuando el usuario pasa el ratón */
+    background: rgba(255, 255, 255, 0.4);
+  }
+
+  /* Compatibilidad básica para Firefox */
+  .custom-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+  }
 }

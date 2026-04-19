@@ -1,8 +1,24 @@
+"use client";
+
 import Link from "next/dist/client/link";
 import { DisplayCarta } from "@/components/interfaz/DisplayCarta";
-import Carta from "@/types/carta";
+import ErrorMazo from "@/components/interfaz/ErrorMazo";
+import { useEditorMazos } from "@/hooks/useEditorMazos";
+import Carta  from "@/types/carta";
 
-{/*Falta implementar la lógica que modifique el mazo y al darle a guardar mande al back el mazo actualizado*/}
+export default function EditorMazosPage() {
+  // Simulación: aquí pondrías el email del usuario logueado (desde Zustand o Context)
+  const emailUsuario = "admin@juego.com"; 
+  
+  const {
+    cartasDisponibles,
+    cartasSeleccionadas,
+    nombreMazo, setNombreMazo,
+    limiteMazo = 10,
+    isLoading, isSaving,
+    getCantidad, addCarta, removeCarta, guardarMazo,
+    errorMazo, cerrarError
+  } = useEditorMazos(emailUsuario);
 
 const cartasEjemplo: Carta[] = [
   {
@@ -71,15 +87,36 @@ const cartasEjemplo: Carta[] = [
   }
 ];
 
-const limiteMazo = 10;
-
-export default function Home() {
   return (
-    <main>
-      <div className="flex text-white items-center justify-center text-3xl pt-4">
-        <h1>
-          Editor de mazos
-        </h1>
+    <main className="w-full h-full flex flex-col p-4 md:p-8 overflow-y-auto bg-[#0a0f2c] custom-scroll">
+      
+      {errorMazo.abierto && (
+        <ErrorMazo 
+          mensaje={errorMazo.mensaje} 
+          onClose={cerrarError} 
+        />
+      )}
+
+
+
+      {/* CABECERA: Título, Input y Contador */}
+      <div className="flex flex-col items-center justify-center text-white shrink-0 mb-12 gap-4">
+        <h1 className="text-4xl font-bold tracking-tight">Editor de Mazos</h1>
+        
+        <input 
+          type="text" 
+          value={nombreMazo}
+          onChange={(e) => setNombreMazo(e.target.value)}
+          placeholder="Nombre del mazo..."
+          maxLength={20}
+          className="bg-transparent border-b-2 border-yellow-400 text-white text-center text-2xl outline-none p-2 placeholder-gray-500 focus:bg-white/5 transition-colors w-80"
+        />
+
+        <div className="text-xl mt-2 text-blue-300 bg-blue-900/40 px-6 py-2 rounded-full border border-blue-800">
+          Cartas en el mazo: <span className={cartasSeleccionadas.length === limiteMazo ? "text-yellow-400 font-bold" : "text-white font-bold"}>
+            {cartasSeleccionadas.length} / {limiteMazo}
+          </span>
+        </div>
       </div>
       <div className="text-white text-2xl mt-4 ml-10 text-center">
         {cartasEjemplo.length}/{limiteMazo}

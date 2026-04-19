@@ -1,25 +1,63 @@
 import React from 'react';
+import Carta from '../../types/carta';
+// 1. Definimos la forma de las props que el componente va a recibir
+interface MazoVisualProps {
+  onSelectCarta: (carta: Carta) => void;
+}
 
-export const MazoVisual: React.FC = () => {
+// 2. Le decimos a React.FC que use esas props: React.FC<MazoVisualProps>
+export const MazoVisual: React.FC<MazoVisualProps> = ({ onSelectCarta }) => {
+  const mano = [
+    { id: 1, nombre: "Moises", imagen: "/moises2.png", efecto: "Te saltas el bloqueo", tipo: "Acción", rareza: "Común", descripcion: "Carta que permite saltar bloqueos", vacia: false },
+    { id: 2, nombre: "Moises", imagen: "/moises2.png", efecto: "Te saltas el bloqueo", tipo: "Acción", rareza: "Común", descripcion: "Carta que permite saltar bloqueos", vacia: false },
+    { id: 3, nombre: "Moises", imagen: "/moises2.png", efecto: "Te saltas el bloqueo", tipo: "Acción", rareza: "Común", descripcion: "Carta que permite saltar bloqueos", vacia: false },
+    { id: 4, nombre: "", imagen: "", efecto: "", tipo: "", rareza: "", descripcion: "", vacia: true }, // Hueco vacío
+  ];
+
   return (
-    <div className="absolute bottom-15 left-15 z-10 flex items-end">
-      {/* Contenedor de las cartas apiladas */}
-      <div className="relative w-30 h-40">
-        {/* Carta de fondo (decorativa para dar efecto de mazo) */}
-        <div className="absolute bottom-1 left-1 w-full h-full bg-black border-2 border-purple-600 rounded-md shadow-sm transform -rotate-3"></div>
-        
-        {/* Carta principal del mazo */}
-        <div className="absolute bottom-0 left-0 w-full h-full bg-black border-2 border-blue-600 rounded-md shadow-md flex flex-col items-center justify-start gap-1 pt-2">
-          {/* Diseño de la parte trasera de la carta */}
-          <h1 className="text-[10px] font-bold text-white leading-none text-center">Moises</h1>
-          <img
-				src="/moises2.png"
-				alt="Dado"
-				className="h-25 w-25 object-contain drop-shadow-lg"
-			/>
-          <h1 className="text-[8px] font-bold text-white leading-none text-center">Te saltas el bloqueo</h1>
-        </div>
-      </div>
+    <div className="w-full grid grid-cols-2 gap-3 p-1">
+      
+      {mano.map((carta) => {
+        if (carta.vacia) {
+          return (
+            <div 
+              key={carta.id} 
+              className="w-full aspect-[2/3] border-2 border-dashed border-white/40 rounded-lg flex items-center justify-center bg-black/20"
+            >
+              <span className="text-white/30 text-xs font-bold uppercase tracking-widest">+ Carta</span>
+            </div>
+          );
+        }
+
+        return (
+          <div 
+            key={carta.id} 
+            // 3. Añadimos el evento onClick para avisar al padre qué carta se eligió
+            onClick={() => onSelectCarta(carta)}
+            className="w-full aspect-[2/3] bg-black border-2 border-blue-600 rounded-lg shadow-md flex flex-col items-center justify-between p-2 hover:scale-105 transition-transform cursor-pointer hover:border-blue-400 hover:shadow-[0_0_15px_rgba(37,99,235,0.6)] z-10"
+          >
+            {/* Título de la carta */}
+            <h1 className="text-[10px] xl:text-xs font-bold text-white leading-none text-center truncate w-full">
+              {carta.nombre}
+            </h1>
+            
+            {/* Imagen */}
+            <div className="flex-1 w-full relative flex items-center justify-center py-1">
+              <img
+                src={carta.imagen}
+                alt={carta.nombre}
+                className="max-h-full max-w-full object-contain drop-shadow-md"
+              />
+            </div>
+            
+            {/* Efecto de la carta */}
+            <h1 className="text-[8px] xl:text-[10px] font-medium text-blue-200 leading-tight text-center">
+              {carta.efecto}
+            </h1>
+          </div>
+        );
+      })}
+
     </div>
   );
 };

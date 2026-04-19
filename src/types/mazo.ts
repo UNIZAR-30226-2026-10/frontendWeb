@@ -1,9 +1,15 @@
-import Carta from "./carta";
-
-interface Mazo {
-    nombre: string;
-    cartas: Carta[]; //Lista de cartas que componen el mazo
-    enUso: boolean; //Indica si el mazo está siendo utilizado en una partida, para mostrar un mensaje de advertencia al intentar editar o borrar el mazo
+export interface Carta {
+  nombre: string;
+  tipo: string;
+  rareza: string;
+  imagen: string;
+  descripcion: string;
+  efecto: string;
 }
 
-export default Mazo;
+export interface Mazo {
+  id: string;
+  deck_name: string;
+  cards: string[]; // Nombres de las cartas
+  is_in_use: boolean;
+}
