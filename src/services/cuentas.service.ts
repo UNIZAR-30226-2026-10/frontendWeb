@@ -26,6 +26,7 @@ export const CuentaService = {
     const response = await fetch(`${API_URL}/auth/new_users`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
       body: JSON.stringify({ email, username, password }),
     });
     

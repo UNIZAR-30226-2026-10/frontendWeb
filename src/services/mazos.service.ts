@@ -17,7 +17,9 @@ const agregarImagenesACartas = (cards: Omit<Carta, 'imagen'>[]): Carta[] => {
 export const MazoService = {
   // Obtener todos los mazos
   getMazos: async (email: string): Promise<Mazo[]> => {
-    const res = await fetch(`${API_URL}/users/${email}/decks`);
+    const res = await fetch(`${API_URL}/users/${email}/decks`, {
+      credentials: 'include',
+    });
     const mazos = await res.json();
     
     return mazos.map((mazo: any) => ({
@@ -28,7 +30,9 @@ export const MazoService = {
 
   // Obtener un mazo por ID (para editar)
   getMazoById: async (email: string, deckId: string): Promise<Mazo> => {
-    const res = await fetch(`${API_URL}/users/${email}/decks/${deckId}`);
+    const res = await fetch(`${API_URL}/users/${email}/decks/${deckId}`, {
+      credentials: 'include',
+    });
     const mazo = await res.json();
     
     return {
