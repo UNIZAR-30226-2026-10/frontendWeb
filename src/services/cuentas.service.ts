@@ -48,6 +48,7 @@ export const CuentaService = {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include', // CRUCIAL: Envía las cookies al servidor
+      body: JSON.stringify({}), // No es necesario enviar datos, pero el servidor espera un cuerpo JSON
     });
 
     const data = await response.json();

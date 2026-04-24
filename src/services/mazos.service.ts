@@ -1,34 +1,51 @@
-import { Mazo, Carta } from '@/types/mazo';
+import { Mazo } from '@/types/mazo';
+import Carta from '@/types/carta';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
+
+const generarUrlImagen = (nombre: string): string => {
+  return `/Cartas/${nombre.replace(/\s+/g, '_').toLowerCase()}.png`;
+};
+
+const agregarImagenesACartas = (cards: Omit<Carta, 'imagen'>[]): Carta[] => {
+  return cards.map(card => ({
+    ...card,
+    imagen: generarUrlImagen(card.nombre)
+  }));
+};
 
 export const MazoService = {
   // Obtener todos los mazos
   getMazos: async (email: string): Promise<Mazo[]> => {
-    await new Promise(resolve => setTimeout(resolve, 500)); // Simulación
-    return [
-      { id: '1', deck_name: 'Mazo Inicial', is_in_use: true, cards: ['Fuego', 'Rápido'] },
-      { id: '2', deck_name: 'Táctica de Serpiente', is_in_use: false, cards: ['Veneno', 'Salto'] }
-    ];
-    /* REAL: 
     const res = await fetch(`${API_URL}/users/${email}/decks`);
-    return res.json(); 
-    */
+    const mazos = await res.json();
+    
+    return mazos.map((mazo: any) => ({
+      ...mazo,
+      cards: agregarImagenesACartas(mazo.cards)
+    }));
   },
 
   // Obtener un mazo por ID (para editar)
   getMazoById: async (email: string, deckId: string): Promise<Mazo> => {
-    // Simulación: En la realidad buscarías el mazo específico
-    return { id: deckId, deck_name: 'Mazo Recuperado', is_in_use: false, cards: ['Fuego'] };
+    const res = await fetch(`${API_URL}/users/${email}/decks/${deckId}`);
+    const mazo = await res.json();
+    
+    return {
+      ...mazo,
+      cards: agregarImagenesACartas(mazo.cards)
+    };
   },
 
   // Crear, Actualizar, Borrar y Equipar
-  createMazo: async (email: string, name: string, cards: string[]) => {
+  createMazo: async (email: string, name: string, cards: Carta[]) => {
+    const cardsWithoutImage = cards.map(({ imagen, ...rest }) => rest);
     console.log("API: Creando mazo", name);
     return true;
   },
 
-  updateMazo: async (email: string, id: string, name: string, cards: string[]) => {
+  updateMazo: async (email: string, id: string, name: string, cards: Carta[]) => {
+    const cardsWithoutImage = cards.map(({ imagen, ...rest }) => rest);
     console.log("API: Actualizando mazo", id);
     return true;
   },
