@@ -30,8 +30,12 @@ export default function CuadroRegistro() {
       await CuentaService.register(email, nombre, password);
       alert("¡Cuenta creada con éxito! Ya puedes iniciar sesión.");
       router.push('/'); 
-    } catch (err: any) {
-      setError(err.message || 'Error al registrar la cuenta');
+    } catch (err) {
+      if (err instanceof Error) {
+        setError(err.message || 'Error al registrar la cuenta');
+      } else {
+        setError('Error al registrar la cuenta');
+      }
     } finally {
       setCargando(false);
     }

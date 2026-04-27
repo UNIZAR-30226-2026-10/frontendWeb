@@ -24,8 +24,13 @@ export default function CuadroInicioSesion() {
       await CuentaService.login(email, password);
       setUserEmail(email);
       router.push('/juego'); 
-    } catch (err: any) {
-      setError(err.message || 'Error al iniciar sesión');
+    } catch (err) {
+      if (err instanceof Error) {
+        setError(err.message || 'Error al iniciar sesión');
+      }
+      else {
+        setError('Error al iniciar sesión');
+      }
     } finally {
       setCargando(false);
     }
