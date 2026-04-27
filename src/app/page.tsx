@@ -11,11 +11,6 @@ export default function InicioSesion() {
   const searchParams = useSearchParams();
 
   useEffect(() => {
-    if (searchParams.get('error') === 'nocookie') {
-      logout();
-      router.replace('/'); 
-      return;
-    }
     if (userEmail) {
       router.push('/juego');
     }

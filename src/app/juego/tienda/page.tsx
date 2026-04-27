@@ -6,10 +6,11 @@ import SlotTienda from "@/components/interfaz/SlotTienda";
 import ConfirmarCompra from "@/components/interfaz/ConfirmarCompra";
 import ItemTienda from "@/types/itemTienda";
 import { useTienda } from '@/hooks/useTienda';
+import { useUser } from '@/context/userContext';
 
 export default function Tienda() {
-  const emailUsuario = "admin@juego.com"; 
-  const { tienda, isLoading, error } = useTienda(emailUsuario);
+  const { userEmail } = useUser();
+  const { tienda, isLoading, error, isComprando, mensajeCompra, setMensajeCompra, manejarCompra } = useTienda(userEmail || '');
   const [itemSeleccionado, setItemSeleccionado] = useState<ItemTienda | null>(null);
 
   if (isLoading) {
@@ -20,17 +21,29 @@ export default function Tienda() {
     return <div className="text-red-500 text-center mt-10 w-full font-bold">Error: {error || 'No se pudo cargar'}</div>;
   }
 
+  const manejarConfirmarCompra = async (item: ItemTienda) => {
+    await manejarCompra(item);
+    setItemSeleccionado(null);
+  };
+
   return (
     <main className="w-full h-full flex flex-col p-4 md:p-8 overflow-y-auto relative custom-scroll">
       
+      {/* Mensaje de compra */}
+      {mensajeCompra && (
+        <div className={`fixed top-4 left-1/2 -translate-x-1/2 z-50 px-6 py-3 rounded-lg font-bold text-white ${
+          mensajeCompra.tipo === 'exito' ? 'bg-green-500' : 'bg-red-500'
+        }`}>
+          {mensajeCompra.texto}
+        </div>
+      )}
+
       {/* Modal de confirmación */}
       <ConfirmarCompra 
         item={itemSeleccionado} 
         onClose={() => setItemSeleccionado(null)} 
-        onConfirm={(item) => {
-          console.log("Comprado:", item.nombre);
-          setItemSeleccionado(null);
-        }}
+        onConfirm={manejarConfirmarCompra}
+        isLoading={isComprando}
       />
 
       {/* Cabecera idéntica a Logros */}
@@ -53,7 +66,8 @@ export default function Tienda() {
                 <SlotTienda 
                   key={`${item.nombre}-${idx}`} 
                   item={item} 
-                  onSelect={setItemSeleccionado} 
+                  onSelect={setItemSeleccionado}
+                  isComprado={item.comprado}
                 />
               ))}
             </div>
