@@ -26,6 +26,7 @@ export const CuentaService = {
     const response = await fetch(`${API_URL}/auth/new_users`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
       body: JSON.stringify({ email, username, password }),
     });
     
@@ -48,6 +49,7 @@ export const CuentaService = {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include', // CRUCIAL: Envía las cookies al servidor
+      body: JSON.stringify({}), // No es necesario enviar datos, pero el servidor espera un cuerpo JSON
     });
 
     const data = await response.json();

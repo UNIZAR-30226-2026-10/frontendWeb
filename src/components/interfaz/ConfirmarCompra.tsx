@@ -7,9 +7,10 @@ interface ConfirmarCompraProps {
   item: ItemTienda | null;
   onClose: () => void;
   onConfirm: (item: ItemTienda) => void;
+  isLoading?: boolean;
 }
 
-const ConfirmarCompra: React.FC<ConfirmarCompraProps> = ({ item, onClose, onConfirm }) => {
+const ConfirmarCompra: React.FC<ConfirmarCompraProps> = ({ item, onClose, onConfirm, isLoading = false }) => {
   if (!item) return null;
 
   return (
@@ -19,7 +20,7 @@ const ConfirmarCompra: React.FC<ConfirmarCompraProps> = ({ item, onClose, onConf
       {/* Fondo oscuro: también absolute para que no se salga del main */}
       <div 
         className="absolute inset-0 bg-black/70 backdrop-blur-sm" 
-        onClick={onClose} 
+        onClick={() => !isLoading && onClose()} 
       />
 
       {/* Contenedor del Modal: Igual que antes pero relativo al absolute */}
@@ -27,7 +28,8 @@ const ConfirmarCompra: React.FC<ConfirmarCompraProps> = ({ item, onClose, onConf
         
         <button 
           onClick={onClose}
-          className="absolute top-4 right-4 text-white/50 hover:text-white text-2xl transition-colors"
+          disabled={isLoading}
+          className="absolute top-4 right-4 text-white/50 hover:text-white text-2xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
           ✕
         </button>
@@ -55,9 +57,17 @@ const ConfirmarCompra: React.FC<ConfirmarCompraProps> = ({ item, onClose, onConf
 
             <button
               onClick={() => onConfirm(item)}
-              className="w-full bg-green-500 hover:bg-green-400 text-white font-bold py-4 rounded-xl border-b-4 border-green-700 active:border-b-0 active:translate-y-1 transition-all text-xl uppercase shadow-lg"
+              disabled={isLoading}
+              className="w-full bg-green-500 hover:bg-green-400 disabled:bg-gray-500 disabled:cursor-not-allowed text-white font-bold py-4 rounded-xl border-b-4 border-green-700 active:border-b-0 active:translate-y-1 transition-all text-xl uppercase shadow-lg flex items-center justify-center gap-2"
             >
-              Confirmar Compra
+              {isLoading ? (
+                <>
+                  <span className="animate-spin">⏳</span>
+                  Comprando...
+                </>
+              ) : (
+                'Confirmar Compra'
+              )}
             </button>
           </div>
         </div>

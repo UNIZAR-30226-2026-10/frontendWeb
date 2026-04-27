@@ -1,7 +1,8 @@
 "use client";
-import router from 'next/router';
+import {useRouter} from 'next/navigation';
 
 export const RegresarJuego = () => {
+  const router = useRouter();
   return (
     <div className="flex items-center justify-between w-full px-4 py-2 bg-[#283F9F] border-b-2 border-yellow-400 shadow-md">
       
@@ -12,7 +13,6 @@ export const RegresarJuego = () => {
         <span className="text-xl">←</span>
         Salir al Menu
       </button>
-      <div className="text-gray-400">⚙️</div>
     </div>
   );
 };

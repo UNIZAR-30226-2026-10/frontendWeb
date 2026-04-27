@@ -11,7 +11,8 @@ interface Props{
 }
 export const ListaJugadores: React.FC<Props> = ({ jugadores }) => {
     return (
-    <div className="absolute top-2 left-10 z-10 w-44 bg-black/40 backdrop-blur-sm p-3 rounded-xl border border-white/20 shadow-2xl">
+    // Hemos quitado "absolute top-2 left-10 z-10 w-44" y puesto "w-full relative z-10"
+    <div className="w-full relative z-10 bg-black/40 backdrop-blur-sm p-3 rounded-xl border border-white/20 shadow-2xl">
       <h3 className="text-white text-center font-bold text-xl mb-2 tracking-wide uppercase">
         Turno
       </h3>
