@@ -2,16 +2,18 @@
 import React from 'react'
 import CajaLista from './CajaLista';
 import Link from 'next/link';
-{/*Habrá que cambiar esto para que use la clase mazo*/}
+import Carta from '@/types/carta'; 
+
 interface SlotMazoProps {
   id: string; 
   nombreMazo: string;
-  numMazos?: number; // Le pongo el "?" por si a veces no lo pasas, que no dé error
-  previewCartas: string[];
+  numMazos?: number; 
+  previewCartas: Carta[]; 
   mazoEnUso: boolean;
   onDelete: (id: string) => void;
   onSelect: (id: string) => void;
 }
+
 export const SlotMazo = (props: SlotMazoProps) => {
   return (
     <CajaLista>
@@ -23,7 +25,6 @@ export const SlotMazo = (props: SlotMazoProps) => {
                 Editar
               </Link>
               
-              {/* 2. AQUÍ ACTUALIZAMOS EL BOTÓN para usar la función real */}
               <button
                 type="button"
                 onClick={() => props.onDelete(props.id)}
@@ -41,7 +42,7 @@ export const SlotMazo = (props: SlotMazoProps) => {
         <ul className="flex list-inside text-xl text-white font-bold">
           {props.previewCartas.map((carta, index) => (
             <li key={index} className="mr-2">
-              {carta}
+              {carta.nombre}
               {index < props.previewCartas.length - 1 ? ',' : ''}
             </li>
           ))}
