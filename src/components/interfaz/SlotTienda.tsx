@@ -25,14 +25,18 @@ const SlotTienda: React.FC<SlotTiendaProps> = ({ item, onSelect, isComprado = it
           : 'bg-[#1a2a6c] border-white/5 hover:border-amber-400 hover:scale-105 cursor-pointer group'
         }`}
     >
-      <div className={`w-full aspect-square rounded-xl mb-4 flex items-center justify-center text-5xl transition-colors
-        ${isComprado 
-          ? 'bg-white/5' 
-          : 'bg-white/10 group-hover:bg-white/20'
-        }`}
+      <div className={`w-full aspect-square rounded-xl mb-4 flex items-center justify-center overflow-hidden transition-colors
+        ${isComprado ? 'bg-white/5' : 'bg-white/10 group-hover:bg-white/20'}`}
       >
-        {/* Aquí puedes usar item.imagen si existe */}
-        🎭
+        <img 
+          src={item.imagen} 
+          alt={item.nombre} 
+          className={`w-full h-full object-contain p-2 ${isComprado ? 'grayscale opacity-50' : ''}`}
+          onError={(e) => {
+            // Fallback por si no existe la imagen
+            (e.target as HTMLImageElement).src = '/iconos/placeholder_cosmetico.png';
+          }}
+        />
       </div>
       
       <h2 className="text-white text-center text-sm md:text-base mb-2 line-clamp-2 uppercase">
