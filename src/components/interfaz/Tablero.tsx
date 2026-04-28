@@ -27,6 +27,9 @@ const IMAGENES = {
   CURVA: "casilla_curva.png",
   META: "casilla_meta1.png",
   BIFURCACION: "casilla_bifurcacion.png",
+  EFECTO_MAS_CUATRO: "efecto_mas_cuatro.png",
+  EFECTO_AGUJERO: "agujero_de_serpiente.png",
+  EFECTO_MENOS_CUATRO: "efecto_menos_cuatro.png"
 };
 
 const sparseCasillasArray = new Array(100);
@@ -150,7 +153,7 @@ sparseCasillasArray[36] = { esCurva: false, rotacion: 90, tipo: "Escalera", sigu
 sparseCasillasArray[64] = { esCurva: true, rotacion: 270, tipo: "Escalera", siguientes: [75], saltoA: 84 };
 
 
-const MOCK_BACKEND_DATA: SnapshotTablero = generarTableros(3);
+const MOCK_BACKEND_DATA: SnapshotTablero = generarTableros(2);
 
 const obtenerDestinosTrasTirada = (casillaInicio: number, pasos: number): number[] => {
   const indiceInicio = casillaInicio - 1;
@@ -523,7 +526,9 @@ export default function Tablero({ equipoActual, onAvanzarTurno, onResetTurno, va
           {casillas.map((num) => {
             const fichasAqui = misFichas.filter(f => f.posicion === num);
             const datosCasilla = MOCK_BACKEND_DATA.casillas?.[num - 1];
-            
+            const tieneEfectoMasCuatro = datosCasilla?.efecto?.trim() === "+4";
+            const tieneEfectoAgujero = datosCasilla?.efecto?.trim() === "Agujero de serpiente"; 
+            const tieneEfectoMenosCuatro = datosCasilla?.efecto?.trim() === "-4";
             let imagenSrc = IMAGENES.VACIA;
             if (datosCasilla) {
               if (datosCasilla.tipo === "Meta") imagenSrc = IMAGENES.META;
@@ -551,6 +556,39 @@ export default function Tablero({ equipoActual, onAvanzarTurno, onResetTurno, va
             return (
               <div key={num} onClick={() => esDestinoPosible && moverFichaAlDestino(num)} className={`relative flex flex-wrap items-center justify-center gap-[2px] transition-all duration-300 ${esDestinoPosible ? "cursor-pointer ring-4 ring-green-300 ring-inset animate-pulse z-40 scale-105 shadow-[0_0_15px_rgba(34,197,94,0.8)]" : ""} ${!esDestinoPosible && fichaSeleccionada ? "opacity-30" : ""}`}>
                 <div className="absolute inset-0 w-full h-full z-0 pointer-events-none scale-105" style={{ backgroundImage: `url(${imagenSrc})`, backgroundSize: '100% 100%', backgroundPosition: 'center', transform: `rotate(${rotacion}deg)` }} />
+                {tieneEfectoMasCuatro && (
+                  <div
+                    className="absolute inset-0 z-10 pointer-events-none scale-105"
+                    style={{
+                      backgroundImage: `url(${IMAGENES.EFECTO_MAS_CUATRO})`,
+                      backgroundSize: "70% 70%",
+                      backgroundPosition: "center",
+                      backgroundRepeat: "no-repeat",
+                    }}
+                  />
+                )}
+                {tieneEfectoAgujero && (
+                  <div
+                    className="absolute inset-0 z-10 pointer-events-none scale-105"
+                    style={{
+                      backgroundImage: `url(${IMAGENES.EFECTO_AGUJERO})`,
+                      backgroundSize: "90% 100%",
+                      backgroundPosition: "center",
+                      backgroundRepeat: "no-repeat",
+                    }}
+                  />
+                )}
+                {tieneEfectoMenosCuatro && (
+                  <div
+                    className="absolute inset-0 z-10 pointer-events-none scale-105"
+                    style={{
+                      backgroundImage: `url(${IMAGENES.EFECTO_MENOS_CUATRO})`,
+                      backgroundSize: "100% 100%",
+                      backgroundPosition: "center",
+                      backgroundRepeat: "no-repeat",
+                    }}
+                  />
+                )}
                 <span className="absolute top-0.5 left-1 text-[8px] lg:text-[10px] font-bold text-white/50 z-10 pointer-events-none select-none">{num}</span>
                 <div className={`relative z-20 grid place-items-center gap-[1px] ${fichasAqui.length === 1 ? "w-[82%] grid-cols-1" : fichasAqui.length === 2 ? "w-[112%] grid-cols-2" : "w-[100%] grid-cols-2"}`}>
                   {fichasVisibles.map(ficha => {

@@ -158,7 +158,7 @@ export function generarTableros(tipo: number): SnapshotTablero {
                     siguientes: siguiente !== undefined ? [siguiente-1] : []
                 };
             }
-            sparseCasillasArray[5]= { esCurva: true, rotacion: 180, tipo: "Curva", siguientes: [15] };
+            sparseCasillasArray[5]= { esCurva: true, rotacion: 180, tipo: "Curva", siguientes: [15], efecto: "+4" };
             sparseCasillasArray[15]= { esCurva: false, rotacion: 270, tipo: "Bifurcacion", siguientes: [14,16] };
             for(let i = 17 ;i <=19;i++){
                 sparseCasillasArray[i - 1] = { esCurva: false, rotacion: 90, tipo: "Normal", siguientes: [i] };
@@ -176,7 +176,7 @@ export function generarTableros(tipo: number): SnapshotTablero {
                 sparseCasillasArray[i - 1] = { esCurva: false, rotacion: 90, tipo: "Normal", siguientes: [i-2] };
             }
             sparseCasillasArray[24] = { esCurva: true, rotacion: 270, tipo: "Curva", siguientes: [34] };
-            sparseCasillasArray[35] = { esCurva: true, rotacion: 270, tipo: "Curva", siguientes: [45] };
+            sparseCasillasArray[35] = { esCurva: true, rotacion: 270, tipo: "Curva", siguientes: [45], efecto: "+4" };
             sparseCasillasArray[34] = { esCurva: false, rotacion: 360, tipo: "Bifurcacion", siguientes: [44] };   
             sparseCasillasArray[10] = { esCurva: true, rotacion: 270, tipo: "Curva", siguientes: [20] };
             sparseCasillasArray[20] = { esCurva: true, rotacion: 360, tipo: "Curva", siguientes: [21] };
@@ -184,20 +184,20 @@ export function generarTableros(tipo: number): SnapshotTablero {
             sparseCasillasArray[22] = { esCurva: true, rotacion: 180, tipo: "Curva", siguientes: [32] };
             sparseCasillasArray[33] = { esCurva: false, rotacion: 90, tipo: "Normal", siguientes: [34] };
             sparseCasillasArray[32] = { esCurva: true, rotacion: 270, tipo: "Bifurcacion", siguientes: [31,33] };
-            sparseCasillasArray[31] = { esCurva: false, rotacion: 90, tipo: "Normal", siguientes: [30] };
+            sparseCasillasArray[31] = { esCurva: false, rotacion: 90, tipo: "Normal", siguientes: [30], efecto: "Agujero de serpiente"  };
             sparseCasillasArray[30] = { esCurva: true , rotacion: 270, tipo: "Curva", siguientes: [40] };
             sparseCasillasArray[40] = { esCurva: true, rotacion: 360, tipo: "Curva", siguientes: [41] };
             sparseCasillasArray[41] = { esCurva: false, rotacion: 90, tipo: "Normal", siguientes: [42] };
-            sparseCasillasArray[42] = { esCurva: true, rotacion: 180, tipo: "Curva", siguientes: [52] };
+            sparseCasillasArray[42] = { esCurva: true, rotacion: 180, tipo: "Curva", siguientes: [52], efecto: "Agujero de serpiente" };
             sparseCasillasArray[43] = { esCurva: true, rotacion: 270, tipo: "Curva", siguientes: [53] };
             sparseCasillasArray[44] = { esCurva: true, rotacion: 90, tipo: "Curva", siguientes: [43] };
-            sparseCasillasArray[45] = { esCurva: true, rotacion: 360, tipo: "Curva", siguientes: [46] };
+            sparseCasillasArray[45] = { esCurva: true, rotacion: 360, tipo: "Curva", siguientes: [46], efecto: "+4"  };
             sparseCasillasArray[46] = { esCurva: false, rotacion: 90, tipo: "Normal", siguientes: [47] };
             sparseCasillasArray[47] = { esCurva: false, rotacion: 90, tipo: "Normal", siguientes: [48] };
-            sparseCasillasArray[48] = { esCurva: false, rotacion: 90, tipo: "Normal", siguientes: [49] };
+            sparseCasillasArray[48] = { esCurva: false, rotacion: 90, tipo: "Normal", siguientes: [49], efecto: "-4"  };
             sparseCasillasArray[49] = { esCurva: true, rotacion: 180, tipo: "Curva", siguientes: [59] };
             sparseCasillasArray[50] = { esCurva: true, rotacion: 270, tipo: "Curva", siguientes: [60] };
-            sparseCasillasArray[51] = { esCurva: false, rotacion: 90, tipo: "Normal", siguientes: [50] };
+            sparseCasillasArray[51] = { esCurva: false, rotacion: 90, tipo: "Normal", siguientes: [50], efecto: "Agujero de serpiente" };
             sparseCasillasArray[52] = { esCurva: true, rotacion: 90, tipo: "Curva", siguientes: [51] };
             sparseCasillasArray[53] = { esCurva: true, rotacion: 360, tipo: "Normal", siguientes: [54]};
             sparseCasillasArray[54] = { esCurva: false, rotacion: 90, tipo: "Normal", siguientes: [55] };
@@ -208,7 +208,7 @@ export function generarTableros(tipo: number): SnapshotTablero {
             sparseCasillasArray[59] = { esCurva: true, rotacion: 90, tipo: "Curva", siguientes: [58] };
             sparseCasillasArray[60] = { esCurva: true, rotacion: 360, tipo: "Curva", siguientes: [61] };
             sparseCasillasArray[61] = { esCurva: false, rotacion: 270, tipo: "Normal", siguientes: [62] };
-            sparseCasillasArray[62] = { esCurva: false, rotacion: 90, tipo: "Normal", siguientes: [63] };
+            sparseCasillasArray[62] = { esCurva: false, rotacion: 90, tipo: "Normal", siguientes: [63]};
             sparseCasillasArray[63] = { esCurva: true, rotacion: 180, tipo: "Curva", siguientes: [73] }; 
             sparseCasillasArray[64] = { esCurva: true, rotacion: 270, tipo: "Curva", siguientes: [74]}; 
             sparseCasillasArray[65] = { esCurva: false, rotacion: 90, tipo: "Normal", siguientes: [64] };
@@ -216,20 +216,20 @@ export function generarTableros(tipo: number): SnapshotTablero {
             sparseCasillasArray[67] = { esCurva: true, rotacion: 360, tipo: "Curva", siguientes: [68] };
             sparseCasillasArray[68] = { esCurva: false, rotacion: 90, tipo: "Normal", siguientes: [69] };
             sparseCasillasArray[69] = { esCurva: true, rotacion: 180, tipo: "Curva", siguientes: [79] };
-            sparseCasillasArray[73] = { esCurva: false, rotacion: 180, tipo: "Bifurcacion", siguientes: [83] };
+            sparseCasillasArray[73] = { esCurva: false, rotacion: 180, tipo: "Bifurcacion", siguientes: [83], efecto: "-4"   };
             sparseCasillasArray[74] = { esCurva: true, rotacion: 90, tipo: "Curva", siguientes: [73] };
             sparseCasillasArray[75] = { esCurva: true, rotacion: 270, tipo: "Curva", siguientes: [85] };
             sparseCasillasArray[76] = { esCurva: false, rotacion: 90, tipo: "Normal", siguientes: [75] };
             sparseCasillasArray[77] = { esCurva: true, rotacion: 180, tipo: "Curva", siguientes: [76] };
             sparseCasillasArray[78] = { esCurva: true, rotacion: 270, tipo: "Curva", siguientes: [88] };
             sparseCasillasArray[79] = { esCurva: true, rotacion: 90, tipo: "Curva", siguientes: [78] };
-            sparseCasillasArray[80] = { esCurva: true, rotacion: 270, tipo: "Curva", siguientes: [90] };
+            sparseCasillasArray[80] = { esCurva: true, rotacion: 270, tipo: "Curva", siguientes: [90], efecto: "-4"   };
             sparseCasillasArray[81] = { esCurva: false, rotacion: 90, tipo: "Normal", siguientes: [80] };
             sparseCasillasArray[82] = { esCurva: false, rotacion: 90, tipo: "Normal", siguientes: [81] };
             sparseCasillasArray[83] = { esCurva: true, rotacion: 90, tipo: "Curva", siguientes: [82] };
             sparseCasillasArray[84] = { esCurva: true, rotacion: 270, tipo: "Curva", siguientes: [94] };
             sparseCasillasArray[85] = { esCurva: true, rotacion: 90, tipo: "Curva", siguientes: [84] }; 
-            sparseCasillasArray[87] = { esCurva: true, rotacion: 360, tipo: "Curva", siguientes: [77] }; 
+            sparseCasillasArray[87] = { esCurva: true, rotacion: 360, tipo: "Curva", siguientes: [77], efecto: "+4"  }; 
             sparseCasillasArray[88] = { esCurva: true, rotacion: 90, tipo: "Curva", siguientes: [87] }; 
             sparseCasillasArray[90] = { esCurva: true, rotacion: 360, tipo: "Curva", siguientes: [91] };
             sparseCasillasArray[91] = { esCurva: false, rotacion: 90, tipo: "Normal", siguientes: [92] };
