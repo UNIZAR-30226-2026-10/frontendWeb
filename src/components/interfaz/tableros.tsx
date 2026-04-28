@@ -1,5 +1,3 @@
-import { table } from "console";
-
 export type TipoCasilla = "Normal" | "Escalera" | "Serpiente" | "Bifurcacion" | "Meta"|"Vacía";
 
 export interface CasillaBackend {
@@ -149,10 +147,8 @@ export function generarTableros(tipo: number): SnapshotTablero {
         case 2:
             for(let numeroCasilla = 1; numeroCasilla <= 5; numeroCasilla++) {
                 const indice = numeroCasilla - 1;
-                let rotacion = 90;
-
-                let siguiente: number | undefined;
-                siguiente = numeroCasilla + 1;
+                const rotacion = 90;
+                const siguiente = numeroCasilla+1;
 
 
                 sparseCasillasArray[indice] = {
