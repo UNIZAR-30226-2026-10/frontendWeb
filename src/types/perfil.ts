@@ -1,7 +1,7 @@
 export interface Cosmetico {
   id: string;
   nombre: string;
-  tipo: 'Ficha' | 'Escalera' | 'Serpiente';
+  tipo: 'Ficha' | 'Escalera' | 'Serpiente' | 'Icono';
   imagen?: string;
 }
 

@@ -10,21 +10,12 @@ export type TipoLogro =
   | string;
 
 export interface AchievementApi {
-  id?: string;
-  nombre?: string;
-  name?: string;
-  descripcion?: string;
-  description?: string;
-  requisito?: number;
-  requirement?: number;
-  tipo?: TipoLogro;
-  type?: TipoLogro;
-  recompensa?: string;
-  reward?: string;
-  carta?: {
-    nombre?: string;
-    name?: string;
-  } | null;
+  nombre: string;          // Es tu ID en Prisma
+  descripcion: string;
+  requisito: number;
+  tipo: TipoLogro;
+  recompensaMonetaria?: number; // El campo que faltaba
+  cartaID?: string;             // El ID de la carta de recompensa
 }
 
 export interface UserStatsApi {
