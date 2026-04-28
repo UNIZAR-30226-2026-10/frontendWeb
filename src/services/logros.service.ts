@@ -13,7 +13,7 @@ export const LogrosService = {
   // 2. Obtenemos todos los logros disponibles en el juego
   // Nota: Asumo que tienes esta ruta en api/achievements o similar
   getGlobalAchievements: async (): Promise<AchievementApi[]> => {
-    const response = await fetch(`${API_URL}/achievements/all`); // Ajustar según tu ruta real
+    const response = await fetch(`${API_URL}/achievements`); // Ajustar según tu ruta real
     if (!response.ok) return []; // Fallback si no existe la ruta aún
     return response.json();
   },

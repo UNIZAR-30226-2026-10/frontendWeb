@@ -243,7 +243,6 @@ export default function Tablero({ equipoActual, onAvanzarTurno, onResetTurno, va
 
   useEffect(() => {
     if (valorDadoExterno === null) {
-      // Comentario para dejar pasar el check de eslint
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setMovimientosPermitidos({});
       return;
@@ -371,133 +370,115 @@ export default function Tablero({ equipoActual, onAvanzarTurno, onResetTurno, va
       const esEscalera = tipoInicio === "Escalera";
 
       if (esEscalera) {
-        // --- LÓGICA DE ESCALERA EN 3 PARTES (HORIZONTAL) CORREGIDA ---
         const flipScale = dx < 0 ? ' scaleY(-1)' : '';
-        
-        // 1. REDUCIMOS EL GROSOR. Prueba con '8%' o '10%' para que se vea natural.
         const grosorEscalera = '8%'; 
 
         return (
           <div
             key={`${inicio}-${fin}`}
-            className="absolute z-30 pointer-events-none drop-shadow-xl flex flex-row items-center justify-between"
+            className="absolute z-30 pointer-events-none drop-shadow-xl flex flex-row items-center justify-center"
             style={{
               left: `${start.x}%`,
               top: `${start.y}%`,
               width: `${longitud}%`,
-              height: grosorEscalera, // Grosor controlado
+              height: grosorEscalera,
               transformOrigin: '0% 50%',
               transform: `translateY(-50%) rotate(${angulo}deg)${flipScale}`
             }}
           >
-                <div
-  className="h-full flex-shrink-0 overflow-hidden"
->
-  <img
-    src="/escalera_magnate_base.png"
-    alt="Tope"
-    className="h-full max-w-none"
-    style={{
-      width: "100%",
-      height: "89%",
-      transform:"translateY(7%) translateX(8%)"
-    }}
-  />
-</div>
+            <div className="h-full flex-shrink-0 overflow-hidden relative z-20">
+              <img
+                src="/escalera_estratega_base.png"
+                alt="Base"
+                className="h-full w-auto block max-w-none"
+              />
+            </div>
             
-            {/* CUERPO (Peldaños) - Escala proporcional al alto y repite */}
             <div
-        className="h-full flex-1"
-        style={{
-          backgroundImage: "url(/escalera_magnate_cuerpo.png)",
-          backgroundRepeat: "repeat-x",
-          backgroundSize: "13px",
-          backgroundPosition: "left center",
-        }}
-      />
+              className="h-full flex-1 relative z-10"
+              style={{
+                backgroundImage: "url(/escalera_estratega_cuerpo.png)",
+                backgroundRepeat: "repeat-x",
+                backgroundSize: "auto 100%",
+                backgroundPosition: "left center",
+                transform: "scaleX(1.03)"
+              }}
+            />
             
-            {/* TOPE (Puntas) - Escalado a la altura y centrada */}
-                            <div
-  className="h-full flex-shrink-0 overflow-hidden"
->
-  <img
-    src="/escalera_magnate_tope.png"
-    alt="Tope"
-    className="h-full max-w-none"
-    style={{
-      width: "100%",
-      height: "89%",
-      transform:"translateY(7%) translateX(-7%)"
-    }}
-  />
-</div>
+            <div className="h-full flex-shrink-0 overflow-hidden relative z-20">
+              <img
+                src="/escalera_estratega_tope.png"
+                alt="Tope"
+                className="h-full w-auto block max-w-none"
+              />
+            </div>
           </div>
         );
       } else {
-   const flipScale = dx < 0 ? " scaleY(-1)" : "";
+        const flipScale = dx < 0 ? " scaleY(-1)" : "";
 
-  const altoSerpiente = "6.5%";
-  const anchoCabeza = "52px";
-  const anchoCola = "70px";
-  const patronCuerpo = "22px 44%";
+        const altoSerpiente = "6.5%";
+        const anchoCabeza = "52px";
+        const anchoCola = "70px";
+        const patronCuerpo = "22px 44%";
 
-  return (
-    <div
-      key={`${inicio}-${fin}`}
-      className="absolute z-30 pointer-events-none drop-shadow-xl flex flex-row items-center"
-      style={{
-        left: `${start.x}%`,
-        top: `${start.y}%`,
-        width: `${longitud}%`,
-        height: altoSerpiente,
-        transformOrigin: "0% 50%",
-        transform: `translateY(-50%) rotate(${angulo}deg)${flipScale}`,
-      }}
-    >
+        return (
+          <div
+            key={`${inicio}-${fin}`}
+            className="absolute z-30 pointer-events-none drop-shadow-xl flex flex-row items-center"
+            style={{
+              left: `${start.x}%`,
+              top: `${start.y}%`,
+              width: `${longitud}%`,
+              height: altoSerpiente,
+              transformOrigin: "0% 50%",
+              transform: `translateY(-50%) rotate(${angulo}deg)${flipScale}`,
+            }}
+          >
 
-      <div
-  className="h-full flex-shrink-0 overflow-hidden"
-  style={{ width: anchoCabeza }}
->
-  <img
-    src="/serpiente_calcetin_cabeza.png"
-    alt="Cabeza"
-    className="h-full max-w-none"
-    style={{
-      width: "100%",
-      height: "50%",
-      transform:"translateY(46%) translateX(1%)"
-    }}
-  />
-</div>
+            <div
+              className="h-full flex-shrink-0 overflow-hidden"
+              style={{ width: anchoCabeza }}
+            >
+              <img
+                src="/serpiente_futuro_cabeza.png"
+                alt="Cabeza"
+                className="h-full max-w-none"
+                style={{
+                  width: "100%",
+                  height: "50%",
+                  transform:"translateY(46%) translateX(1%)"
+                }}
+              />
+            </div>
 
-      <div
-        className="h-full flex-1"
-        style={{
-          backgroundImage: "url(/serpiente_calcetin_cuerpo.png)",
-          backgroundRepeat: "repeat-x",
-          backgroundSize: patronCuerpo,
-          backgroundPosition: "left center",
-        }}
-      />
+            <div
+              className="h-full flex-1"
+              style={{
+                backgroundImage: "url(/serpiente_futuro_cuerpo.png)",
+                backgroundRepeat: "repeat-x",
+                backgroundSize: patronCuerpo,
+                backgroundPosition: "left center",
+              }}
+            />
 
-      <div
-  className="h-full flex-shrink-0 overflow-hidden"
-  style={{ width: anchoCola }}
->
-  <img
-    src="/serpiente_calcetin_cola.png"
-    alt="Cola"
-    className="h-full max-w-none"
-    style={{
-      width: "140%",
-      height: "113%",
-      transform: "translateX(-29%)translateY(-5%)",
-    }}
-  />
-</div>
-    </div>
-  );
+            <div
+              className="h-full flex-shrink-0 overflow-hidden"
+              style={{ width: anchoCola }}
+            >
+              <img
+                src="/serpiente_futuro_cola.png"
+                alt="Cola"
+                className="h-full max-w-none"
+                style={{
+                  width: "140%",
+                  height: "113%",
+                  transform: "translateX(-29%)translateY(-5%)",
+                }}
+              />
+            </div>
+          </div>
+        );
       }
     });
   };

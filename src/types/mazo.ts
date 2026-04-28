@@ -1,15 +1,8 @@
-export interface Carta {
-  nombre: string;
-  tipo: string;
-  rareza: string;
-  imagen: string;
-  descripcion: string;
-  efecto: string;
-}
+import Carta from './carta'; 
 
 export interface Mazo {
   id: string;
   deck_name: string;
-  cards: string[]; // Nombres de las cartas
+  cards: Carta[];      // Sigue usando Carta, pero ahora viene del otro archivo
   is_in_use: boolean;
 }

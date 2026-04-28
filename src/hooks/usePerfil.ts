@@ -21,14 +21,17 @@ export const usePerfil = (email: string) => {
     }
   }, [email]);
 
-  const actualizarEquipamiento = async (nuevoItem: Cosmetico) => {
+  const actualizarEquipamiento = async (itemAEquipar: Cosmetico) => {
     if (!perfil) return;
     try {
-      const exito = await PerfilService.equiparCosmetico(email, nuevoItem.id);
+      const exito = await PerfilService.equiparCosmetico(email, {
+        tipo: itemAEquipar.tipo,
+        nombre: itemAEquipar.id
+      });
       if (exito) {
         // Actualización optimista: cambiamos la UI antes de re-descargar
         const nuevosEquipados = perfil.cosmeticos.map(c => 
-          c.tipo === nuevoItem.tipo ? nuevoItem : c
+          c.tipo === itemAEquipar.tipo ? itemAEquipar : c
         );
         setPerfil({ ...perfil, cosmeticos: nuevosEquipados });
       }

@@ -6,15 +6,31 @@ import React from 'react';
 interface SlotTiendaProps {
   item: ItemTienda;
   onSelect: (item: ItemTienda) => void;
+  isComprado?: boolean;
 }
 
-const SlotTienda: React.FC<SlotTiendaProps> = ({ item, onSelect }) => {
+const SlotTienda: React.FC<SlotTiendaProps> = ({ item, onSelect, isComprado = item.comprado }) => {
+  const handleClick = () => {
+    if (!isComprado) {
+      onSelect(item);
+    }
+  };
+
   return (
     <div 
-      onClick={() => onSelect(item)}
-      className="bg-[#1a2a6c] p-4 rounded-2xl font-bold shadow-lg border-2 border-white/5 hover:border-amber-400 hover:scale-105 transition-all cursor-pointer group flex flex-col items-center"
+      onClick={handleClick}
+      className={`p-4 rounded-2xl font-bold shadow-lg border-2 flex flex-col items-center transition-all relative
+        ${isComprado 
+          ? 'bg-[#0a1a3c] border-gray-600 opacity-70 cursor-default' 
+          : 'bg-[#1a2a6c] border-white/5 hover:border-amber-400 hover:scale-105 cursor-pointer group'
+        }`}
     >
-      <div className="w-full aspect-square bg-white/10 rounded-xl mb-4 flex items-center justify-center text-5xl group-hover:bg-white/20 transition-colors">
+      <div className={`w-full aspect-square rounded-xl mb-4 flex items-center justify-center text-5xl transition-colors
+        ${isComprado 
+          ? 'bg-white/5' 
+          : 'bg-white/10 group-hover:bg-white/20'
+        }`}
+      >
         {/* Aquí puedes usar item.imagen si existe */}
         🎭
       </div>
@@ -27,6 +43,12 @@ const SlotTienda: React.FC<SlotTiendaProps> = ({ item, onSelect }) => {
         <span className="text-amber-400 text-xs">SEP</span>
         <span className="text-white">{item.precio}</span>
       </div>
+
+      {isComprado && (
+        <div className="absolute inset-0 rounded-2xl flex items-center justify-center bg-black/40">
+          <span className="text-white text-sm font-bold uppercase bg-green-600 px-3 py-1 rounded">Comprado</span>
+        </div>
+      )}
     </div>
   );
 };
