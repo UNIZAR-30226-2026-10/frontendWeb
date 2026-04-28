@@ -1,5 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
+import { generarTableros, type SnapshotTablero } from "./tableros";
 
 // Definición de tipos
 type Ficha = {
@@ -9,21 +10,7 @@ type Ficha = {
   equipo: string;
 };
 
-//Tipos definidos en el backend
-type TipoCasilla = "Normal" | "Escalera" | "Serpiente" | "Bifurcacion" | "Meta";
 
-interface CasillaBackend {
-  esCurva: boolean;
-  rotacion: number;
-  efecto?: string;
-  tipo: TipoCasilla;
-  siguientes: number[];
-  saltoA?: number;
-}
-
-interface SnapshotTablero {
-  casillas: (CasillaBackend | undefined)[];
-}
 
 interface TableroProps {
   equipoActual: string;
@@ -163,47 +150,46 @@ sparseCasillasArray[36] = { esCurva: false, rotacion: 90, tipo: "Escalera", sigu
 sparseCasillasArray[64] = { esCurva: true, rotacion: 270, tipo: "Escalera", siguientes: [75], saltoA: 84 };
 
 
-const MOCK_BACKEND_DATA: SnapshotTablero = {
-    casillas: sparseCasillasArray
-};
+const MOCK_BACKEND_DATA: SnapshotTablero = generarTableros(3);
 
 const obtenerDestinosTrasTirada = (casillaInicio: number, pasos: number): number[] => {
+  const indiceInicio = casillaInicio - 1;
   const destinos = new Set<number>();
 
-  const obtenerAnteriores = (casillaObjetivo: number): number[] => {
+  const obtenerAnteriores = (indiceObjetivo: number): number[] => {
     const anteriores: number[] = [];
     MOCK_BACKEND_DATA.casillas.forEach((casilla, index) => {
-      if (casilla?.siguientes.includes(casillaObjetivo)) {
-        anteriores.push(index + 1);
+      if (casilla?.siguientes.includes(indiceObjetivo)) {
+        anteriores.push(index);
       }
     });
     return anteriores;
   };
 
-  const obtenerReboteDesdeMeta = (casillaMeta: number, pasosSobrantes: number): number[] => {
-    if (pasosSobrantes === 0) return [casillaMeta];
-    const anteriores = obtenerAnteriores(casillaMeta);
-    if (anteriores.length === 0) return [casillaMeta];
+  const obtenerReboteDesdeMeta = (indiceMeta: number, pasosSobrantes: number): number[] => {
+    if (pasosSobrantes === 0) return [indiceMeta];
+    const anteriores = obtenerAnteriores(indiceMeta);
+    if (anteriores.length === 0) return [indiceMeta];
     return Array.from(new Set(anteriores.flatMap((anterior) => obtenerReboteDesdeMeta(anterior, pasosSobrantes - 1))));
   };
 
-  const recorrer = (casillaActual: number, pasosRestantes: number, direccion: "adelante" | "atras" = "adelante") => {
-    const datosCasilla = MOCK_BACKEND_DATA.casillas[casillaActual - 1];
+  const recorrer = (indiceActual: number, pasosRestantes: number, direccion: "adelante" | "atras" = "adelante") => {
+    const datosCasilla = MOCK_BACKEND_DATA.casillas[indiceActual];
     const siguientes = datosCasilla?.siguientes ?? [];
 
     if (pasosRestantes === 0) {
-      destinos.add(casillaActual);
+      destinos.add(indiceActual);
       return;
     }
 
     if (direccion === "atras") {
-      const anteriores = obtenerAnteriores(casillaActual);
+      const anteriores = obtenerAnteriores(indiceActual);
       anteriores.forEach((anterior) => recorrer(anterior, pasosRestantes - 1, "atras"));
       return;
     }
 
     if (datosCasilla?.tipo === "Meta") {
-      obtenerReboteDesdeMeta(casillaActual, pasosRestantes).forEach((destino) => destinos.add(destino));
+      obtenerReboteDesdeMeta(indiceActual, pasosRestantes).forEach((destino) => destinos.add(destino));
       return;
     }
 
@@ -220,10 +206,10 @@ const obtenerDestinosTrasTirada = (casillaInicio: number, pasos: number): number
     siguientes.forEach((siguiente) => recorrer(siguiente, pasosRestantes - 1));
   };
 
-  recorrer(casillaInicio, pasos);
-  destinos.delete(casillaInicio);
+  recorrer(indiceInicio, pasos);
+  destinos.delete(indiceInicio);
 
-  return Array.from(destinos);
+  return Array.from(destinos).map((indice) => indice + 1);
 };
 
 const esperar = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
@@ -251,7 +237,7 @@ export default function Tablero({ equipoActual, onAvanzarTurno, onResetTurno, va
   const saltosDinamicos: Record<number, number> = {};
   MOCK_BACKEND_DATA.casillas?.forEach((casilla, index) => {
     if (casilla && casilla.saltoA !== undefined) {
-      saltosDinamicos[index + 1] = casilla.saltoA;
+      saltosDinamicos[index + 1] = casilla.saltoA + 1;
     }
   });
 
@@ -282,14 +268,45 @@ export default function Tablero({ equipoActual, onAvanzarTurno, onResetTurno, va
     }
   };
 
+  const resolverCadenaSerpientes = (casillaInicio: number): number[] => {
+    const destinos: number[] = [];
+    const visitadas = new Set<number>();
+    let casillaActual = casillaInicio;
+
+    while (!visitadas.has(casillaActual)) {
+      visitadas.add(casillaActual);
+
+      const datosCasilla = MOCK_BACKEND_DATA.casillas[casillaActual - 1];
+      if (datosCasilla?.tipo !== "Serpiente" || datosCasilla.saltoA === undefined) {
+        break;
+      }
+
+      const casillaDestino = datosCasilla.saltoA + 1;
+      if (casillaDestino === casillaActual) {
+        break;
+      }
+
+      destinos.push(casillaDestino);
+      casillaActual = casillaDestino;
+    }
+
+    return destinos;
+  };
+
   const ejecutarMovimientoFinal = async (fichaId: string, base: number, final: number) => {
     setMovimientosPermitidos({});
     setFichaSeleccionada(null);
-    if (base !== final) {
-      setMisFichas(f => f.map(fi => fi.id === fichaId ? { ...fi, posicion: base } : fi));
-      await esperar(800);
+
+    const cadenaSerpientes = resolverCadenaSerpientes(final);
+    const trayectoria = base !== final ? [base, final, ...cadenaSerpientes] : [base, ...cadenaSerpientes];
+
+    for (let i = 0; i < trayectoria.length; i++) {
+      const destino = trayectoria[i];
+      setMisFichas((f) => f.map((fi) => (fi.id === fichaId ? { ...fi, posicion: destino } : fi)));
+      if (i < trayectoria.length - 1) {
+        await esperar(800);
+      }
     }
-    setMisFichas(f => f.map(fi => fi.id === fichaId ? { ...fi, posicion: final } : fi));
     
     onTirarDadoManual(null);
     onAvanzarTurno();
@@ -300,11 +317,15 @@ export default function Tablero({ equipoActual, onAvanzarTurno, onResetTurno, va
     const fichaActual = fichaSeleccionada;
     const datosCasilla = MOCK_BACKEND_DATA.casillas[casillaDestino - 1];
 
-    if (datosCasilla?.tipo === "Escalera" && datosCasilla.saltoA) {
-      setConfirmacionEscalera({ fichaId: fichaActual, casillaBase: casillaDestino, casillaSalto: datosCasilla.saltoA });
+    if (datosCasilla?.tipo === "Escalera" && datosCasilla.saltoA !== undefined) {
+      setConfirmacionEscalera({ fichaId: fichaActual, casillaBase: casillaDestino, casillaSalto: datosCasilla.saltoA + 1 });
       return; 
     }
-    ejecutarMovimientoFinal(fichaActual, casillaDestino, datosCasilla?.saltoA ?? casillaDestino);
+    ejecutarMovimientoFinal(
+      fichaActual,
+      casillaDestino,
+      datosCasilla?.saltoA !== undefined ? datosCasilla.saltoA + 1 : casillaDestino
+    );
   };
 
   const enviarFichasACasa = () => {
@@ -508,6 +529,7 @@ export default function Tablero({ equipoActual, onAvanzarTurno, onResetTurno, va
               if (datosCasilla.tipo === "Meta") imagenSrc = IMAGENES.META;
               else if (datosCasilla.tipo === "Bifurcacion") imagenSrc = IMAGENES.BIFURCACION;
               else if (datosCasilla.esCurva) imagenSrc = IMAGENES.CURVA;
+              else if (datosCasilla.tipo === "Vacía") imagenSrc = IMAGENES.VACIA;
               else imagenSrc = IMAGENES.NORMAL;
             }
 
@@ -536,12 +558,12 @@ export default function Tablero({ equipoActual, onAvanzarTurno, onResetTurno, va
                     const estaSeleccionada = fichaSeleccionada === ficha.id;
                     const cantidadEquipoEnCasilla = fichasAgrupadasPorEquipo[ficha.equipo]?.length ?? 1;
                     const imagenFicha = ficha.equipo === "miEquipo"
-                      ? "/Jugador_rojo.png"
+                      ? "/Jugador_rojo_explorador.png"
                       : ficha.equipo === "equipoAzul"
-                        ? "/Jugador_azul.png"
+                        ? "/Jugador_azul_explorador.png"
                         : ficha.equipo === "equipoVerde"
-                          ? "/Jugador_verde.png"
-                          : "/Jugador_amarillo.png";
+                          ? "/Jugador_verde_explorador.png"
+                          : "/Jugador_amarillo_explorador.png";
 
                     const esDeTuEquipo = ficha.equipo === equipoActual;
 
