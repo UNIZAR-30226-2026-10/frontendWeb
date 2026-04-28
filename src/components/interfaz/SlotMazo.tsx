@@ -11,7 +11,8 @@ interface SlotMazoProps {
   previewCartas: Carta[]; 
   mazoEnUso: boolean;
   onDelete: (id: string) => void;
-  onSelect: (id: string) => void;
+  onSelect?: (id: string) => void;
+  onEdit: (id: string) => void;
 }
 
 export const SlotMazo = (props: SlotMazoProps) => {
@@ -21,9 +22,12 @@ export const SlotMazo = (props: SlotMazoProps) => {
         <div className="flex text-2xl justify-between">
             <h1 className="text-white text-3xl font-bold">{props.nombreMazo} {props.mazoEnUso ? "(En uso)" : ""}</h1>
             <div className="flex items-center gap-10 pt-6">
-              <Link href="/juego/mazos/editarmazos" className="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-500">
+              <button 
+                onClick={() => props.onEdit(props.id)} 
+                className="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-500 transition-colors"
+              >
                 Editar
-              </Link>
+              </button>
               
               <button
                 type="button"
