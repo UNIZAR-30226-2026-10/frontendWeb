@@ -1,35 +1,65 @@
 import { Amigo } from '@/types/amigo';
+import { Invitacion } from '@/types/invitacion';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://host.docker.internal:3000/api';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
 
 export const AmigosService = {
   getAmigos: async (email: string): Promise<Amigo[]> => {
-    // 1. Simulamos el tiempo de carga de internet (medio segundo)
-    await new Promise(resolve => setTimeout(resolve, 500));
-    // 2. Devolvemos unos datos de prueba (Mocks) para que puedas ver tu diseño
-    return [
-      { id: '1', nombre: 'EscaladorMaestro', estado: 'online', avatar: '/Icono Cofre.jpg' },
-      { id: '2', nombre: 'ZigZagKing', estado: 'invitado', avatar: '/icono L.jpg' },
-      { id: '3', nombre: 'Colmillo Veloz', estado: 'online', avatar: '/Icono W.jpg' },
-      { id: '4', nombre: 'Escalera77', estado: 'desconectado', avatar: '/Icono Nerdge.jpg       ' },
-    ];
-
-    /* --- GUARDA EL CÓDIGO REAL COMENTADO PARA EL FUTURO ---
     try {
       const response = await fetch(`${API_URL}/users/${email}/friends`, {
-        // credentials: 'include' 
+        method: 'GET',
+        credentials: 'include', // Necesario para verifyToken
       });
-      
-      if (!response.ok) {
-        throw new Error('Error al obtener los amigos o API no encontrada');
-      }
-      
+
+      if (!response.ok) throw new Error('Error al obtener amigos');
+
       const data = await response.json();
-      return data as Amigo[];
+      // data.friends es un string[] de emails según tu backend:
+      // return user.amigos.map((amigo: any) => amigo.email);
+
+      return data.friends.map((amigoEmail: string) => ({
+        id: amigoEmail,
+        nombre: amigoEmail.split('@')[0], // Usamos la parte antes del @ como nombre temporal
+        avatar: '/iconos/default_user.png', // Avatar por defecto
+      }));
     } catch (error) {
       console.error('Failed to fetch friends:', error);
       return [];
     }
-    -------------------------------------------------------- */
   },
+
+  // Añadir amigo (Usa el endpoint que definiste: POST /:email/:friendUsername/invites)
+  addAmigo: async (userEmail: string, friendUsername: string) => {
+    const response = await fetch(`${API_URL}/users/${userEmail}/${friendUsername}/invites`, {
+      method: 'POST',
+      credentials: 'include',
+    });
+
+    if (!response.ok) {
+      const err = await response.json();
+      throw new Error(err.error || 'No se pudo añadir al amigo');
+    }
+    return response.json();
+  },
+
+  // Eliminar amigo (DELETE /api/users/:email/friends)
+  removeAmigo: async (userEmail: string, friendUsername: string) => {
+    const response = await fetch(`${API_URL}/users/${userEmail}/friends?friendUsername=${friendUsername}`, {
+      method: 'DELETE',
+      credentials: 'include',
+      // Nota: Ajusta según cómo reciba el back el username (query param o body)
+    });
+
+    if (!response.ok) throw new Error('Error al eliminar amigo');
+    return response.json();
+  },
+
+  getInvitaciones: async (email: string): Promise<Invitacion[]> => {
+  const response = await fetch(`${API_URL}/users/${email}/invites`, {
+    credentials: 'include'
+  });
+  if (!response.ok) return [];
+  const data = await response.json();
+  return data.invites; // Devuelve el array de invitaciones
+},
 };

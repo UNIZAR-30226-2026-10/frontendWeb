@@ -82,5 +82,21 @@ export const PerfilService = {
     }
 
     return true;
+  },
+
+  cambiarUsername: async (email: string, nuevoNombre: string): Promise<boolean> => {
+  const response = await fetch(`${API_URL}/users/${email}/username`, {
+    method: 'PUT',
+    credentials: 'include',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ username: nuevoNombre })
+  });
+
+  if (!response.ok) {
+    const err = await response.json().catch(() => ({}));
+    throw new Error(err.error || 'Error al cambiar el nombre');
   }
+
+  return true;
+}
 };

@@ -1,6 +1,5 @@
 export interface Amigo {
-  id: string;
+  id: string;      // Usaremos el email como ID único
   nombre: string;
-  estado: 'online' | 'invitado' | 'desconectado';
   avatar: string;
 }

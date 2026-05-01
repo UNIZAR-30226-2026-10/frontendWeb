@@ -1,57 +1,33 @@
 'use client';
-import { useState } from 'react';
-import AmigoOpciones from './AmigoOpciones';
 
-const Avatar = ({ nombre, estado, avatar }: { nombre: string; estado: string; avatar: string }) => (
-  <div className="flex items-center gap-3">
-    <img
-      src={avatar}
-      alt={nombre}
-      className="w-10 h-10 bg-indigo-900 rounded-full shadow-inner object-cover"
-    />
-    <div className="flex flex-col">
-      <span className="text-white text-sm font-semibold leading-tight">{nombre}</span>
-      <span className={`text-xs ${estado === 'online' ? 'text-green-400' : 
-        estado === 'invitado' ? 'text-yellow-400' : 'text-red-400'}`}>
-        {estado}
-      </span>
-    </div>
-  </div>
-);
+import React from 'react';
+import { Amigo } from '@/types/amigo';
 
-interface AmigoProps {
-  amigo: { nombre: string; estado: string; avatar: string };
+interface TarjetaAmigoProps {
+  amigo: Amigo;
 }
 
-const TarjetaAmigo = ({ amigo }: AmigoProps) => {
-  const [showOptions, setShowOptions] = useState(false);
-  
-  // Definimos el color de fondo basado en el estado
-  const backgroundColor = amigo.estado === 'invitado' ? 'bg-sky-500' : 'bg-[#121943] hover:bg-[#1c2661]';
-
+const TarjetaAmigo: React.FC<TarjetaAmigoProps> = ({ amigo }) => {
   return (
-    <div className="flex flex-col w-full">
-      {/* Contenedor principal para que las opciones aparezcan debajo */}
-      <div className={`flex flex-col p-2 rounded-md transition-all duration-300 ${backgroundColor}`}>
-        
-        {/* Fila donde se ven el nombre y el avatar del amigo */}
-        <div className="flex items-center justify-between w-full">
-          <Avatar nombre={amigo.nombre} estado={amigo.estado} avatar={amigo.avatar} />
-          {/* Boton para mostrar/ocultar opciones */}
-          <button 
-            onClick={() => setShowOptions(!showOptions)}
-            className={`text-white transition-transform duration-200 p-1 ${showOptions ? 'rotate-90' : 'rotate-0'}`}
-          >
-            ➔
-          </button>
-        </div>
+    <div className="flex items-center gap-3 p-2 hover:bg-white/10 rounded-lg transition-colors cursor-pointer group">
+      {/* Avatar circular */}
+      <div className="w-10 h-10 rounded-full border-2 border-white/20 overflow-hidden bg-gray-600 shrink-0">
+        <img 
+          src={amigo.avatar} 
+          alt={amigo.nombre} 
+          className="w-full h-full object-cover"
+          onError={(e) => (e.currentTarget.src = '/iconos/default_user.png')}
+        />
+      </div>
 
-        {/* Funcion que se ejecuta cuando se pulsa el boton de la flecha */}
-        {showOptions && (
-          <div className="mt-2 w-full">
-             <AmigoOpciones />
-          </div>
-        )}
+      {/* Nombre y Email */}
+      <div className="flex flex-col min-w-0">
+        <span className="text-white font-bold text-sm truncate group-hover:text-yellow-400 transition-colors">
+          {amigo.nombre}
+        </span>
+        <span className="text-gray-400 text-[10px] truncate">
+          {amigo.id}
+        </span>
       </div>
     </div>
   );
