@@ -3,7 +3,15 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_API_URL: http://20.250.148.59/api
     container_name: frontend_prod_ag
     restart: always
     ports:
       - "3001:3000"
+    networks:
+      - red_universal
+
+networks:
+  red_universal:
+    external: true
