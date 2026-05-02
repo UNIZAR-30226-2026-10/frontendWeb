@@ -4,14 +4,14 @@ import React, { useState } from 'react';
 import SlotSelectorSkin from '@/components/interfaz/SlotSelectorSkin';
 import SelectorSkin from '@/components/interfaz/SelectorSkin';
 import { usePerfil } from '@/hooks/usePerfil';
-import { useUser } from '@/context/userContext';
+import { useUser } from '@/context/userContext'; 
 
 export default function Perfil() {
   const { userEmail, logout } = useUser(); 
   const { perfil, isLoading, error, actualizarEquipamiento } = usePerfil(userEmail || "");
   const [tipoEdicion, setTipoEdicion] = useState<string | null>(null);
 
-    
+  // Mantenemos esto para que espere al localStorage un milisegundo sin romper la API
   if (!userEmail) return null;
 
   if (isLoading) {
@@ -47,15 +47,16 @@ export default function Perfil() {
       {/* Caja de Perfil Original */}
       <div className="relative bg-[#283F9F] border-4 border-yellow-400 rounded-[2rem] p-8 shadow-xl flex flex-col gap-6 max-w-5xl w-full">
         
+        {/* CORREGIDO: Estadísticas dinámicas desde el backend */}
         <div className="absolute top-6 right-8 text-2xl font-bold text-white">
-          35W/12L
+          {perfil.victorias}W/{perfil.derrotas}L
         </div>
 
         <div className="flex flex-row items-center gap-8 mt-4">
           <div className="relative shrink-0">
             <div className="w-40 h-40 bg-white rounded-full border-4 border-black flex items-center justify-center overflow-hidden">
               <img 
-                src={perfil.fotoPerfil} 
+                src={`/iconos/${perfil.fotoPerfil}`} // Asumiendo que guardáis las imágenes en public/iconos/
                 alt={perfil.username} 
                 className="w-full h-full object-cover" 
               />
@@ -79,7 +80,7 @@ export default function Perfil() {
           </div>
         </div>
 
-        {/* BOTÓN DE LOGOUT (Encima de la línea, visible y presente) */}
+        {/* BOTÓN DE LOGOUT */}
         <div className="flex justify-end -mb-4 pr-2">
           <button
             onClick={logout}
@@ -92,7 +93,7 @@ export default function Perfil() {
 
         {/* Separador y Cosméticos Originales */}
         <div className="mt-2 border-t border-white/20 pt-6">
-          <h2 className="text-2xl font-bold mb-6 text-white">Cosmeticos:</h2>
+          <h2 className="text-2xl font-bold mb-6 text-white">Cosméticos:</h2>
           
           <div className="flex flex-row flex-wrap justify-around gap-4">
             {perfil.cosmeticos.map((cosmetic) => (

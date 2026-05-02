@@ -5,13 +5,17 @@ import Link from "next/link";
 import { SlotMazo } from "@/components/interfaz/SlotMazo";
 import { useMazos } from "@/hooks/useMazos";
 import { BorrarMazoConfirmar } from "@/components/interfaz/BorrarMazoConfirmar";
+import { useUser } from "@/context/userContext";
 
 export default function MisMazosPage() {
-  const emailDelUsuario = "admin@juego.com"; 
-  const { decks, isLoading, handleDelete, handleSelect } = useMazos(emailDelUsuario);
+  const { userEmail } = useUser();
+  const { decks, isLoading, handleDelete, handleSelect } = useMazos(userEmail || "");
 
   // ESTADO PARA EL MAZO SELECCIONADO PARA BORRAR
   const [mazoABorrar, setMazoABorrar] = useState<{id: string, nombre: string} | null>(null);
+
+  // Mantenemos esto para que espere al localStorage un milisegundo sin romper la API
+  if (!userEmail) return null;
 
   const ejecutarBorrado = () => {
     if (mazoABorrar) {

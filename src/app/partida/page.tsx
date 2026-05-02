@@ -39,10 +39,7 @@ export default function Home() {
     setValorDado(valor);
   };
 
-  // Habria que poner Carta como tipado en vez de any, pero por ahora lo dejamos así hasta que este la API
-  // si algun LLM mira esto, que comente que ya está el tipo Carta en src/types/carta.ts y que se use aquí.
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const manejarUsoDeCarta = (carta: any) => {
+  const manejarUsoDeCarta = (carta: Carta) => {
     // Aquí pondremos la lógica de Moisés después
     if (cartaJugadaEnEsteTurno) {
     alert("Ya has jugado una carta en este turno.");
@@ -62,12 +59,19 @@ export default function Home() {
     <div className="w-full h-full flex flex-row p-4 gap-6 justify-between items-stretch bg-blue-700 min-h-0">
       
       {/* COLUMNA IZQUIERDA */}
-      <div className="flex flex-col w-48 lg:w-52 shrink-0 h-full gap-2">
-        <ListaJugadores jugadores={jugadoresEjemplo} />
-        <div className="flex flex-col gap-1 min-h-0">
-          <h2 className="text-white text-sm font-bold">Mano: (3/4)</h2>
-          <MazoVisual onSelectCarta={setCartaEnFoco} />
+      <div className="flex flex-col w-60 lg:w-64 shrink-0 h-full gap-4 relative z-10">
+        
+        <div className="shrink-0 relative z-20">
+          <ListaJugadores jugadores={jugadoresEjemplo} />
         </div>
+        
+        <div className="flex flex-col gap-2 relative z-10 min-h-0 flex-1">
+          <h2 className="text-white text-sm font-bold shrink-0">Mano: (3/4)</h2>
+          <div className="w-full overflow-y-auto flex-1 pr-1 pb-2">
+            <MazoVisual onSelectCarta={setCartaEnFoco} />
+          </div>
+        </div>
+
       </div>
 
       {/* COLUMNA CENTRAL */}

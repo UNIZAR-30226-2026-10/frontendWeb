@@ -1,5 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
+import { generarTableros, type SnapshotTablero } from "./tableros";
 
 // Definición de tipos
 type Ficha = {
@@ -9,21 +10,7 @@ type Ficha = {
   equipo: string;
 };
 
-//Tipos definidos en el backend
-type TipoCasilla = "Normal" | "Escalera" | "Serpiente" | "Bifurcacion" | "Meta";
 
-interface CasillaBackend {
-  esCurva: boolean;
-  rotacion: number;
-  efecto?: string;
-  tipo: TipoCasilla;
-  siguientes: number[];
-  saltoA?: number;
-}
-
-interface SnapshotTablero {
-  casillas: (CasillaBackend | undefined)[];
-}
 
 interface TableroProps {
   equipoActual: string;
@@ -40,6 +27,9 @@ const IMAGENES = {
   CURVA: "casilla_curva.png",
   META: "casilla_meta1.png",
   BIFURCACION: "casilla_bifurcacion.png",
+  EFECTO_MAS_CUATRO: "efecto_mas_cuatro.png",
+  EFECTO_AGUJERO: "agujero_de_serpiente.png",
+  EFECTO_MENOS_CUATRO: "efecto_menos_cuatro.png"
 };
 
 const sparseCasillasArray = new Array(100);
@@ -163,47 +153,46 @@ sparseCasillasArray[36] = { esCurva: false, rotacion: 90, tipo: "Escalera", sigu
 sparseCasillasArray[64] = { esCurva: true, rotacion: 270, tipo: "Escalera", siguientes: [75], saltoA: 84 };
 
 
-const MOCK_BACKEND_DATA: SnapshotTablero = {
-    casillas: sparseCasillasArray
-};
+const MOCK_BACKEND_DATA: SnapshotTablero = generarTableros(2);
 
 const obtenerDestinosTrasTirada = (casillaInicio: number, pasos: number): number[] => {
+  const indiceInicio = casillaInicio - 1;
   const destinos = new Set<number>();
 
-  const obtenerAnteriores = (casillaObjetivo: number): number[] => {
+  const obtenerAnteriores = (indiceObjetivo: number): number[] => {
     const anteriores: number[] = [];
     MOCK_BACKEND_DATA.casillas.forEach((casilla, index) => {
-      if (casilla?.siguientes.includes(casillaObjetivo)) {
-        anteriores.push(index + 1);
+      if (casilla?.siguientes.includes(indiceObjetivo)) {
+        anteriores.push(index);
       }
     });
     return anteriores;
   };
 
-  const obtenerReboteDesdeMeta = (casillaMeta: number, pasosSobrantes: number): number[] => {
-    if (pasosSobrantes === 0) return [casillaMeta];
-    const anteriores = obtenerAnteriores(casillaMeta);
-    if (anteriores.length === 0) return [casillaMeta];
+  const obtenerReboteDesdeMeta = (indiceMeta: number, pasosSobrantes: number): number[] => {
+    if (pasosSobrantes === 0) return [indiceMeta];
+    const anteriores = obtenerAnteriores(indiceMeta);
+    if (anteriores.length === 0) return [indiceMeta];
     return Array.from(new Set(anteriores.flatMap((anterior) => obtenerReboteDesdeMeta(anterior, pasosSobrantes - 1))));
   };
 
-  const recorrer = (casillaActual: number, pasosRestantes: number, direccion: "adelante" | "atras" = "adelante") => {
-    const datosCasilla = MOCK_BACKEND_DATA.casillas[casillaActual - 1];
+  const recorrer = (indiceActual: number, pasosRestantes: number, direccion: "adelante" | "atras" = "adelante") => {
+    const datosCasilla = MOCK_BACKEND_DATA.casillas[indiceActual];
     const siguientes = datosCasilla?.siguientes ?? [];
 
     if (pasosRestantes === 0) {
-      destinos.add(casillaActual);
+      destinos.add(indiceActual);
       return;
     }
 
     if (direccion === "atras") {
-      const anteriores = obtenerAnteriores(casillaActual);
+      const anteriores = obtenerAnteriores(indiceActual);
       anteriores.forEach((anterior) => recorrer(anterior, pasosRestantes - 1, "atras"));
       return;
     }
 
     if (datosCasilla?.tipo === "Meta") {
-      obtenerReboteDesdeMeta(casillaActual, pasosRestantes).forEach((destino) => destinos.add(destino));
+      obtenerReboteDesdeMeta(indiceActual, pasosRestantes).forEach((destino) => destinos.add(destino));
       return;
     }
 
@@ -220,10 +209,10 @@ const obtenerDestinosTrasTirada = (casillaInicio: number, pasos: number): number
     siguientes.forEach((siguiente) => recorrer(siguiente, pasosRestantes - 1));
   };
 
-  recorrer(casillaInicio, pasos);
-  destinos.delete(casillaInicio);
+  recorrer(indiceInicio, pasos);
+  destinos.delete(indiceInicio);
 
-  return Array.from(destinos);
+  return Array.from(destinos).map((indice) => indice + 1);
 };
 
 const esperar = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
@@ -251,13 +240,12 @@ export default function Tablero({ equipoActual, onAvanzarTurno, onResetTurno, va
   const saltosDinamicos: Record<number, number> = {};
   MOCK_BACKEND_DATA.casillas?.forEach((casilla, index) => {
     if (casilla && casilla.saltoA !== undefined) {
-      saltosDinamicos[index + 1] = casilla.saltoA;
+      saltosDinamicos[index + 1] = casilla.saltoA + 1;
     }
   });
 
   useEffect(() => {
     if (valorDadoExterno === null) {
-      // Comentario para dejar pasar el check de eslint
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setMovimientosPermitidos({});
       return;
@@ -283,14 +271,45 @@ export default function Tablero({ equipoActual, onAvanzarTurno, onResetTurno, va
     }
   };
 
+  const resolverCadenaSerpientes = (casillaInicio: number): number[] => {
+    const destinos: number[] = [];
+    const visitadas = new Set<number>();
+    let casillaActual = casillaInicio;
+
+    while (!visitadas.has(casillaActual)) {
+      visitadas.add(casillaActual);
+
+      const datosCasilla = MOCK_BACKEND_DATA.casillas[casillaActual - 1];
+      if (datosCasilla?.tipo !== "Serpiente" || datosCasilla.saltoA === undefined) {
+        break;
+      }
+
+      const casillaDestino = datosCasilla.saltoA + 1;
+      if (casillaDestino === casillaActual) {
+        break;
+      }
+
+      destinos.push(casillaDestino);
+      casillaActual = casillaDestino;
+    }
+
+    return destinos;
+  };
+
   const ejecutarMovimientoFinal = async (fichaId: string, base: number, final: number) => {
     setMovimientosPermitidos({});
     setFichaSeleccionada(null);
-    if (base !== final) {
-      setMisFichas(f => f.map(fi => fi.id === fichaId ? { ...fi, posicion: base } : fi));
-      await esperar(800);
+
+    const cadenaSerpientes = resolverCadenaSerpientes(final);
+    const trayectoria = base !== final ? [base, final, ...cadenaSerpientes] : [base, ...cadenaSerpientes];
+
+    for (let i = 0; i < trayectoria.length; i++) {
+      const destino = trayectoria[i];
+      setMisFichas((f) => f.map((fi) => (fi.id === fichaId ? { ...fi, posicion: destino } : fi)));
+      if (i < trayectoria.length - 1) {
+        await esperar(800);
+      }
     }
-    setMisFichas(f => f.map(fi => fi.id === fichaId ? { ...fi, posicion: final } : fi));
     
     onTirarDadoManual(null);
     onAvanzarTurno();
@@ -301,11 +320,15 @@ export default function Tablero({ equipoActual, onAvanzarTurno, onResetTurno, va
     const fichaActual = fichaSeleccionada;
     const datosCasilla = MOCK_BACKEND_DATA.casillas[casillaDestino - 1];
 
-    if (datosCasilla?.tipo === "Escalera" && datosCasilla.saltoA) {
-      setConfirmacionEscalera({ fichaId: fichaActual, casillaBase: casillaDestino, casillaSalto: datosCasilla.saltoA });
+    if (datosCasilla?.tipo === "Escalera" && datosCasilla.saltoA !== undefined) {
+      setConfirmacionEscalera({ fichaId: fichaActual, casillaBase: casillaDestino, casillaSalto: datosCasilla.saltoA + 1 });
       return; 
     }
-    ejecutarMovimientoFinal(fichaActual, casillaDestino, datosCasilla?.saltoA ?? casillaDestino);
+    ejecutarMovimientoFinal(
+      fichaActual,
+      casillaDestino,
+      datosCasilla?.saltoA !== undefined ? datosCasilla.saltoA + 1 : casillaDestino
+    );
   };
 
   const enviarFichasACasa = () => {
@@ -350,133 +373,115 @@ export default function Tablero({ equipoActual, onAvanzarTurno, onResetTurno, va
       const esEscalera = tipoInicio === "Escalera";
 
       if (esEscalera) {
-        // --- LÓGICA DE ESCALERA EN 3 PARTES (HORIZONTAL) CORREGIDA ---
         const flipScale = dx < 0 ? ' scaleY(-1)' : '';
-        
-        // 1. REDUCIMOS EL GROSOR. Prueba con '8%' o '10%' para que se vea natural.
         const grosorEscalera = '8%'; 
 
         return (
           <div
             key={`${inicio}-${fin}`}
-            className="absolute z-30 pointer-events-none drop-shadow-xl flex flex-row items-center justify-between"
+            className="absolute z-30 pointer-events-none drop-shadow-xl flex flex-row items-center justify-center"
             style={{
               left: `${start.x}%`,
               top: `${start.y}%`,
               width: `${longitud}%`,
-              height: grosorEscalera, // Grosor controlado
+              height: grosorEscalera,
               transformOrigin: '0% 50%',
               transform: `translateY(-50%) rotate(${angulo}deg)${flipScale}`
             }}
           >
-                <div
-  className="h-full flex-shrink-0 overflow-hidden"
->
-  <img
-    src="/escalera_base.png"
-    alt="Tope"
-    className="h-full max-w-none"
-    style={{
-      width: "100%",
-      height: "89%",
-      transform:"translateY(7%) translateX(8%)"
-    }}
-  />
-</div>
+            <div className="h-full flex-shrink-0 overflow-hidden relative z-20">
+              <img
+                src="/escalera_estratega_base.png"
+                alt="Base"
+                className="h-full w-auto block max-w-none"
+              />
+            </div>
             
-            {/* CUERPO (Peldaños) - Escala proporcional al alto y repite */}
             <div
-        className="h-full flex-1"
-        style={{
-          backgroundImage: "url(/escalera_cuerpo.png)",
-          backgroundRepeat: "repeat-x",
-          backgroundSize: "13px",
-          backgroundPosition: "left center",
-        }}
-      />
+              className="h-full flex-1 relative z-10"
+              style={{
+                backgroundImage: "url(/escalera_estratega_cuerpo.png)",
+                backgroundRepeat: "repeat-x",
+                backgroundSize: "auto 100%",
+                backgroundPosition: "left center",
+                transform: "scaleX(1.03)"
+              }}
+            />
             
-            {/* TOPE (Puntas) - Escalado a la altura y centrada */}
-                            <div
-  className="h-full flex-shrink-0 overflow-hidden"
->
-  <img
-    src="/escalera_tope.png"
-    alt="Tope"
-    className="h-full max-w-none"
-    style={{
-      width: "100%",
-      height: "89%",
-      transform:"translateY(7%) translateX(-7%)"
-    }}
-  />
-</div>
+            <div className="h-full flex-shrink-0 overflow-hidden relative z-20">
+              <img
+                src="/escalera_estratega_tope.png"
+                alt="Tope"
+                className="h-full w-auto block max-w-none"
+              />
+            </div>
           </div>
         );
       } else {
-   const flipScale = dx < 0 ? " scaleY(-1)" : "";
+        const flipScale = dx < 0 ? " scaleY(-1)" : "";
 
-  const altoSerpiente = "6.5%";
-  const anchoCabeza = "52px";
-  const anchoCola = "70px";
-  const patronCuerpo = "22px 44%";
+        const altoSerpiente = "6.5%";
+        const anchoCabeza = "52px";
+        const anchoCola = "70px";
+        const patronCuerpo = "22px 44%";
 
-  return (
-    <div
-      key={`${inicio}-${fin}`}
-      className="absolute z-30 pointer-events-none drop-shadow-xl flex flex-row items-center"
-      style={{
-        left: `${start.x}%`,
-        top: `${start.y}%`,
-        width: `${longitud}%`,
-        height: altoSerpiente,
-        transformOrigin: "0% 50%",
-        transform: `translateY(-50%) rotate(${angulo}deg)${flipScale}`,
-      }}
-    >
+        return (
+          <div
+            key={`${inicio}-${fin}`}
+            className="absolute z-30 pointer-events-none drop-shadow-xl flex flex-row items-center"
+            style={{
+              left: `${start.x}%`,
+              top: `${start.y}%`,
+              width: `${longitud}%`,
+              height: altoSerpiente,
+              transformOrigin: "0% 50%",
+              transform: `translateY(-50%) rotate(${angulo}deg)${flipScale}`,
+            }}
+          >
 
-      <div
-  className="h-full flex-shrink-0 overflow-hidden"
-  style={{ width: anchoCabeza }}
->
-  <img
-    src="/serpiente_futuro_cabeza.png"
-    alt="Cabeza"
-    className="h-full max-w-none"
-    style={{
-      width: "100%",
-      height: "50%",
-      transform:"translateY(46%) translateX(1%)"
-    }}
-  />
-</div>
+            <div
+              className="h-full flex-shrink-0 overflow-hidden"
+              style={{ width: anchoCabeza }}
+            >
+              <img
+                src="/serpiente_futuro_cabeza.png"
+                alt="Cabeza"
+                className="h-full max-w-none"
+                style={{
+                  width: "100%",
+                  height: "50%",
+                  transform:"translateY(46%) translateX(1%)"
+                }}
+              />
+            </div>
 
-      <div
-        className="h-full flex-1"
-        style={{
-          backgroundImage: "url(/serpiente_futuro_cuerpo.png)",
-          backgroundRepeat: "repeat-x",
-          backgroundSize: patronCuerpo,
-          backgroundPosition: "left center",
-        }}
-      />
+            <div
+              className="h-full flex-1"
+              style={{
+                backgroundImage: "url(/serpiente_futuro_cuerpo.png)",
+                backgroundRepeat: "repeat-x",
+                backgroundSize: patronCuerpo,
+                backgroundPosition: "left center",
+              }}
+            />
 
-      <div
-  className="h-full flex-shrink-0 overflow-hidden"
-  style={{ width: anchoCola }}
->
-  <img
-    src="/serpiente_futuro_cola.png"
-    alt="Cola"
-    className="h-full max-w-none"
-    style={{
-      width: "140%",
-      height: "113%",
-      transform: "translateX(-29%)translateY(-5%)",
-    }}
-  />
-</div>
-    </div>
-  );
+            <div
+              className="h-full flex-shrink-0 overflow-hidden"
+              style={{ width: anchoCola }}
+            >
+              <img
+                src="/serpiente_futuro_cola.png"
+                alt="Cola"
+                className="h-full max-w-none"
+                style={{
+                  width: "140%",
+                  height: "113%",
+                  transform: "translateX(-29%)translateY(-5%)",
+                }}
+              />
+            </div>
+          </div>
+        );
       }
     });
   };
@@ -521,12 +526,15 @@ export default function Tablero({ equipoActual, onAvanzarTurno, onResetTurno, va
           {casillas.map((num) => {
             const fichasAqui = misFichas.filter(f => f.posicion === num);
             const datosCasilla = MOCK_BACKEND_DATA.casillas?.[num - 1];
-            
+            const tieneEfectoMasCuatro = datosCasilla?.efecto?.trim() === "+4";
+            const tieneEfectoAgujero = datosCasilla?.efecto?.trim() === "Agujero de serpiente"; 
+            const tieneEfectoMenosCuatro = datosCasilla?.efecto?.trim() === "-4";
             let imagenSrc = IMAGENES.VACIA;
             if (datosCasilla) {
               if (datosCasilla.tipo === "Meta") imagenSrc = IMAGENES.META;
               else if (datosCasilla.tipo === "Bifurcacion") imagenSrc = IMAGENES.BIFURCACION;
               else if (datosCasilla.esCurva) imagenSrc = IMAGENES.CURVA;
+              else if (datosCasilla.tipo === "Vacía") imagenSrc = IMAGENES.VACIA;
               else imagenSrc = IMAGENES.NORMAL;
             }
 
@@ -548,6 +556,39 @@ export default function Tablero({ equipoActual, onAvanzarTurno, onResetTurno, va
             return (
               <div key={num} onClick={() => esDestinoPosible && moverFichaAlDestino(num)} className={`relative flex flex-wrap items-center justify-center gap-[2px] transition-all duration-300 ${esDestinoPosible ? "cursor-pointer ring-4 ring-green-300 ring-inset animate-pulse z-40 scale-105 shadow-[0_0_15px_rgba(34,197,94,0.8)]" : ""} ${!esDestinoPosible && fichaSeleccionada ? "opacity-30" : ""}`}>
                 <div className="absolute inset-0 w-full h-full z-0 pointer-events-none scale-105" style={{ backgroundImage: `url(${imagenSrc})`, backgroundSize: '100% 100%', backgroundPosition: 'center', transform: `rotate(${rotacion}deg)` }} />
+                {tieneEfectoMasCuatro && (
+                  <div
+                    className="absolute inset-0 z-10 pointer-events-none scale-105"
+                    style={{
+                      backgroundImage: `url(${IMAGENES.EFECTO_MAS_CUATRO})`,
+                      backgroundSize: "70% 70%",
+                      backgroundPosition: "center",
+                      backgroundRepeat: "no-repeat",
+                    }}
+                  />
+                )}
+                {tieneEfectoAgujero && (
+                  <div
+                    className="absolute inset-0 z-10 pointer-events-none scale-105"
+                    style={{
+                      backgroundImage: `url(${IMAGENES.EFECTO_AGUJERO})`,
+                      backgroundSize: "90% 100%",
+                      backgroundPosition: "center",
+                      backgroundRepeat: "no-repeat",
+                    }}
+                  />
+                )}
+                {tieneEfectoMenosCuatro && (
+                  <div
+                    className="absolute inset-0 z-10 pointer-events-none scale-105"
+                    style={{
+                      backgroundImage: `url(${IMAGENES.EFECTO_MENOS_CUATRO})`,
+                      backgroundSize: "100% 100%",
+                      backgroundPosition: "center",
+                      backgroundRepeat: "no-repeat",
+                    }}
+                  />
+                )}
                 <span className="absolute top-0.5 left-1 text-[8px] lg:text-[10px] font-bold text-white/50 z-10 pointer-events-none select-none">{num}</span>
                 <div className={`relative z-20 grid place-items-center gap-[1px] ${fichasAqui.length === 1 ? "w-[82%] grid-cols-1" : fichasAqui.length === 2 ? "w-[112%] grid-cols-2" : "w-[100%] grid-cols-2"}`}>
                   {fichasVisibles.map(ficha => {
@@ -555,12 +596,12 @@ export default function Tablero({ equipoActual, onAvanzarTurno, onResetTurno, va
                     const estaSeleccionada = fichaSeleccionada === ficha.id;
                     const cantidadEquipoEnCasilla = fichasAgrupadasPorEquipo[ficha.equipo]?.length ?? 1;
                     const imagenFicha = ficha.equipo === "miEquipo"
-                      ? "/Jugador_rojo.png"
+                      ? "/Jugador_rojo_explorador.png"
                       : ficha.equipo === "equipoAzul"
-                        ? "/Jugador_azul.png"
+                        ? "/Jugador_azul_explorador.png"
                         : ficha.equipo === "equipoVerde"
-                          ? "/Jugador_verde.png"
-                          : "/Jugador_amarillo.png";
+                          ? "/Jugador_verde_explorador.png"
+                          : "/Jugador_amarillo_explorador.png";
 
                     const esDeTuEquipo = ficha.equipo === equipoActual;
 
