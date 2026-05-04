@@ -2,6 +2,17 @@ import { PerfilUI } from '@/types/perfil';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
 
+export const generarUrlImagen = (nombre: string): string => {
+  if (!nombre || nombre.toLowerCase() === 'null' || nombre === '') return '/placeholder_cosmetico.png';
+  return `/${nombre.toLowerCase().replace(/\s+/g, '_')}.png`;
+};
+
+const normalizarNombre = (valor: any): string => {
+  if (typeof valor === 'string') return valor;
+  if (typeof valor === 'object' && valor !== null && valor.nombre) return valor.nombre;
+  return '';
+};
+
 export const PerfilService = {
   getPerfil: async (email: string): Promise<PerfilUI> => {
     const [perfilRes, iconsRes, pawnsRes, snakesRes, stairsRes] = await Promise.all([
@@ -24,22 +35,34 @@ export const PerfilService = {
     const stairsData = await stairsRes.json().catch(() => ({ escaleras: [] }));
 
     const todosMisCosmeticos = [
-      ...iconsData.iconos.map((nombre: string) => ({ id: nombre, tipo: 'Icono', nombre })),
-      ...pawnsData.fichas.map((nombre: string) => ({ id: nombre, tipo: 'Ficha', nombre })),
-      ...snakesData.serpientes.map((nombre: string) => ({ id: nombre, tipo: 'Serpiente', nombre })),
-      ...stairsData.escaleras.map((nombre: string) => ({ id: nombre, tipo: 'Escalera', nombre }))
+      ...iconsData.iconos.map((item: any) => {
+        const nombre = typeof item === 'string' ? item : item.nombre;
+        return { id: nombre, tipo: 'Icono', nombre, imagen: generarUrlImagen(nombre) };
+      }),
+      ...pawnsData.fichas.map((item: any) => {
+        const nombre = typeof item === 'string' ? item : item.nombre;
+        return { id: nombre, tipo: 'Skin_Ficha', nombre, imagen: generarUrlImagen(nombre) };
+      }),
+      ...snakesData.serpientes.map((item: any) => {
+        const nombre = typeof item === 'string' ? item : item.nombre;
+        return { id: nombre, tipo: 'Skin_Serpiente', nombre, imagen: generarUrlImagen(nombre) };
+      }),
+      ...stairsData.escaleras.map((item: any) => {
+        const nombre = typeof item === 'string' ? item : item.nombre;
+        return { id: nombre, tipo: 'Skin_Escalera', nombre, imagen: generarUrlImagen(nombre) };
+      })
     ];
 
     return {
       username: data.nombre,
-      fotoPerfil: data.iconoActual,
+      fotoPerfil: normalizarNombre(data.iconoActual),
       victorias: data.victorias,
       derrotas: data.derrotas,
       sep: data.SEP,
       cosmeticos: [
-        { id: 'ficha_actual', tipo: 'Ficha', nombre: data.FichaActual },
-        { id: 'serpiente_actual', tipo: 'Serpiente', nombre: data.SerpienteActual },
-        { id: 'escalera_actual', tipo: 'Escalera', nombre: data.EscaleraActual }
+        { id: 'ficha_actual', tipo: 'Skin_Ficha', nombre: normalizarNombre(data.FichaActual), imagen: generarUrlImagen(normalizarNombre(data.FichaActual)) },
+        { id: 'serpiente_actual', tipo: 'Skin_Serpiente', nombre: normalizarNombre(data.SerpienteActual), imagen: generarUrlImagen(normalizarNombre(data.SerpienteActual)) },
+        { id: 'escalera_actual', tipo: 'Skin_Escalera', nombre: normalizarNombre(data.EscaleraActual), imagen: generarUrlImagen(normalizarNombre(data.EscaleraActual)) }
       ],
       todosMisCosmeticos 
     };
@@ -54,15 +77,15 @@ export const PerfilService = {
         endpoint = 'icon';
         bodyData = { icon: item.nombre };
         break;
-      case 'Ficha':
+      case 'Skin_Ficha':
         endpoint = 'pawn';
         bodyData = { pawn: item.nombre };
         break;
-      case 'Serpiente':
+      case 'Skin_Serpiente':
         endpoint = 'snake';
         bodyData = { snake: item.nombre };
         break;
-      case 'Escalera':
+      case 'Skin_Escalera':
         endpoint = 'stair';
         bodyData = { stair: item.nombre };
         break;

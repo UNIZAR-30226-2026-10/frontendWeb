@@ -79,7 +79,7 @@ export default function Perfil() {
               className="w-40 h-40 bg-white rounded-full border-4 border-black flex items-center justify-center overflow-hidden cursor-pointer hover:border-amber-400 hover:scale-105 transition-all group relative"
             >
               <img 
-                src={`/iconos/${perfil.fotoPerfil}`} 
+                src={`/${perfil.fotoPerfil.toLowerCase().replace(/\s+/g, '_')}.png`} 
                 alt={perfil.username} 
                 className="w-full h-full object-cover" 
               />
@@ -133,6 +133,7 @@ export default function Perfil() {
               <SlotSelectorSkin 
                 key={cosmetic.tipo}
                 titulo={cosmetic.tipo} 
+                imagenUrl={cosmetic.imagen}
                 imagenPlaceholder={cosmetic.nombre} 
                 onClick={() => setTipoEdicion(cosmetic.tipo)}
               />

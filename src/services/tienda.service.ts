@@ -4,7 +4,7 @@ import { LogrosService } from './logros.service'; // Reutilizamos para el SEP
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
 
-const SECCIONES_ORDEN: tipoSkin[] = ['escalera', 'serpiente', 'icono', 'ficha'];
+const SECCIONES_ORDEN: tipoSkin[] = ['Skin_Escalera', 'Skin_Serpiente', 'Icono', 'Skin_Ficha'];
 
 export const TiendaService = {
   getTienda: async (email: string): Promise<TiendaUI> => {
@@ -20,28 +20,28 @@ export const TiendaService = {
       const cosmeticos: CosmeticoAPI[] = await storeRes.json();
       
       const cosmeticosPorTipo: Record<tipoSkin, ItemTienda[]> = {
-        escalera: [],
-        serpiente: [],
-        icono: [],
-        ficha: [],
+        'Skin_Escalera': [],
+        'Skin_Serpiente': [],
+        'Icono': [],
+        'Skin_Ficha': [],
       };
 
       cosmeticos.forEach(cosmetico => {
         // Mejoramos la detección: si el nombre no ayuda, el back debería devolver el tipo
         // Por ahora, usamos tu lógica de detección por nombre
-        let tipo: tipoSkin = 'icono';
+        let tipo: tipoSkin = 'Icono';
         const nombreLower = cosmetico.nomCosmetico.toLowerCase();
         
-        if (nombreLower.includes('escalera')) tipo = 'escalera';
-        else if (nombreLower.includes('serpiente')) tipo = 'serpiente';
-        else if (nombreLower.includes('ficha')) tipo = 'ficha';
+        if (nombreLower.includes('escalera')) tipo = 'Skin_Escalera';
+        else if (nombreLower.includes('serpiente')) tipo = 'Skin_Serpiente';
+        else if (nombreLower.includes('ficha')) tipo = 'Skin_Ficha';
 
         cosmeticosPorTipo[tipo].push({
           nombre: cosmetico.nomCosmetico,
           tipo,
           precio: cosmetico.precio,
           // Corregimos la ruta de imagen para que sea consistente
-          imagen: `/cosmeticos/${cosmetico.nomCosmetico.toLowerCase().replace(/\s+/g, '_')}.png`,
+          imagen: `/${cosmetico.nomCosmetico.toLowerCase().replace(/\s+/g, '_')}.png`,
           comprado: cosmetico.loTiene,
         });
       });
