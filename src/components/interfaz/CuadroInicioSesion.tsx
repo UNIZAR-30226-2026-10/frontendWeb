@@ -1,6 +1,6 @@
 'use client';
 
-import Link from "next/link"; // Ojo: La importación correcta en Next es 'next/link'
+import Link from "next/link"; 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { CuentaService } from '@/services/cuentas.service';
@@ -13,7 +13,7 @@ export default function CuadroInicioSesion() {
   const [cargando, setCargando] = useState(false);
   
   const router = useRouter();
-  const { setUserEmail } = useUser();
+  const { setUser } = useUser();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -21,14 +21,14 @@ export default function CuadroInicioSesion() {
     setCargando(true);
 
     try {
-      await CuentaService.login(email, password);
-      setUserEmail(email);
+      const loginData = await CuentaService.login(email, password);
+      // Gracias a la interfaz limpia del servicio, esto ya no da error de TypeScript
+      setUser(loginData.email, loginData.username);
       router.push('/juego'); 
     } catch (err) {
       if (err instanceof Error) {
         setError(err.message || 'Error al iniciar sesión');
-      }
-      else {
+      } else {
         setError('Error al iniciar sesión');
       }
     } finally {

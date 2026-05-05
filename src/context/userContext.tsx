@@ -5,27 +5,35 @@ import { CuentaService } from '@/services/cuentas.service';
 
 interface userContextType {
   userEmail: string | null;
-  setUserEmail: (email: string) => void;
+  username: string | null;
+  setUser: (email: string, username: string) => void; 
   logout: () => void;
 }
 
-const userContext = createContext<userContextType | undefined>(undefined);
+export const userContext = createContext<userContextType | undefined>(undefined);
 
 export function UserProvider({ children }: { children: ReactNode }) {
   const [userEmail, setUserEmailState] = useState<string | null>(null);
+  const [username, setUsernameState] = useState<string | null>(null);
   const [isCargando, setIsCargando] = useState(true);
 
   useEffect(() => {
     const intentarAutoLogin = async () => {
       try {
-        // Intentamos validar la cookie en el backend
         const data = await CuentaService.cookieLogin();
         setUserEmailState(data.email);
+        setUsernameState(data.username); 
+        
         localStorage.setItem('userEmail', data.email);
+        localStorage.setItem('username', data.username); 
       } catch (error) {
-        // Si falla (no hay cookie o expiró), miramos si hay algo en localStorage por si acaso
         const emailGuardado = localStorage.getItem('userEmail');
-        if (emailGuardado) setUserEmailState(emailGuardado);
+        const usernameGuardado = localStorage.getItem('username'); 
+        
+        if (emailGuardado && usernameGuardado) {
+            setUserEmailState(emailGuardado);
+            setUsernameState(usernameGuardado);
+        }
       } finally {
         setIsCargando(false);
       }
@@ -34,28 +42,29 @@ export function UserProvider({ children }: { children: ReactNode }) {
     intentarAutoLogin();
   }, []);
 
-  const setUserEmail = (email: string) => {
+  const setUser = (email: string, newUsername: string) => {
     setUserEmailState(email);
+    setUsernameState(newUsername);
     localStorage.setItem('userEmail', email);
+    localStorage.setItem('username', newUsername);
   };
 
   const logout = async () => {
     try {
-      // 1. Avisamos al backend para que borre las cookies 'session' y 'autologin'
       await CuentaService.logout();
     } catch (error) {
       console.error("Error cerrando sesión en servidor, limpiando local de todos modos", error);
     } finally {
-      // 2. Limpiamos rastro local
       setUserEmailState(null);
+      setUsernameState(null); 
       localStorage.removeItem('userEmail');
-      // 3. Redirigimos a la raíz (donde está el login)
+      localStorage.removeItem('username'); 
       window.location.href = "/"; 
     }
   };
 
   return (
-    <userContext.Provider value={{ userEmail, setUserEmail, logout }}>
+    <userContext.Provider value={{ userEmail, username, setUser, logout }}>
       {!isCargando && children}
     </userContext.Provider>
   );

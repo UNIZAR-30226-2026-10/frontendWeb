@@ -16,14 +16,6 @@ const formatearTipoSeccion = (tipo: tipoSkin): string => {
   return mapa[tipo] || tipo;
 };
 
-const formatearNombreItem = (nombre: string): string => {
-  // Convierte "ESCALERA_JUNGLA" a "Escalera Jungla"
-  return nombre
-    .split('_')
-    .map(palabra => palabra.charAt(0).toUpperCase() + palabra.slice(1).toLowerCase())
-    .join(' ');
-};
-
 export const TiendaService = {
   getTienda: async (email: string): Promise<TiendaUI> => {
     try {
@@ -55,7 +47,7 @@ export const TiendaService = {
         else if (nombreLower.includes('ficha')) tipo = 'Skin_Ficha';
 
         cosmeticosPorTipo[tipo].push({
-          nombre: formatearNombreItem(cosmetico.nomCosmetico),
+          nombre: cosmetico.nomCosmetico,
           tipo,
           precio: cosmetico.precio,
           // Corregimos la ruta de imagen para que sea consistente

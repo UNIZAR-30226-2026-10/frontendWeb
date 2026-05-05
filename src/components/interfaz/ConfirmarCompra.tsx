@@ -2,6 +2,7 @@
 
 import React from 'react';
 import ItemTienda from "@/types/itemTienda";
+import { formatearNombreItem } from "@/hooks/useTienda";
 
 interface ConfirmarCompraProps {
   item: ItemTienda | null;
@@ -43,7 +44,7 @@ const ConfirmarCompra: React.FC<ConfirmarCompraProps> = ({ item, onClose, onConf
           <div className="w-full md:w-1/2 flex flex-col justify-between space-y-6">
             <div>
               <h2 className="text-3xl font-bold text-white uppercase tracking-tight leading-none">
-                {item.nombre}
+                {formatearNombreItem(item.nombre)}
               </h2>
               <p className="text-amber-400 text-sm font-bold mt-2 uppercase tracking-widest">Recompensa Exclusiva</p>
             </div>

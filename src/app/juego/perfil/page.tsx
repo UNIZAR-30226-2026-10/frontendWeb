@@ -6,7 +6,7 @@ import SelectorSkin from '@/components/interfaz/SelectorSkin';
 import SelectorNombre from '@/components/interfaz/CajaCambiarNombre'; // Asegúrate de crearlo
 import { usePerfil } from '@/hooks/usePerfil';
 import { useUser } from '@/context/userContext'; 
-
+import { formatearNombreItem } from '@/hooks/useTienda';
 const mostrartipo = (tipo: string): string => {
   const mapa: { [key: string]: string } = {
     'Icono': 'Icono',
@@ -142,7 +142,7 @@ export default function Perfil() {
                 key={cosmetic.tipo}
                 titulo={mostrartipo(cosmetic.tipo)} 
                 imagenUrl={cosmetic.imagen}
-                imagenPlaceholder={cosmetic.nombre} 
+                imagenPlaceholder={formatearNombreItem(cosmetic.nombre)} 
                 onClick={() => setTipoEdicion(cosmetic.tipo)}
               />
             ))}

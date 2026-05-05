@@ -6,9 +6,16 @@ interface HuecoJugadorProps {
     esLider?: boolean;
     nomJugador?: string;
     iconoJugador?: string;
+    onAgregarBot?: () => void;
 }
 
-const HuecoJugador: React.FC<HuecoJugadorProps> = ({estaOcupado,esLider,nomJugador,iconoJugador}) => {
+const HuecoJugador: React.FC<HuecoJugadorProps> = ({
+    estaOcupado,
+    esLider,
+    nomJugador,
+    iconoJugador,
+    onAgregarBot
+}) => {
     
     const [hayBot,setHayBot] = useState(false);
     if(hayBot) {
@@ -30,8 +37,14 @@ const HuecoJugador: React.FC<HuecoJugadorProps> = ({estaOcupado,esLider,nomJugad
     if(!estaOcupado) {
         return (
             <button
-                className="bg-[#eab308] w-60 h-60 rounded-4xl flex flex-col items-center justify-center text-white text-3xl font-bold font-sans"
-                onClick={() => setHayBot(true)}
+                className="bg-[#eab308] w-60 h-60 rounded-4xl flex flex-col items-center justify-center text-white text-3xl font-bold font-sans hover:bg-[#d4a107] transition-colors"
+                onClick={() => {
+                    if (onAgregarBot) {
+                        onAgregarBot();
+                    } else {
+                        setHayBot(true);
+                    }
+                }}
             >
                 <div>+</div>
                 <span>Añadir Bot</span>

@@ -5,6 +5,14 @@ import { TiendaUI } from '@/types/tienda';
 import ItemTienda from '@/types/itemTienda';
 import { TiendaService } from '@/services/tienda.service';
 
+export const formatearNombreItem = (nombre: string): string => {
+  // Convierte "ESCALERA_JUNGLA" a "Escalera Jungla"
+  return nombre
+    .split('_')
+    .map(palabra => palabra.charAt(0).toUpperCase() + palabra.slice(1).toLowerCase())
+    .join(' ');
+};
+
 export const useTienda = (email: string) => {
   const [tienda, setTienda] = useState<TiendaUI | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -40,7 +48,7 @@ export const useTienda = (email: string) => {
 
       await TiendaService.comprarCosmetico(email, item.nombre);
 
-      setMensajeCompra({ tipo: 'exito', texto: `¡${item.nombre} comprado exitosamente!` });
+      setMensajeCompra({ tipo: 'exito', texto: `¡${formatearNombreItem(item.nombre)} comprado exitosamente!` });
 
       // Refrescar la tienda después de 1.5 segundos
       setTimeout(() => {

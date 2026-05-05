@@ -1,6 +1,7 @@
 'use client';
 
 import ItemTienda from "@/types/itemTienda";
+import { formatearNombreItem } from "@/hooks/useTienda";
 import React from 'react';
 
 interface SlotTiendaProps {
@@ -36,7 +37,7 @@ const SlotTienda: React.FC<SlotTiendaProps> = ({ item, onSelect, isComprado = it
       </div>
       
       <h2 className="text-white text-center text-sm md:text-base mb-2 whitespace-normal break-words line-clamp-3 uppercase">
-        {item.nombre}
+        {formatearNombreItem(item.nombre)}
       </h2>
       
       <div className="mt-auto bg-black/30 w-full py-1 rounded-lg border border-white/10 flex justify-center items-center gap-2">
