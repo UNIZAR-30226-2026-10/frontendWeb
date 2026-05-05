@@ -26,11 +26,15 @@ const SelectorSkin: React.FC<Props> = ({ titulo, items, onClose, onSelect, skinS
               key={skin.id}
               onClick={() => onSelect(skin)}
               className={`cursor-pointer rounded-2xl p-4 border-4 transition-all flex flex-col items-center gap-3 ${
-                skin.id === skinSeleccionadaId ? "border-yellow-400 bg-yellow-400/10" : "border-transparent bg-black/20 hover:bg-black/40"
+                skin.nombre === skinSeleccionadaId ? "border-yellow-400 bg-yellow-400/10" : "border-transparent bg-black/20 hover:bg-black/40"
               }`}
             >
-              <div className="w-full aspect-square bg-white rounded-xl flex items-center justify-center text-gray-200 text-[10px] font-bold uppercase">
-                Imagen
+              <div className="w-full aspect-square bg-white rounded-xl flex items-center justify-center text-gray-200 text-[10px] font-bold uppercase overflow-hidden">
+                {skin.imagen ? (
+                  <img src={skin.imagen} alt={skin.nombre} className="w-full h-full object-contain p-2" />
+                ) : (
+                  <span>Imagen</span>
+                )}
               </div>
               <p className="font-bold text-xs text-center text-white uppercase">{skin.nombre}</p>
             </div>

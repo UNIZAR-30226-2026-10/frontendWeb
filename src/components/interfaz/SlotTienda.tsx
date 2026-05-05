@@ -32,14 +32,10 @@ const SlotTienda: React.FC<SlotTiendaProps> = ({ item, onSelect, isComprado = it
           src={item.imagen} 
           alt={item.nombre} 
           className={`w-full h-full object-contain p-2 ${isComprado ? 'grayscale opacity-50' : ''}`}
-          onError={(e) => {
-            // Fallback por si no existe la imagen
-            (e.target as HTMLImageElement).src = '/iconos/placeholder_cosmetico.png';
-          }}
         />
       </div>
       
-      <h2 className="text-white text-center text-sm md:text-base mb-2 line-clamp-2 uppercase">
+      <h2 className="text-white text-center text-sm md:text-base mb-2 whitespace-normal break-words line-clamp-3 uppercase">
         {item.nombre}
       </h2>
       

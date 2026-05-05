@@ -25,9 +25,6 @@ const SlotSelectorSkin: React.FC<SlotSelectorSkinProps> = ({ titulo, imagenUrl, 
             src={imagenUrl} 
             alt={titulo} 
             className="w-full h-full object-contain" 
-            onError={(e) => {
-              (e.target as HTMLImageElement).src = '/iconos/placeholder_cosmetico.png';
-            }}
           />
         ) : (
           <span className="text-gray-400 text-sm font-bold text-center px-2">

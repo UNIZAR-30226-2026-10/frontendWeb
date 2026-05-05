@@ -6,6 +6,24 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
 
 const SECCIONES_ORDEN: tipoSkin[] = ['Skin_Escalera', 'Skin_Serpiente', 'Icono', 'Skin_Ficha'];
 
+const formatearTipoSeccion = (tipo: tipoSkin): string => {
+  const mapa: { [key: string]: string } = {
+    'Skin_Escalera': 'ESCALERAS',
+    'Skin_Serpiente': 'SERPIENTES',
+    'Icono': 'ICONOS',
+    'Skin_Ficha': 'FICHAS'
+  };
+  return mapa[tipo] || tipo;
+};
+
+const formatearNombreItem = (nombre: string): string => {
+  // Convierte "ESCALERA_JUNGLA" a "Escalera Jungla"
+  return nombre
+    .split('_')
+    .map(palabra => palabra.charAt(0).toUpperCase() + palabra.slice(1).toLowerCase())
+    .join(' ');
+};
+
 export const TiendaService = {
   getTienda: async (email: string): Promise<TiendaUI> => {
     try {
@@ -37,7 +55,7 @@ export const TiendaService = {
         else if (nombreLower.includes('ficha')) tipo = 'Skin_Ficha';
 
         cosmeticosPorTipo[tipo].push({
-          nombre: cosmetico.nomCosmetico,
+          nombre: formatearNombreItem(cosmetico.nomCosmetico),
           tipo,
           precio: cosmetico.precio,
           // Corregimos la ruta de imagen para que sea consistente
@@ -47,7 +65,7 @@ export const TiendaService = {
       });
 
       const secciones: SeccionTienda[] = SECCIONES_ORDEN.map(tipo => ({
-        nombre: tipo.charAt(0).toUpperCase() + tipo.slice(1) + "s",
+        nombre: formatearTipoSeccion(tipo),
         items: cosmeticosPorTipo[tipo],
       }));
 

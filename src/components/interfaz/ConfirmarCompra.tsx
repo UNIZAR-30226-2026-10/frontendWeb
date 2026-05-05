@@ -14,16 +14,16 @@ const ConfirmarCompra: React.FC<ConfirmarCompraProps> = ({ item, onClose, onConf
   if (!item) return null;
 
   return (
-    /* CAMBIO CLAVE: absolute en lugar de fixed e inset-0 */
-    <div className="absolute inset-0 z-[100] flex items-center justify-center p-4">
+    /* CAMBIO CLAVE: fixed para que aparezca en pantalla */
+     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
       
-      {/* Fondo oscuro: también absolute para que no se salga del main */}
+      {/* Fondo oscuro: fixed para que aparezca en pantalla */}
       <div 
-        className="absolute inset-0 bg-black/70 backdrop-blur-sm" 
+         className="fixed inset-0 bg-black/70 backdrop-blur-sm" 
         onClick={() => !isLoading && onClose()} 
       />
 
-      {/* Contenedor del Modal: Igual que antes pero relativo al absolute */}
+      {/* Contenedor del Modal */}
       <div className="relative bg-[#283F9F] border-4 border-amber-400 rounded-3xl p-6 md:p-8 max-w-2xl w-full shadow-2xl animate-in zoom-in-95 duration-200">
         
         <button 
@@ -37,7 +37,7 @@ const ConfirmarCompra: React.FC<ConfirmarCompraProps> = ({ item, onClose, onConf
         <div className="flex flex-col md:flex-row gap-8 items-center">
           
           <div className="w-full md:w-1/2 aspect-square bg-white/10 rounded-2xl border-2 border-white/20 flex items-center justify-center overflow-hidden">
-             <div className="text-6xl">🎭</div> 
+              <img src={item.imagen} alt={item.nombre} className="w-full h-full object-contain p-4" />
           </div>
 
           <div className="w-full md:w-1/2 flex flex-col justify-between space-y-6">
