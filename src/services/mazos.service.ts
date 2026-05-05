@@ -1,120 +1,104 @@
 import { Mazo } from '@/types/mazo';
-import Carta from '@/types/carta';
+import { Carta } from '@/types/carta';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
-
-// Interfaces para coincidir exactamente con lo que devuelve Prisma en el Backend
-interface CartaBackend {
-  nombre: string;
-  tipo: string;
-  calidad: string; // En el back es 'calidad', en el front 'rareza'
-  descripcion: string;
-  efecto?: string;
-}
-
-interface BarajaCartaBackend {
-  cartaNombre: string;
-  carta: CartaBackend;
-}
-
-interface BarajaBackend {
-  nombre: string;
-  usuarioEmail: string;
-  barajaCartas: BarajaCartaBackend[];
-  usadaEn: { partidaID: string }[];
-}
+// Mantenemos el 3000 para las llamadas a la API
+const API_URL = 'http://localhost:3000/api'; 
 
 const generarUrlImagen = (nombre: string): string => {
-  return `/Cartas/${nombre.replace(/\s+/g, '_').toLowerCase()}.png`;
-};
-
-// Función de mapeo para transformar lo que viene del servidor a lo que usa tu UI
-const mapearMazo = (mazoCrudo: BarajaBackend): Mazo => {
-  const cartasCompletas: Carta[] = mazoCrudo.barajaCartas.map((bc) => ({
-    nombre: bc.carta.nombre,
-    tipo: bc.carta.tipo,
-    rareza: bc.carta.calidad, 
-    descripcion: bc.carta.descripcion,
-    efecto: bc.carta.efecto || '',
-    imagen: generarUrlImagen(bc.carta.nombre),
-  }));
-
-  return {
-    id: mazoCrudo.nombre, // Usamos el nombre como ID único según tu esquema
-    deck_name: mazoCrudo.nombre,
-    cards: cartasCompletas,
-    is_in_use: mazoCrudo.usadaEn && mazoCrudo.usadaEn.length > 0,
-  };
+  // Como las imágenes las tienes TÚ en el frontend (carpeta public/Cartas)
+  // Next.js accede a ellas directamente desde la raíz.
+  // IMPORTANTE: Asegúrate de que el nombre del archivo coincida (ej: "Moisés.png" o "moises.png")
+  // Lo más común es: minúsculas y espacios por guiones bajos.
+  const nombreArchivo = nombre.toLowerCase().replace(/\s+/g, '_');
+  return `/Cartas/${nombreArchivo}.png`;
 };
 
 export const MazoService = {
-  // GET /api/users/:email/decks
+  // GET: Obtener mazos
   getMazos: async (email: string): Promise<Mazo[]> => {
-    const res = await fetch(`${API_URL}/users/${email}/decks`, {
+    const res = await fetch(`${API_URL}/users/${encodeURIComponent(email)}/decks`, {
       credentials: 'include',
     });
     
     if (!res.ok) throw new Error('Error al obtener los mazos');
 
     const data = await res.json(); 
-    // CORRECCIÓN: Accedemos a la propiedad .decks que envía tu backend
-    const mazosCrudos: BarajaBackend[] = data.decks || [];
-    return mazosCrudos.map(mapearMazo);
+    
+    // El backend devuelve el objeto { decks: [...] } y dentro de cada mazo el array .cartas
+    return (data.decks || []).map((m: any) => ({
+      id: m.nombre,
+      nombre: m.nombre,
+      is_in_use: false, 
+      cartas: (m.cartas || []).map((c: any) => ({
+        ...c,
+        imagen: generarUrlImagen(c.nombre),
+        efecto: ''
+      }))
+    }));
   },
 
-  getMazoById: async (email: string, deckId: string): Promise<Mazo> => {
-    // Obtenemos todos y buscamos el que coincida
-    const mazos = await MazoService.getMazos(email);
-    const mazo = mazos.find(m => m.id === deckId);
-  
-    if (!mazo) throw new Error('Mazo no encontrado');
-    return mazo;
-  },
-
-  // DELETE /api/users/:email/decks/:deck-id
+  // DELETE: Borrar mazo
   deleteMazo: async (email: string, id: string): Promise<boolean> => {
-    const response = await fetch(`${API_URL}/users/${email}/decks/${id}`, {
+    const emailSafe = encodeURIComponent(email);
+    const idSafe = encodeURIComponent(id);
+
+    const url = `${API_URL}/users/${emailSafe}/decks/${idSafe}`;
+    const response = await fetch(url, {
       method: 'DELETE',
       credentials: 'include',
     });
 
     if (!response.ok) {
       const err = await response.json().catch(() => ({}));
-      // Captura el mensaje "No se puede eliminar la baraja porque esta siendo usada..."
-      throw new Error(err.error || 'No se pudo eliminar el mazo');
+      throw new Error(err.error || 'Error al eliminar: Probablemente el mazo está en uso');
     }
     return true;
   },
 
-  updateMazo: async (email: string, id: string, name: string, cards: Carta[]) => {
-    // Si el nombre (id) ha cambiado, el backend lo tratará como uno nuevo.
-    // Una estrategia común es borrar el antiguo y crear el nuevo si el nombre cambia,
-    // o simplemente enviar los nuevos datos si tu backend soporta PUT /decks/:id
-    
-    // Por ahora, para que tu front funcione, implementamos la lógica de borrado + creación
-    // que es la más segura con tu esquema actual de "entidad débil":
-    if (id !== name) {
-      await MazoService.deleteMazo(email, id);
-    }
-    return await MazoService.createMazo(email, name, cards);
-  },
+  // POST: Crear mazo
+  createMazo: async (email: string, nombre: string, cartas: Carta[]) => {
+    // 1. FILTRO DE REPETIDAS: Obligatorio porque el compañero puso una PK en la tabla BarajaCarta
+    const cartasUnicas = Array.from(new Map(cartas.map(c => [c.nombre, c])).values());
 
-  // POST /api/users/:email/decks
-  createMazo: async (email: string, name: string, cards: Carta[]) => {
-    const response = await fetch(`${API_URL}/users/${email}/decks`, {
+    const payload = { 
+      nombre: nombre, 
+      cartas: cartasUnicas.map(c => ({
+        nombre: c.nombre, // Nombre exacto que vino del catálogo (Ej: "Moisés")
+        descripcion: c.descripcion,
+        // Limpiamos ENUMS (Quitar tildes y Capitalizar: Épica -> Epica)
+        calidad: c.calidad.normalize("NFD").replace(/[\u0300-\u036f]/g, "").charAt(0).toUpperCase() + c.calidad.slice(1).toLowerCase(),
+        tipo: c.tipo.charAt(0).toUpperCase() + c.tipo.slice(1).toLowerCase()
+      }))
+    };
+
+    const response = await fetch(`${API_URL}/users/${encodeURIComponent(email)}/decks`, {
       method: 'POST',
       credentials: 'include',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ 
-        nombre: name, 
-        cartas: cards 
-      }),
+      body: JSON.stringify(payload),
     });
 
     if (!response.ok) {
       const err = await response.json().catch(() => ({}));
-      throw new Error(err.error || 'Error al crear el mazo');
+      throw new Error(err.error || 'Error al crear el mazo en el servidor');
     }
     return true;
+  },
+
+  getMazoById: async (email: string, deckId: string): Promise<Mazo> => {
+    const mazos = await MazoService.getMazos(email);
+    const mazo = mazos.find(m => m.id === deckId);
+    if (!mazo) throw new Error('Mazo no encontrado');
+    return mazo;
+  },
+
+  updateMazo: async (email: string, id: string, name: string, cards: Carta[]) => {
+    // Borramos el existente y creamos el nuevo (no hay PUT en el back)
+    try {
+        await MazoService.deleteMazo(email, id);
+    } catch (e) {
+        console.warn("No se pudo borrar el mazo anterior, procediendo a crear...");
+    }
+    return await MazoService.createMazo(email, name, cards);
   }
-};
+};  

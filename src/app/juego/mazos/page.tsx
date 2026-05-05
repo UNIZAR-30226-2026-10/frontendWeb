@@ -9,7 +9,6 @@ import { useUser } from "@/context/userContext";
 
 export default function MisMazosPage() {
   const { userEmail } = useUser();
-  // Eliminamos handleSelect ya que no se selecciona nada aquí
   const { decks, isLoading, handleDelete } = useMazos(userEmail || "");
 
   const [mazoABorrar, setMazoABorrar] = useState<{id: string, nombre: string} | null>(null);
@@ -62,18 +61,28 @@ export default function MisMazosPage() {
           <p className="text-xl">No tienes ningún mazo creado todavía.</p>
         </div>
       ) : (
-        <ul className="flex flex-col gap-4">
+        <ul className="flex flex-col gap-6"> {/* Aumentado el gap para que quepa la info extra */}
           {decks.map((mazo) => (
-            <SlotMazo 
-              key={mazo.id}
-              id={mazo.id}
-              nombreMazo={mazo.deck_name} 
-              previewCartas={mazo.cards} 
-              // Forzamos false para que ninguno salga como "Seleccionado"
-              mazoEnUso={false}
-              onDelete={(id) => setMazoABorrar({ id, nombre: mazo.deck_name })} 
-              onEdit={(id) => window.location.href = `/juego/mazos/editarmazos?id=${id}`}
-            />
+            <li key={mazo.id} className="flex flex-col gap-2 bg-white/5 p-4 rounded-xl border border-white/10">
+              <SlotMazo 
+                id={mazo.id}
+                nombreMazo={mazo.nombre} 
+                previewCartas={mazo.cartas} 
+                mazoEnUso={false}
+                onDelete={(id) => setMazoABorrar({ id, nombre: mazo.nombre })} 
+                onEdit={(id) => window.location.href = `/juego/mazos/editarmazos?id=${id}`}
+              />
+              
+              {/* --- INFO EXTRA DE DEPURACIÓN --- */}
+              <div className="px-4 py-2 bg-black/30 rounded-lg">
+                <p className="text-xs text-yellow-500 font-bold uppercase mb-1">Contenido del mazo ({mazo.cartas.length} cartas):</p>
+                <p className="text-sm text-gray-300 italic">
+                  {mazo.cartas.length > 0 
+                    ? mazo.cartas.map(c => c.nombre).join(", ") 
+                    : "Este mazo está vacío (error al guardar cartas)"}
+                </p>
+              </div>
+            </li>
           ))}
         </ul>
       )}
