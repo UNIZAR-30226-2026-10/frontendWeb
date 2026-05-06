@@ -5,13 +5,10 @@ import { Carta } from '@/types/carta';
 const API_URL = 'http://localhost:3000/api'; 
 
 const generarUrlImagen = (nombre: string): string => {
-  // Como las imágenes las tienes TÚ en el frontend (carpeta public/Cartas)
-  // Next.js accede a ellas directamente desde la raíz.
-  // IMPORTANTE: Asegúrate de que el nombre del archivo coincida (ej: "Moisés.png" o "moises.png")
-  // Lo más común es: minúsculas y espacios por guiones bajos.
   const nombreArchivo = nombre.toLowerCase().replace(/\s+/g, '_');
   return `/Cartas/${nombreArchivo}.png`;
 };
+
 
 export const MazoService = {
   // GET: Obtener mazos
@@ -64,12 +61,12 @@ export const MazoService = {
       nombre: nombre, 
       cartas: cartasUnicas.map(c => ({
         nombre: c.nombre, // Nombre exacto que vino del catálogo (Ej: "Moisés")
-        descripcion: c.descripcion,
         // Limpiamos ENUMS (Quitar tildes y Capitalizar: Épica -> Epica)
         calidad: c.calidad.normalize("NFD").replace(/[\u0300-\u036f]/g, "").charAt(0).toUpperCase() + c.calidad.slice(1).toLowerCase(),
-        tipo: c.tipo.charAt(0).toUpperCase() + c.tipo.slice(1).toLowerCase()
+        tipo: c.tipo.charAt(0).toUpperCase() + c.tipo.slice(1).toLowerCase(),
+        descripcion: c.descripcion
       }))
-    };
+    };  
 
     const response = await fetch(`${API_URL}/users/${encodeURIComponent(email)}/decks`, {
       method: 'POST',

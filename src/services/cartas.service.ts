@@ -2,22 +2,33 @@
 import Carta from '../types/carta';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
+const imageSlug = (name: string): string => {
+  return name
+    .normalize('NFD')                    // separa letras de acentos
+    .replace(/[\u0300-\u036f]/g, '')     // elimina tildes
+    .replace(/ñ/g, 'n')
+    .replace(/Ñ/g, 'n')
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, '_')                // espacios a _
+    .replace(/[^a-z0-9_]/g, '');         // elimina caracteres raros
+};
+
 
 export const CardsService = {
-  // Obtener el catálogo global de cartas
   getAllCards: async (): Promise<Carta[]> => {
     const response = await fetch(`${API_URL}/cards`, { credentials: 'include' });
     if (!response.ok) throw new Error('Error al obtener catálogo');
+
     const data = await response.json();
-    
-    // Mapeamos de 'calidad' (back) a 'rareza' (front)
+
     return data.cards.map((c: any) => ({
       nombre: c.nombre,
       tipo: c.tipo,
-      rareza: c.calidad, // Ajuste de nombre
+      calidad: c.calidad,
       descripcion: c.descripcion,
-      imagen: `/Cartas/${c.nombre.replace(/\s+/g, '_').toLowerCase()}.png`,
-      efecto: "" 
+      imagen: `/Cartas/${imageSlug(c.nombre)}.png`,
+      efecto: ""
     }));
   }
 };

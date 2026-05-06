@@ -2,8 +2,10 @@ import Carta from "@/types/carta";
 import React from 'react'
 
 export const DisplayCarta = ({ carta , cantidad = 0 }: { carta: Carta, cantidad?: number }) => {
-  const getBorderClass = (rareza: string) => {
-    switch (rareza.toLowerCase()) {
+  const rareza = carta.calidad || (carta as Carta & { rareza?: string }).rareza || '';
+
+  const getBorderClass = (valorRareza: string) => {
+    switch (valorRareza.toLowerCase()) {
       case 'comun': return 'border-green-500';
       case 'rara': return 'border-orange-500';
       case 'epica': return 'border-purple-500';
@@ -13,7 +15,7 @@ export const DisplayCarta = ({ carta , cantidad = 0 }: { carta: Carta, cantidad?
   };
 
   return (
-    <div className={`relative flex flex-col bg-black p-4 rounded-lg shadow-md border-4 ${getBorderClass(carta.rareza)} w-70 transition-all duration-300 ${cantidad === 0 ? 'opacity-100 grayscale-[0.4]' : 'opacity-100 scale-105'}`}>
+    <div className={`relative flex flex-col bg-black p-4 rounded-lg shadow-md border-4 ${getBorderClass(rareza)} w-70 transition-all duration-300 ${cantidad === 0 ? 'opacity-100 grayscale-[0.4]' : 'opacity-100 scale-105'}`}>
       
       {/* Insignia amarilla de cantidad (x1, x2) */}
       {cantidad > 0 && (

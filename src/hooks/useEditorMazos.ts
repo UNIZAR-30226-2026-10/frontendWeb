@@ -26,8 +26,8 @@
           // 2. Si editamos, cargamos el mazo
           if (deckId) {
             const mazoAEditar = await MazoService.getMazoById(email, deckId);
-            setNombreMazo(mazoAEditar.deck_name);
-            setCartasSeleccionadas(mazoAEditar.cards);
+            setNombreMazo(mazoAEditar.nombre);
+            setCartasSeleccionadas(mazoAEditar.cartas);
           }
         } catch (err) {
           console.error(err);
@@ -39,6 +39,13 @@
     }, [email, deckId]);
 
     const addCarta = (carta: Carta) => {
+      const yaExiste = cartasSeleccionadas.some(c => c.nombre === carta.nombre);
+
+      if (yaExiste) {
+        setErrorMazo({ abierto: true, mensaje: '¡No puedes añadir la misma carta más de una vez!' });
+        return;
+      }
+
       if (cartasSeleccionadas.length < limiteMazo) {
         setCartasSeleccionadas([...cartasSeleccionadas, carta]);
       } else {
