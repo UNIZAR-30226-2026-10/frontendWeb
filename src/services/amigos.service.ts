@@ -14,13 +14,21 @@ export const AmigosService = {
       if (!response.ok) throw new Error('Error al obtener amigos');
 
       const data = await response.json();
-      // data.friends es un string[] de usernames (nombres de usuario)
-      // El backend devuelve amigo.nombre, nunca el email de los amigos
-      return data.friends.map((amigoUsername: string) => ({
-        id: amigoUsername,              // username como identificador único
-        nombre: amigoUsername,          // username como nombre de visualización
-        avatar: '/iconos/default_user.png',
-      }));
+      // data.friends es un array de objetos { nombre: string, icono?: string }
+      // El backend devuelve el username y el nombre del cosmético de icono equipado
+      return data.friends.map((amigo: { nombre: string; icono?: string | null }) => {
+        // Convertir el nombre del cosmético a URL de imagen (mismo patrón que generarUrlImagen en perfil.service.ts)
+        const avatarUrl =
+          amigo.icono && amigo.icono !== '' && amigo.icono.toLowerCase() !== 'null'
+            ? `/${amigo.icono.toLowerCase().replace(/\s+/g, '_')}.png`
+            : '/iconos/default_user.png';
+
+        return {
+          id: amigo.nombre,     // username como identificador único, nunca el email
+          nombre: amigo.nombre, // username como nombre de visualización
+          avatar: avatarUrl,
+        };
+      });
     } catch (error) {
       console.error('Failed to fetch friends:', error);
       return [];
