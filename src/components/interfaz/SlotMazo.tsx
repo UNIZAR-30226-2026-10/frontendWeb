@@ -1,7 +1,6 @@
 "use client"
-import React from 'react'
+import React, { useState } from 'react'
 import CajaLista from './CajaLista';
-import Link from 'next/link';
 import Carta from '@/types/carta'; 
 
 interface SlotMazoProps {
@@ -16,14 +15,34 @@ interface SlotMazoProps {
 }
 
 export const SlotMazo = (props: SlotMazoProps) => {
+  const [mostrarCartas, setMostrarCartas] = useState(false);
+
+  const getBorderClass = (valorRareza: string) => {
+    switch (valorRareza.toLowerCase()) {
+      case 'comun': return 'border-green-500';
+      case 'rara': return 'border-orange-500';
+      case 'epica': return 'border-purple-500';
+      case 'legendaria': return 'border-yellow-600';
+      default: return 'border-gray-500';
+    }
+  };
+
+  const cartasMini = Array.from({ length: 10 }, (_, index) => props.previewCartas[index] ?? null);
+
   return (
     <CajaLista>
-      <div className="flex flex-col font-sans gap-4">
+      <div
+        className="flex flex-col font-sans gap-4 cursor-pointer select-none"
+        onClick={() => setMostrarCartas((valor) => !valor)}
+      >
         <div className="flex text-2xl justify-between">
             <h1 className="text-white text-3xl font-bold">{props.nombreMazo} {props.mazoEnUso ? "(En uso)" : ""}</h1>
-            <div className="flex items-center gap-10 pt-6">
+            <div className="flex items-center gap-4 pt-6">
               <button 
-                onClick={() => props.onEdit(props.id)} 
+                onClick={(event) => {
+                  event.stopPropagation();
+                  props.onEdit(props.id);
+                }} 
                 className="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-500 transition-colors"
               >
                 Editar
@@ -31,7 +50,10 @@ export const SlotMazo = (props: SlotMazoProps) => {
               
               <button
                 type="button"
-                onClick={() => props.onDelete(props.id)}
+                onClick={(event) => {
+                  event.stopPropagation();
+                  props.onDelete(props.id);
+                }}
                 disabled={props.mazoEnUso}
                 className={`px-3 py-1 rounded text-white
                   ${props.mazoEnUso 
@@ -42,15 +64,45 @@ export const SlotMazo = (props: SlotMazoProps) => {
               </button>
             </div>
         </div>
-        
-        <ul className="flex list-inside text-xl text-white font-bold">
-          {props.previewCartas.map((carta, index) => (
-            <li key={index} className="mr-2">
-              {carta.nombre}
-              {index < props.previewCartas.length - 1 ? ',' : ''}
-            </li>
-          ))}
-        </ul>
+
+        {mostrarCartas && (
+          <div className="pt-2 border-t border-white/10">
+            <div className="grid grid-cols-5 gap-2 w-full">
+              {cartasMini.map((carta, index) => {
+                if (!carta) {
+                  return (
+                    <div
+                      key={`empty-${index}`}
+                      className="aspect-[2/3] rounded-md border-2 border-dashed border-white/20 bg-black/20"
+                    />
+                  );
+                }
+
+                const rareza = carta.calidad || (carta as Carta & { rareza?: string }).rareza || '';
+
+                return (
+                  <div
+                    key={`${props.id}-${index}`}
+                    className={`aspect-[2/3] rounded-md border-2 ${getBorderClass(rareza)} bg-black shadow-md p-1 flex flex-col items-center`}
+                  >
+                    <div className="w-full text-[10px] font-bold leading-tight text-white text-center truncate px-1">
+                      {carta.nombre}
+                    </div>
+
+                    <div className="mt-1 w-[82%] h-[65%] rounded-sm border border-white/20 bg-gray-900 overflow-hidden flex items-center justify-center">
+                      <img
+                        src={carta.imagen}
+                        alt={carta.nombre}
+                        className="h-full w-full object-contain -translate-y-1"
+                        loading="lazy"
+                      />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
       </div>
     </CajaLista>
   )
