@@ -2,26 +2,37 @@ import React from 'react';
 import Carta from '../../types/carta';
 // 1. Definimos la forma de las props que el componente va a recibir
 interface MazoVisualProps {
+  cartas: Carta[];
   onSelectCarta: (carta: Carta) => void;
 }
 
 // 2. Le decimos a React.FC que use esas props: React.FC<MazoVisualProps>
-export const MazoVisual: React.FC<MazoVisualProps> = ({ onSelectCarta }) => {
-  const mano = [
-    { id: 1, nombre: "Moises", imagen: "/moises2.png", efecto: "Te saltas el bloqueo", tipo: "Acción", rareza: "Común", descripcion: "Carta que permite saltar bloqueos", vacia: false },
-    { id: 2, nombre: "Moises", imagen: "/moises2.png", efecto: "Te saltas el bloqueo", tipo: "Acción", rareza: "Común", descripcion: "Carta que permite saltar bloqueos", vacia: false },
-    { id: 3, nombre: "Moises", imagen: "/moises2.png", efecto: "Te saltas el bloqueo", tipo: "Acción", rareza: "Común", descripcion: "Carta que permite saltar bloqueos", vacia: false },
-    { id: 4, nombre: "", imagen: "", efecto: "", tipo: "", rareza: "", descripcion: "", vacia: true }, // Hueco vacío
-  ];
+const imageSlug = (name: string): string => {
+  return name
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/ñ/g, 'n')
+    .replace(/Ñ/g, 'n')
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, '_')
+    .replace(/[^a-z0-9_]/g, '');
+};
+
+export const MazoVisual: React.FC<MazoVisualProps> = ({ cartas, onSelectCarta }) => {
+  const mano = [...cartas.slice(0, 4)];
+  while (mano.length < 4) {
+    mano.push({ nombre: '', tipo: '', calidad: '', descripcion: '', imagen: '', efecto: '' });
+  }
 
   return (
     <div className="w-full grid grid-cols-2 gap-3 p-1">
       
       {mano.map((carta) => {
-        if (carta.vacia) {
+        if (!carta.nombre) {
           return (
             <div 
-              key={carta.id} 
+              key={`vacia-${mano.indexOf(carta)}`} 
               className="w-full aspect-[2/3] border-2 border-dashed border-white/40 rounded-lg flex items-center justify-center bg-black/20"
             >
               <span className="text-white/30 text-xs font-bold uppercase tracking-widest">+ Carta</span>
@@ -31,7 +42,7 @@ export const MazoVisual: React.FC<MazoVisualProps> = ({ onSelectCarta }) => {
 
         return (
           <div 
-            key={carta.id} 
+            key={carta.nombre} 
             // 3. Añadimos el evento onClick para avisar al padre qué carta se eligió
             onClick={() => onSelectCarta(carta)}
             className="w-full aspect-[2/3] bg-black border-2 border-blue-600 rounded-lg shadow-md flex flex-col items-center justify-between p-2 hover:scale-105 transition-transform cursor-pointer hover:border-blue-400 hover:shadow-[0_0_15px_rgba(37,99,235,0.6)] z-10"
@@ -44,7 +55,7 @@ export const MazoVisual: React.FC<MazoVisualProps> = ({ onSelectCarta }) => {
             {/* Imagen */}
             <div className="flex-1 w-full relative flex items-center justify-center py-1">
               <img
-                src={carta.imagen}
+                src={carta.imagen || `/Cartas/${imageSlug(carta.nombre)}.png`}
                 alt={carta.nombre}
                 className="max-h-full max-w-full object-contain drop-shadow-md"
               />

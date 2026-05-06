@@ -63,6 +63,10 @@
     };
 
     const guardarMazo = async () => {
+      if (cartasSeleccionadas.length != limiteMazo) {
+        setErrorMazo({ abierto: true, mensaje: '¡El mazo debe estar lleno!' });
+        return;
+      }
       if (!nombreMazo.trim()) {
         setErrorMazo({ abierto: true, mensaje: 'Ponle un nombre al mazo' });
         return;

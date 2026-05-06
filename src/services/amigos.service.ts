@@ -63,12 +63,21 @@ export const AmigosService = {
     return response.json();
   },
 
-  getInvitaciones: async (email: string): Promise<Invitacion[]> => {
-  const response = await fetch(`${API_URL}/users/${email}/invites`, {
-    credentials: 'include'
-  });
-  if (!response.ok) return [];
-  const data = await response.json();
-  return data.invites; // Devuelve el array de invitaciones
-},
+  getInvitaciones: async (username: string): Promise<Invitacion[]> => {
+    const response = await fetch(`${API_URL}/users/${username}/invites`, {
+      credentials: 'include',
+    });
+
+    if (!response.ok) return [];
+
+    const data = await response.json().catch(() => ({ invites: [] }));
+    const invitesRaw = data.invites || [];
+
+    // El backend puede devolver lobbyID; el front consume partidaID.
+    return invitesRaw.map((i: any) => ({
+      inviteFor: i.inviteFor,
+      inviteFrom: i.inviteFrom,
+      partidaID: i.partidaID || i.lobbyID || '',
+    }));
+  },
 };

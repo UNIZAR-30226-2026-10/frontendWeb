@@ -10,6 +10,18 @@ interface Props{
     jugadores: jugador[];
 }
 export const ListaJugadores: React.FC<Props> = ({ jugadores }) => {
+  const resolverRutaIcono = (icono?: string): string => {
+    if (!icono || icono.trim() === '' || icono.toLowerCase() === 'null') {
+      return '/icono_default.png';
+    }
+
+    if (icono.startsWith('http://') || icono.startsWith('https://') || icono.startsWith('/')) {
+      return icono;
+    }
+
+    return `/${icono.replace(/\s+/g, '_')}.png`;
+  };
+
     return (
     // Hemos quitado "absolute top-2 left-10 z-10 w-44" y puesto "w-full relative z-10"
     <div className="w-full relative z-10 bg-black/40 backdrop-blur-sm p-3 rounded-xl border border-white/20 shadow-2xl">
@@ -28,7 +40,15 @@ export const ListaJugadores: React.FC<Props> = ({ jugadores }) => {
             }`}
           >
             <div className="relative w-6 h-6 shrink-0 rounded-full border border-black bg-white flex items-center justify-center overflow-visible">
+              {jugador.iconoJugador ? (
+                <img
+                  src={resolverRutaIcono(jugador.iconoJugador)}
+                  alt={jugador.nombreJugador}
+                  className="w-full h-full object-cover rounded-full"
+                />
+              ) : (
                 <span className="text-xs drop-shadow-sm">🐍</span>
+              )}
               {jugador.esLider && (
                 <span className="absolute -top-5 -right-1 text-xl drop-shadow-md rotate-12">👑</span>
               )}

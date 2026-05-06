@@ -18,7 +18,7 @@ const mostrartipo = (tipo: string): string => {
 };
 
 export default function Perfil() {
-  const { userEmail, logout } = useUser(); 
+  const { userEmail, logout,username, setUser } = useUser(); 
   const { 
     perfil, 
     isLoading, 
@@ -29,6 +29,12 @@ export default function Perfil() {
 
   const [tipoEdicion, setTipoEdicion] = useState<string | null>(null);
   const [editandoNombre, setEditandoNombre] = useState(false);
+
+  const manejarCambioNombre = async (nuevoNombre: string) => {
+    await actualizarUsername(nuevoNombre);
+    // 🔑 Sincronizar el contexto global con el nuevo username
+    setUser(userEmail || "", nuevoNombre);
+  };
 
   if (!userEmail) return null;
 
@@ -67,7 +73,7 @@ export default function Perfil() {
         <SelectorNombre 
           nombreActual={perfil.username}
           onClose={() => setEditandoNombre(false)}
-          onSave={actualizarUsername}
+          onSave={manejarCambioNombre}
         />
       )}
     

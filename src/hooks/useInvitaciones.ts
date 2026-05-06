@@ -5,14 +5,15 @@ import { Invitacion } from '@/types/invitacion';
 import { AmigosService } from '@/services/amigos.service';
 import { LobbiesService } from '@/services/lobbies.service';
 
-export const useInvitaciones = (email: string) => {
+// Ahora el hook recibe `username` porque el endpoint GET usa /users/{username}/invites
+export const useInvitaciones = (username: string) => {
   const [invitaciones, setInvitaciones] = useState<Invitacion[]>([]);
 
   const fetchInvites = useCallback(async () => {
-    if (!email) return;
-    const data = await AmigosService.getInvitaciones(email);
+    if (!username) return;
+    const data = await AmigosService.getInvitaciones(username);
     setInvitaciones(data || []);
-  }, [email]);
+  }, [username]);
 
   useEffect(() => {
     fetchInvites();
@@ -21,8 +22,14 @@ export const useInvitaciones = (email: string) => {
   }, [fetchInvites]);
 
   const responder = async (invite: Invitacion, aceptar: boolean) => {
+    const lobbyId = invite.partidaID || invite.lobbyID || '';
+    if (!lobbyId) {
+      alert('No se pudo procesar la invitacion: falta lobbyId en el payload');
+      return;
+    }
+
     try {
-      await LobbiesService.responderInvitacion(invite.partidaID, {
+      await LobbiesService.responderInvitacion(lobbyId, {
         inviteFor: invite.inviteFor,
         inviteFrom: invite.inviteFrom,
         accept: aceptar,

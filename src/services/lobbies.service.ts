@@ -1,4 +1,5 @@
 import { Lobby } from '../types/lobby';
+import { Invitacion } from '../types/invitacion';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
 
@@ -13,6 +14,19 @@ export const LobbiesService = {
 
     if (!response.ok) throw new Error('Error al crear el lobby');
     return response.json();
+  },
+
+  obtenerTablerosDisponibles: async (): Promise<Array<{ nombre: string }>> => {
+    const response = await fetch(`${API_URL}/lobbies/board`, {
+      method: 'GET',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+    });
+
+    if (!response.ok) throw new Error('Error al obtener los tableros disponibles');
+
+    const data = await response.json().catch(() => ({ tableros: [] }));
+    return data.tableros || [];
   },
 
   obtenerLobbyDeJugador: async (username: string): Promise<Lobby | null> => {
@@ -72,7 +86,23 @@ export const LobbiesService = {
     if (!response.ok) throw new Error('Error al responder la invitación');
     return response.json();
   },
-
+  recibirInvitaciones: async (username: string): Promise<Invitacion[]> => {
+    const response = await fetch(`${API_URL}/users/${username}/invites`, {
+      method: 'GET',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+    });
+    if (!response.ok) return [];
+    const data = await response.json().catch(() => ({ invites: [] }));
+    const invitesRaw = data.invites || [];
+    // Normalize backend field names: accept either 'lobbyID' or 'partidaID'
+    const invites: Invitacion[] = invitesRaw.map((i: any) => ({
+      inviteFor: i.inviteFor,
+      inviteFrom: i.inviteFrom,
+      partidaID: i.partidaID || i.lobbyID || '',
+    }));
+    return invites;
+  },
   agregarBot: async (lobbyId: string, requestedBy: string): Promise<Lobby> => {
     const response = await fetch(`${API_URL}/lobbies/${lobbyId}/bots`, {
       method: 'POST',

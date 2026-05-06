@@ -9,7 +9,7 @@ import { useUser } from '@/context/userContext';
 const BarraAmigos = () => {
   const { userEmail, username } = useUser();
   const { amigos, isLoading, agregarAmigo, isAdding, addError, setAddError, eliminarAmigo } = useAmigos(userEmail || '');
-  const { invitaciones, responder } = useInvitaciones(userEmail || '');
+  const { invitaciones, responder } = useInvitaciones(username || '');
 
   const [mostrarPopup, setMostrarPopup] = useState(false);
   const [nombreAmigo, setNombreAmigo] = useState('');
@@ -169,4 +169,4 @@ const BarraAmigos = () => {
   );
 };
 
-export default BarraAmigos;
+export default BarraAmigos;

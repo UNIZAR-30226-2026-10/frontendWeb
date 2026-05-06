@@ -8,6 +8,7 @@ import PopupSalirLobby from "@/components/interfaz/PopupSalirLobby";
 import SelectorMazo from "@/components/interfaz/SelectorMazo";
 import SelectorTablero from "@/components/interfaz/SelectorTablero";
 import { useLobby } from "@/hooks/useLobby";
+import { useMazos } from "@/hooks/useMazos";
 import { useUser } from "@/context/userContext";
 import { Jugador } from "@/types/lobby";
 
@@ -15,7 +16,8 @@ export default function JuegoPrincipalPage() {
   const router = useRouter();
 
   // Extraemos directamente el username real del contexto (puede ser string | null aquí)
-  const { username } = useUser();
+  const { username, userEmail } = useUser();
+  const { decks, isLoading: isLoadingDecks } = useMazos(userEmail || '');
 
   const {
     lobby,
@@ -79,6 +81,23 @@ export default function JuegoPrincipalPage() {
     }
   }, [lobby, username]);
 
+  useEffect(() => {
+    if (!username) return;
+
+    const miJugadorEnLobby = lobby?.jugadores.find(j => j.nombre === username);
+    if (miJugadorEnLobby?.nombreMazo) {
+      setMazoElegido(miJugadorEnLobby.nombreMazo);
+      return;
+    }
+
+    if (decks.length > 0) {
+      const existeMazoSeleccionado = decks.some(d => d.nombre === mazoElegido);
+      if (!existeMazoSeleccionado) {
+        setMazoElegido(decks[0].nombre);
+      }
+    }
+  }, [decks, lobby, username, mazoElegido]);
+
 
   // -------------------------------------------------------------------
   // BARRERA DE SEGURIDAD PARA TYPESCRIPT (¡Y PARA USUARIOS NO LOGUEADOS!)
@@ -137,9 +156,17 @@ export default function JuegoPrincipalPage() {
 
   const manejarSalida = async () => {
     if (lobbyId) {
+      // 1. Eliminar el jugador de la lobby actual
       await eliminarJugador(lobbyId, username);
       setMostrarPopupSalir(false);
-      router.push('/juego');
+      
+      // 2. Crear una nueva lobby
+      const nuevoLobby = await crearLobby();
+      if (nuevoLobby) {
+        setLobbyId(nuevoLobby.idLobby);
+
+        setEstoyListo(false);
+      }
     }
   };
 
@@ -206,6 +233,8 @@ export default function JuegoPrincipalPage() {
           <SelectorMazo
             mazoSeleccionado={mazoElegido}
             onMazoSeleccionado={manejarCambioMazo}
+            mazosDisponibles={decks.map(d => d.nombre)}
+            isLoading={isLoadingDecks}
           />
 
           {lobby?.idCreador === username && (
