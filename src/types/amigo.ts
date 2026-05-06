@@ -1,5 +1,5 @@
 export interface Amigo {
-  id: string;      // Usaremos el email como ID único
+  id: string;      // Nombre de usuario (username) — nunca el email
   nombre: string;
   avatar: string;
 }

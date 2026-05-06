@@ -15,6 +15,18 @@ export const LobbiesService = {
     return response.json();
   },
 
+  obtenerLobbyDeJugador: async (username: string): Promise<Lobby | null> => {
+    const response = await fetch(`${API_URL}/lobbies/by-player/${username}`, {
+      method: 'GET',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+    });
+
+    if (response.status === 404) return null;
+    if (!response.ok) throw new Error('Error al obtener el lobby del jugador');
+    return response.json();
+  },
+
   obtenerLobby: async (lobbyId: string): Promise<Lobby> => {
     const response = await fetch(`${API_URL}/lobbies/${lobbyId}`, {
       method: 'GET',

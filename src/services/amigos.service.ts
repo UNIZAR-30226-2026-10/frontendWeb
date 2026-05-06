@@ -8,19 +8,18 @@ export const AmigosService = {
     try {
       const response = await fetch(`${API_URL}/users/${email}/friends`, {
         method: 'GET',
-        credentials: 'include', // Necesario para verifyToken
+        credentials: 'include',
       });
 
       if (!response.ok) throw new Error('Error al obtener amigos');
 
       const data = await response.json();
-      // data.friends es un string[] de emails según tu backend:
-      // return user.amigos.map((amigo: any) => amigo.email);
-
-      return data.friends.map((amigoEmail: string) => ({
-        id: amigoEmail,
-        nombre: amigoEmail.split('@')[0], // Usamos la parte antes del @ como nombre temporal
-        avatar: '/iconos/default_user.png', // Avatar por defecto
+      // data.friends es un string[] de usernames (nombres de usuario)
+      // El backend devuelve amigo.nombre, nunca el email de los amigos
+      return data.friends.map((amigoUsername: string) => ({
+        id: amigoUsername,              // username como identificador único
+        nombre: amigoUsername,          // username como nombre de visualización
+        avatar: '/iconos/default_user.png',
       }));
     } catch (error) {
       console.error('Failed to fetch friends:', error);
@@ -42,15 +41,17 @@ export const AmigosService = {
     return response.json();
   },
 
-  // Eliminar amigo (DELETE /api/users/:email/friends)
+  // Eliminar amigo (DELETE /api/users/:email/friends/:friendUsername)
   removeAmigo: async (userEmail: string, friendUsername: string) => {
-    const response = await fetch(`${API_URL}/users/${userEmail}/friends?friendUsername=${friendUsername}`, {
+    const response = await fetch(`${API_URL}/users/${userEmail}/friends/${friendUsername}`, {
       method: 'DELETE',
       credentials: 'include',
-      // Nota: Ajusta según cómo reciba el back el username (query param o body)
     });
 
-    if (!response.ok) throw new Error('Error al eliminar amigo');
+    if (!response.ok) {
+      const err = await response.json().catch(() => ({}));
+      throw new Error(err.error || 'Error al eliminar amigo');
+    }
     return response.json();
   },
 

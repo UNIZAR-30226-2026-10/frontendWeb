@@ -7,7 +7,7 @@ import { userContext } from '../context/userContext';
 
 export const useLobby = () => {
   const context = useContext(userContext);
-  const username = context?.userEmail?.split('@')[0];
+  const username = context?.username;
 
   const [lobby, setLobby] = useState<Lobby | null>(null);
   const [loading, setLoading] = useState(false);
@@ -51,6 +51,29 @@ export const useLobby = () => {
       setLoading(false);
     }
   }, []);
+
+  const obtenerLobbyDeJugador = useCallback(async () => {
+    if (!username) {
+      return null;
+    }
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      const lobbyData = await LobbiesService.obtenerLobbyDeJugador(username);
+      if (lobbyData) {
+        setLobby(lobbyData);
+      }
+      return lobbyData;
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Error desconocido';
+      setError(errorMessage);
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  }, [username]);
 
   const enviarInvitacion = useCallback(
     async (lobbyId: string, inviteFor: string) => {
@@ -267,6 +290,7 @@ export const useLobby = () => {
     error,
     crearLobby,
     obtenerLobby,
+    obtenerLobbyDeJugador,
     enviarInvitacion,
     responderInvitacion,
     agregarBot,

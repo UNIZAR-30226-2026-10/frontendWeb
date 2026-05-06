@@ -37,7 +37,7 @@ export const MazoService = {
     }));
   },
 
-  // DELETE: Borrar mazo
+  // DELETE /api/users/:email/decks/:deckId
   deleteMazo: async (email: string, id: string): Promise<boolean> => {
     const emailSafe = encodeURIComponent(email);
     const idSafe = encodeURIComponent(id);

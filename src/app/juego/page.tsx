@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import HuecoJugador from "@/components/interfaz/HuecoJugador";
 import PopupSalirLobby from "@/components/interfaz/PopupSalirLobby";
 import SelectorMazo from "@/components/interfaz/SelectorMazo";
@@ -23,6 +23,7 @@ export default function JuegoPrincipalPage() {
     error,
     crearLobby,
     obtenerLobby,
+    obtenerLobbyDeJugador,
     marcarListo,
     seleccionarMazo,
     cambiarTablero,
@@ -37,10 +38,13 @@ export default function JuegoPrincipalPage() {
   const [lobbyId, setLobbyId] = useState<string | null>(null);
   const [miPosicion, setMiPosicion] = useState<number>(0);
   const [estoyListo, setEstoyListo] = useState(false);
+  const inicializadoRef = useRef(false);
 
   useEffect(() => {
     const inicializarLobby = async () => {
       if (!username) return;
+      if (inicializadoRef.current) return; // evitar doble ejecución
+      inicializadoRef.current = true;
 
       const params = new URLSearchParams(window.location.search);
       const lobbyIdParam = params.get('lobbyId');
@@ -49,15 +53,22 @@ export default function JuegoPrincipalPage() {
         await obtenerLobby(lobbyIdParam);
         setLobbyId(lobbyIdParam);
       } else {
-        const nuevoLobby = await crearLobby();
-        if (nuevoLobby) {
-          setLobbyId(nuevoLobby.idLobby);
+        // Primero comprobar si el jugador ya está en un lobby
+        const lobbyExistente = await obtenerLobbyDeJugador();
+        if (lobbyExistente) {
+          setLobbyId(lobbyExistente.idLobby);
+        } else {
+          // No está en ningún lobby, crear uno nuevo
+          const nuevoLobby = await crearLobby();
+          if (nuevoLobby) {
+            setLobbyId(nuevoLobby.idLobby);
+          }
         }
       }
     };
 
     inicializarLobby();
-  }, [username, crearLobby, obtenerLobby]);
+  }, [username, crearLobby, obtenerLobby, obtenerLobbyDeJugador]);
 
   useEffect(() => {
     if (lobby && username) {
@@ -176,6 +187,7 @@ export default function JuegoPrincipalPage() {
               estaOcupado={!!huecos[0]}
               esLider={huecos[0]?.nombre === lobby?.idCreador}
               nomJugador={huecos[0]?.nombre}
+              iconoJugador={huecos[0]?.icono}
               onAgregarBot={lobby?.idCreador === username ? manejarAgregarBot : undefined}
             />
           </div>
@@ -184,6 +196,7 @@ export default function JuegoPrincipalPage() {
               estaOcupado={!!huecos[1]}
               esLider={huecos[1]?.nombre === lobby?.idCreador}
               nomJugador={huecos[1]?.nombre}
+              iconoJugador={huecos[1]?.icono}
               onAgregarBot={lobby?.idCreador === username ? manejarAgregarBot : undefined}
             />
           </div>
@@ -228,6 +241,7 @@ export default function JuegoPrincipalPage() {
               estaOcupado={!!huecos[2]}
               esLider={huecos[2]?.nombre === lobby?.idCreador}
               nomJugador={huecos[2]?.nombre}
+              iconoJugador={huecos[2]?.icono}
               onAgregarBot={lobby?.idCreador === username ? manejarAgregarBot : undefined}
             />
           </div>
@@ -236,6 +250,7 @@ export default function JuegoPrincipalPage() {
               estaOcupado={!!huecos[3]}
               esLider={huecos[3]?.nombre === lobby?.idCreador}
               nomJugador={huecos[3]?.nombre}
+              iconoJugador={huecos[3]?.icono}
               onAgregarBot={lobby?.idCreador === username ? manejarAgregarBot : undefined}
             />
           </div>

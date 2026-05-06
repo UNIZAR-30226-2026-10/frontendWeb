@@ -8,6 +8,9 @@ export const useAmigos = (email: string) => {
   const [amigos, setAmigos] = useState<Amigo[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isAdding, setIsAdding] = useState(false);
+  const [addError, setAddError] = useState<string | null>(null);
+  const [isRemoving, setIsRemoving] = useState(false);
 
   const fetchAmigos = useCallback(async () => {
     try {
@@ -32,5 +35,35 @@ export const useAmigos = (email: string) => {
     return () => clearInterval(interval);
   }, [email, fetchAmigos]);
 
-  return { amigos, isLoading, error, refresh: fetchAmigos };
+  const agregarAmigo = useCallback(async (friendUsername: string): Promise<boolean> => {
+    if (!email || !friendUsername.trim()) return false;
+    setIsAdding(true);
+    setAddError(null);
+    try {
+      await AmigosService.addAmigo(email, friendUsername.trim());
+      await fetchAmigos(); // Refresca la lista inmediatamente
+      return true;
+    } catch (err: any) {
+      setAddError(err.message || 'No se pudo añadir al amigo');
+      return false;
+    } finally {
+      setIsAdding(false);
+    }
+  }, [email, fetchAmigos]);
+
+  const eliminarAmigo = useCallback(async (friendUsername: string): Promise<boolean> => {
+    if (!email || !friendUsername.trim()) return false;
+    setIsRemoving(true);
+    try {
+      await AmigosService.removeAmigo(email, friendUsername.trim());
+      await fetchAmigos(); // Refresca la lista inmediatamente
+      return true;
+    } catch (err: any) {
+      return false;
+    } finally {
+      setIsRemoving(false);
+    }
+  }, [email, fetchAmigos]);
+
+  return { amigos, isLoading, error, refresh: fetchAmigos, agregarAmigo, isAdding, addError, setAddError, eliminarAmigo, isRemoving };
 };
