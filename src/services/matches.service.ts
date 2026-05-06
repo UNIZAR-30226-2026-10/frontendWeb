@@ -4,6 +4,32 @@ import {ChatResponse} from "../types/partida";
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
 
 export const MatchesService = {
+    iniciarPartida: async (lobbyId: string): Promise<Partida> => {
+        const response = await fetch(`${API_URL}/matches/`, {
+            method: 'POST',
+            credentials: 'include',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ lobby_id: lobbyId })
+        });
+        if (!response.ok) {
+            const err = await response.json().catch(() => ({}));
+            throw new Error(err.error || 'Error al iniciar la partida');
+        }
+        return response.json();
+    },
+    obtenerEstadoPartida: async (partidaId: string, username: string): Promise<Partida> => {
+        const response = await fetch(`${API_URL}/matches/${partidaId}/${username}`, {
+            method: 'GET',
+            credentials: 'include'
+        });
+        if (!response.ok) {
+            const err = await response.json().catch(() => ({}));
+            throw new Error(err.error || 'Error al obtener la partida');
+        }
+        return response.json();
+    },
     obtenerChatPartida: async (partidaId: string, username: string): Promise<ChatResponse> => {
         const response = await fetch(`${API_URL}/matches/${partidaId}/chat/${username}`, {
             method: 'GET',

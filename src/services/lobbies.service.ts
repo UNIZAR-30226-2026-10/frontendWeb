@@ -17,7 +17,7 @@ export const LobbiesService = {
   },
 
   obtenerTablerosDisponibles: async (): Promise<Array<{ nombre: string }>> => {
-    const response = await fetch(`${API_URL}/lobbies/board`, {
+    const response = await fetch(`${API_URL}/boards`, {
       method: 'GET',
       credentials: 'include',
       headers: { 'Content-Type': 'application/json' },
@@ -25,8 +25,8 @@ export const LobbiesService = {
 
     if (!response.ok) throw new Error('Error al obtener los tableros disponibles');
 
-    const data = await response.json().catch(() => ({ tableros: [] }));
-    return data.tableros || [];
+    const data = await response.json() as string[];
+    return data.map((nombre) => ({ nombre }));
   },
 
   obtenerLobbyDeJugador: async (username: string): Promise<Lobby | null> => {

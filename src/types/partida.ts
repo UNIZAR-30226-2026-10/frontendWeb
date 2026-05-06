@@ -1,55 +1,98 @@
-export interface Partida {
-    ID: string;
-    estado: 'EnEspera' | 'EnCurso' | 'Finalizada';
-    SnapshotJugadores: snapshotJugadores; // Lista de usernames de los jugadores
-    tablero: string; // Nombre del tablero seleccionado
-    fechaCreacion: string; // ISO date string
-    fechaFinalizacion?: string; // ISO date string, solo si estado es 'finalizada'
-}
-export type ChatMessage = {
-    mandadoPor: string; // username del jugador que envió el mensaje
-    mensaje: string;
-}
-export type ChatResponse = {
-    chat: ChatMessage[];
-}
-export type usarCartaResponse = Partida;
-export type movimientosResponse = {
-    fichaId: number;
-    casillaDestino:number;
-    esBifurcacion: boolean;
-    pasosRestantes?: number;
-}
-export type throwDiceResponse = {
-    partida: Partida;
-    tirada: number; // Resultado del dado
-    movimientos: movimientosResponse[];
-    tiradaExtra?: number; 
-}
-export type snapshotJugadores = {
-    turnoActual: number; // Índice del jugador cuyo turno es actualmente
-    ronda: number;
-    jugadores: jugadorSchema[];
-}
 export type Ficha = {
   id: number;
   casilla: number;
   meta: boolean;
-}
+};
+
 export type EfectoActivo = {
   resumenEfecto: string;
 };
-export type jugadorSchema = {
-    username: string;
-    fase: 'Cartas' | 'Movimiento';
-    ultimaTirada?: number;
-    fichas : Ficha[];
-    mazo : string;
-    mano : string[]; // Lista de nombres de cartas en mano
-    mazoRestante: string[];
-    cementerio : string[]; // Lista de nombres de cartas usadas
-    cartaJugadaEnTurno: boolean;
-    cartasJugadas: number;
-    efectosActivos: EfectoActivo[]; // Lista de efectos activos sobre el jugador
-    movimientosPermitidos:number[];
+
+export type JugadorEstado = {
+  username: string;
+  fase: 'Cartas' | 'Movimiento';
+  ultimaTirada?: number;
+  fichas: Ficha[];
+  mazo: string;
+  mano: string[];
+  mazoRestante: string[];
+  cementerio: string[];
+  cartaJugadaEnTurno: boolean;
+  cartasJugadas: number;
+  efectosActivos: EfectoActivo[];
+  movimientosPermitidos: number[];
+};
+
+export type SnapshotJugadores = {
+  turnoActual: number;
+  ronda: number;
+  jugadores: JugadorEstado[];
+};
+
+export type CasillaTablero = {
+  esCurva: boolean;
+  rotacion: number;
+  efecto?: string;
+  tipo: 'Normal' | 'Escalera' | 'Serpiente' | 'Bifurcacion' | 'Meta' | 'Vacía';
+  siguientes: number[];
+  saltoA?: number;
+};
+
+export type SnapshotTablero = {
+  casillas: CasillaTablero[];
+};
+
+export type ChatMessage = {
+  mandadoPor: string;
+  mensaje: string;
+};
+
+export type ConfiguracionPartida = {
+  tablero: string;
+  numeroJugadores: number;
+  numeroBots: number;
+};
+
+export type PartidaJugador = {
+  nombre: string;
+  iconoActualField: string;
+  fichaActualField: string;
+  serpienteActualField: string;
+  escaleraActualField: string;
+};
+
+export type Ganador = { nombre: string } | null;
+
+export interface Partida {
+  ID: string;
+  estado: 'EnEspera' | 'EnCurso' | 'Finalizada';
+  snapshotJugadores: SnapshotJugadores;
+  fechaInicio: string;
+  fechaFin: string | null;
+  configuracion: ConfiguracionPartida;
+  snapshotTablero: SnapshotTablero;
+  chat: ChatMessage[];
+  tableroInicialNombre: string;
+  partidaJugadores: PartidaJugador[];
+  ganador: Ganador;
 }
+
+export type ChatResponse = {
+  chat: ChatMessage[];
+};
+
+export type usarCartaResponse = Partida;
+
+export type movimientosResponse = {
+  fichaId: number;
+  casillaDestino: number;
+  esBifurcacion: boolean;
+  pasosRestantes?: number;
+};
+
+export type throwDiceResponse = {
+  partida: Partida;
+  tirada: number;
+  movimientos: movimientosResponse[];
+  tiradaExtra?: number;
+};

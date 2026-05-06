@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useState, useEffect } from "react";
 import { MatchesService } from "../services/matches.service";
 import {
   Partida,
@@ -26,6 +26,34 @@ export function usePartida({
 
   const [cargandoAccion, setCargandoAccion] = useState(false);
   const [errorPartida, setErrorPartida] = useState<string | null>(null);
+
+  const cargarPartida = useCallback(async () => {
+    if (!partidaId || !username) return;
+
+    try {
+      const data = await MatchesService.obtenerEstadoPartida(partidaId, username);
+      setPartida(data);
+    } catch (error) {
+      setErrorPartida(
+        error instanceof Error ? error.message : "Error al cargar la partida"
+      );
+    }
+  }, [partidaId, username]);
+
+  useEffect(() => {
+    if (!partidaId || !username) return;
+
+    cargarPartida();
+
+    const intervalId = window.setInterval(() => {
+      cargarPartida();
+    }, 3000);
+
+    return () => {
+      window.clearInterval(intervalId);
+    };
+  }, [partidaId, username, cargarPartida]);
+
 
   const tirarDado = useCallback(async (): Promise<throwDiceResponse | null> => {
     if (!partidaId || !username || cargandoAccion) return null;
@@ -143,6 +171,7 @@ export function usePartida({
     tiradaExtra,
     movimientos,
 
+    cargarPartida,
     tirarDado,
     moverFicha,
     jugarCarta,

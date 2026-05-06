@@ -11,6 +11,7 @@ import { useLobby } from "@/hooks/useLobby";
 import { useMazos } from "@/hooks/useMazos";
 import { useUser } from "@/context/userContext";
 import { Jugador } from "@/types/lobby";
+import { LobbiesService } from "@/services/lobbies.service";
 
 export default function JuegoPrincipalPage() {
   const router = useRouter();
@@ -37,6 +38,7 @@ export default function JuegoPrincipalPage() {
   const [mostrarPopupSalir, setMostrarPopupSalir] = useState(false);
   const [mazoElegido, setMazoElegido] = useState("Mazo de Fuego");
   const [tableroElegido, setTableroElegido] = useState("Tablero 1");
+  const [tablerosDisponibles, setTablerosDisponibles] = useState<string[]>([]);
   const [lobbyId, setLobbyId] = useState<string | null>(null);
   const [miPosicion, setMiPosicion] = useState<number>(0);
   const [estoyListo, setEstoyListo] = useState(false);
@@ -97,6 +99,24 @@ export default function JuegoPrincipalPage() {
       }
     }
   }, [decks, lobby, username, mazoElegido]);
+
+  useEffect(() => {
+    const cargarTableros = async () => {
+      try {
+        const data = await LobbiesService.obtenerTablerosDisponibles();
+        setTablerosDisponibles(data.map((t) => t.nombre));
+      } catch (err) {
+        console.error("Error al obtener los tableros disponibles:", err);
+      }
+    };
+    cargarTableros();
+  }, []);
+
+  useEffect(() => {
+    if (lobby?.tablero) {
+      setTableroElegido(lobby.tablero);
+    }
+  }, [lobby?.tablero]);
 
 
   // -------------------------------------------------------------------
@@ -241,6 +261,7 @@ export default function JuegoPrincipalPage() {
             <SelectorTablero
               tableroSeleccionado={tableroElegido}
               onTableroSeleccionado={manejarCambioTablero}
+              tablerosDisponibles={tablerosDisponibles}
             />
           )}
 

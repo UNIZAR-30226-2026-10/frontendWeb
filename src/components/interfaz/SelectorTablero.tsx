@@ -9,17 +9,19 @@ interface TableroOption {
 interface SelectorTableroProps {
   tableroSeleccionado: string;
   onTableroSeleccionado: (tableroId: string) => void;
+  tablerosDisponibles?: string[];
 }
 
-const SelectorTablero: React.FC<SelectorTableroProps> = ({ tableroSeleccionado, onTableroSeleccionado }) => {
+const SelectorTablero: React.FC<SelectorTableroProps> = ({ 
+  tableroSeleccionado, 
+  onTableroSeleccionado,
+  tablerosDisponibles
+}) => {
   const [isOpen, setIsOpen] = useState(false);
 
-  const listaTableros: TableroOption[] = [
-    { id: "clasico", nombre: "Tablero Clásico" },
-    { id: "oscuro", nombre: "Tablero Oscuro" },
-    { id: "neon", nombre: "Tablero Neón" },
-    { id: "retro", nombre: "Tablero Retro" },
-  ];
+  const listaTableros = tablerosDisponibles && tablerosDisponibles.length > 0
+    ? tablerosDisponibles
+    : ["Tablero 1", "Tablero Clásico", "Tablero Oscuro", "Tablero Neón", "Tablero Retro"];
 
   const seleccionarYSalir = (tableroId: string) => {
     onTableroSeleccionado(tableroId);
@@ -37,8 +39,16 @@ const SelectorTablero: React.FC<SelectorTableroProps> = ({ tableroSeleccionado, 
 
         {/* CUADRO BLANCO CON EL LÁPIZ */}
         <div className="w-full flex-1 bg-white rounded-sm shadow-inner relative overflow-hidden flex flex-col items-center justify-center border border-black/10">
+            <img 
+              src={`/${tableroSeleccionado}.jpg`} 
+              alt={tableroSeleccionado} 
+              className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-200"
+              onError={(e) => {
+                (e.target as HTMLImageElement).style.opacity = "0";
+              }}
+            />
             {/* Solo aquí mostramos el emoji */}
-            <span className="text-6xl transform group-hover:rotate-12 group-hover:scale-110 transition-transform duration-200 select-none">
+            <span className="text-6xl transform group-hover:rotate-12 group-hover:scale-110 transition-transform duration-200 select-none z-10 drop-shadow">
               ✏️
             </span>
         </div>
@@ -68,29 +78,37 @@ const SelectorTablero: React.FC<SelectorTableroProps> = ({ tableroSeleccionado, 
             
             {/* GRID DE OPCIONES */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 overflow-y-auto p-2 pr-4 flex-1 custom-scroll">
-              {listaTableros.map((tablero) => (
+              {listaTableros.map((tableroNombre) => (
                 <div
-                  key={tablero.id}
-                  onClick={() => seleccionarYSalir(tablero.id)}
+                  key={tableroNombre}
+                  onClick={() => seleccionarYSalir(tableroNombre)}
                   className={`cursor-pointer rounded-2xl p-3 border-4 transition-all flex flex-col ${
-                    tablero.id === tableroSeleccionado 
+                    tableroNombre === tableroSeleccionado 
                     ? "border-yellow-400 bg-yellow-400/10 scale-[1.02]" 
                     : "border-transparent bg-white/5 hover:bg-white/10"
                   }`}
                 >
-                  {/* CUADRO EN BLANCO (Placeholder para imagen futura) */}
-                  <div className="w-full aspect-video bg-white rounded-lg shadow-md border border-gray-200 flex items-center justify-center">
-                      <span className="text-gray-200 font-bold text-[10px] uppercase tracking-widest">
+                  {/* CUADRO DE VISTA PREVIA CON IMAGEN O PLACEHOLDER */}
+                  <div className="w-full aspect-video bg-white rounded-lg shadow-md border border-gray-200 relative overflow-hidden flex items-center justify-center">
+                      <img 
+                        src={`/${tableroNombre}.jpg`} 
+                        alt={tableroNombre} 
+                        className="absolute inset-0 w-full h-full object-cover"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).style.display = "none";
+                        }}
+                      />
+                      <span className="text-gray-400 font-bold text-xs uppercase tracking-widest select-none pointer-events-none">
                         Vista Previa
                       </span>
                   </div>
                   
                   {/* NOMBRE DEL TABLERO */}
                   <div className="pt-4 text-center">
-                    <p className={`font-bold text-lg ${tablero.id === tableroSeleccionado ? "text-yellow-400" : "text-white"}`}>
-                        {tablero.nombre}
+                    <p className={`font-bold text-lg ${tableroNombre === tableroSeleccionado ? "text-yellow-400" : "text-white"}`}>
+                        {tableroNombre}
                     </p>
-                    {tablero.id === tableroSeleccionado && (
+                    {tableroNombre === tableroSeleccionado && (
                       <span className="text-[10px] text-yellow-400 font-bold uppercase">Seleccionado</span>
                     )}
                   </div>
