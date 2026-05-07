@@ -33,7 +33,7 @@ export type CasillaTablero = {
   esCurva: boolean;
   rotacion: number;
   efecto?: string;
-  tipo: 'Normal' | 'Escalera' | 'Serpiente' | 'Bifurcacion' | 'Meta' | 'Vacía';
+  tipo: 'Normal' | 'Escalera' | 'Serpiente' | 'Bifurcacion' | 'Meta' | 'Vacía' | 'Curva';
   siguientes: number[];
   saltoA?: number;
 };

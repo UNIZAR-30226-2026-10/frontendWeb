@@ -24,6 +24,7 @@ export const useLobby = () => {
 
     try {
       const nuevoLobby = await LobbiesService.crearLobby(username);
+
       setLobby(nuevoLobby);
       return nuevoLobby;
     } catch (err) {
@@ -41,6 +42,14 @@ export const useLobby = () => {
 
     try {
       const lobbyData = await LobbiesService.obtenerLobby(lobbyId);
+
+      // FIX: Asegurar que el tablero sea válido
+      if (lobbyData.tablero === 'Tablero 1' && username) {
+        const lobbyCorregido = await LobbiesService.cambiarTablero(lobbyId, username, 'Basico');
+        setLobby(lobbyCorregido);
+        return lobbyCorregido;
+      }
+
       setLobby(lobbyData);
       return lobbyData;
     } catch (err) {
@@ -63,6 +72,12 @@ export const useLobby = () => {
     try {
       const lobbyData = await LobbiesService.obtenerLobbyDeJugador(username);
       if (lobbyData) {
+        // FIX: Asegurar que el tablero sea válido
+        if (lobbyData.tablero === 'Tablero 1') {
+          const lobbyCorregido = await LobbiesService.cambiarTablero(lobbyData.idLobby, username, 'Basico');
+          setLobby(lobbyCorregido);
+          return lobbyCorregido;
+        }
         setLobby(lobbyData);
       }
       return lobbyData;

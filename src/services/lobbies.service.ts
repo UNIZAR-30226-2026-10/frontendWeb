@@ -17,15 +17,20 @@ export const LobbiesService = {
   },
 
   obtenerTablerosDisponibles: async (): Promise<string[]> => {
-    const response = await fetch(`${API_URL}/boards`, {
-      method: 'GET',
-      credentials: 'include',
-      headers: { 'Content-Type': 'application/json' },
-    });
+    try {
+      const response = await fetch(`${API_URL}/boards`, {
+        method: 'GET',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+      });
 
-    if (!response.ok) throw new Error('Error al obtener los tableros disponibles');
-
-    return response.json() as Promise<string[]>;
+      if (!response.ok) throw new Error('Error al obtener los tableros disponibles');
+      return await response.json() as string[];
+    } catch (error) {
+      console.warn('Backend /boards no disponible, usando tableros por defecto:', error);
+      // Fallback local con los tableros que crea el seed por defecto
+      return ["Basico", "Jungla Loca", "La apuesta final"];
+    }
   },
 
   obtenerLobbyDeJugador: async (username: string): Promise<Lobby | null> => {

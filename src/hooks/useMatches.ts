@@ -2,10 +2,11 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { MatchesService } from "../services/matches.service";
-import { MazoService } from "../services/mazos.service";
+import { CardsService } from "../services/cartas.service";
 import { Carta } from "@/types/carta";
 import {
   Partida,
+  ChatMessage,
   throwDiceResponse,
   movimientosResponse,
 } from "../types/partida";
@@ -115,7 +116,7 @@ export function usePartida({
   const tablero = partida?.snapshotTablero ?? null;
 
   useEffect(() => {
-    if (!partida || !miJugador?.mazo) {
+    if (!partida || !miJugador?.mano || miJugador.mano.length === 0) {
       setMazoEnMano([]);
       return;
     }
@@ -124,15 +125,16 @@ export function usePartida({
 
     const cargarMazoEnMano = async () => {
       try {
-        const mazo: Carta[] = [];
-
+        const todasLasCartas = await CardsService.getAllCards();
         if (cancelado) return;
 
-        if (!mazo) {
-          setMazoEnMano([]);
-          return;
-        }
-        setMazoEnMano(mazo);
+        const cartasEnMano = miJugador.mano
+          .map((nombreCarta) =>
+            todasLasCartas.find((c) => c.nombre === nombreCarta)
+          )
+          .filter((c): c is Carta => c !== undefined);
+
+        setMazoEnMano(cartasEnMano);
       } catch {
         if (!cancelado) {
           setMazoEnMano([]);
@@ -247,6 +249,44 @@ export function usePartida({
     [partidaId, username, cargandoAccion]
   );
 
+  const enviarMensajeChat = useCallback(
+    async (mensaje: string): Promise<ChatMessage[] | null> => {
+      if (!partidaId || !username) return null;
+
+      try {
+        const data = await MatchesService.enviarMensajeChat(
+          partidaId,
+          username,
+          mensaje
+        );
+        return data.chat;
+      } catch (error) {
+        setErrorPartida(
+          error instanceof Error ? error.message : "Error al enviar mensaje"
+        );
+        return null;
+      }
+    },
+    [partidaId, username]
+  );
+
+  const obtenerChat = useCallback(async (): Promise<ChatMessage[] | null> => {
+    if (!partidaId || !username) return null;
+
+    try {
+      const data = await MatchesService.obtenerChatPartida(
+        partidaId,
+        username
+      );
+      return data.chat;
+    } catch (error) {
+      setErrorPartida(
+        error instanceof Error ? error.message : "Error al obtener el chat"
+      );
+      return null;
+    }
+  }, [partidaId, username]);
+
   const limpiarErrorPartida = useCallback(() => {
     setErrorPartida(null);
   }, []);
@@ -278,6 +318,8 @@ export function usePartida({
     tirarDado,
     moverFicha,
     jugarCarta,
+    enviarMensajeChat,
+    obtenerChat,
 
     limpiarErrorPartida,
     limpiarMovimientos,

@@ -1,5 +1,5 @@
-import {Partida, throwDiceResponse} from "../types/partida";
-import {ChatResponse} from "../types/partida";
+import { Partida, throwDiceResponse } from "../types/partida";
+import { ChatResponse } from "../types/partida";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
 
@@ -48,7 +48,7 @@ export const MatchesService = {
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ mensaje })
+            body: JSON.stringify({ message: mensaje })
         });
         if (!response.ok) {
             const err = await response.json().catch(() => ({}));
@@ -63,7 +63,7 @@ export const MatchesService = {
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ carta_id:cartaId,who,inicio,fin })
+            body: JSON.stringify({ card_id: cartaId, who, inicio, fin })
         });
         if (!response.ok) {
             const err = await response.json().catch(() => ({}));
@@ -82,14 +82,14 @@ export const MatchesService = {
         }
         return response.json();
     },
-    moverFicha: async (partidaId: string, username: string, pawnId: number,posicionFinal: number,pasosRestantes: number): Promise<Partida> => {
+    moverFicha: async (partidaId: string, username: string, pawnId: number, posicionFinal: number, pasosRestantes: number): Promise<Partida> => {
         const response = await fetch(`${API_URL}/matches/${partidaId}/pawn/${username}`, {
             method: 'POST',
             credentials: 'include',
             headers: {
-            "Content-Type": "application/json",
+                "Content-Type": "application/json",
             },
-            body: JSON.stringify({ pawn_id: pawnId , final_position: posicionFinal, steps_remaining: pasosRestantes})
+            body: JSON.stringify({ pawn_id: pawnId, final_position: posicionFinal, steps_remaining: pasosRestantes })
         });
         if (!response.ok) {
             const err = await response.json().catch(() => ({}));

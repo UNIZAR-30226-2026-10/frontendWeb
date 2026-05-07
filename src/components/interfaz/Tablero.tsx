@@ -1,12 +1,22 @@
 "use client";
 
 import React, { useMemo } from "react";
-import type { SnapshotTablero } from "@/types/partida";
+import type { SnapshotTablero, JugadorEstado, PartidaJugador } from "@/types/partida";
+
+type MovimientoDisponible = {
+	fichaId: number;
+	casillaDestino: number;
+	esBifurcacion: boolean;
+	pasosRestantes?: number;
+};
 
 type TableroProps = {
 	equipoActual?: string;
 	snapshotTablero?: SnapshotTablero | null;
-    onMoverFicha?: (fichaId: number, casillaDestino: number,pasosRestantes: number) => void | Promise<unknown>;
+	jugadores?: JugadorEstado[];
+	partidaJugadores?: PartidaJugador[];
+	movimientos?: MovimientoDisponible[];
+	onMoverFicha?: (fichaId: number, casillaDestino: number, pasosRestantes: number) => void | Promise<unknown>;
 };
 
 const IMAGENES = {
@@ -17,34 +27,82 @@ const IMAGENES = {
 	BIFURCACION: "casilla_bifurcacion.png",
 };
 
-export default function Tablero({   snapshotTablero,
-  onMoverFicha,
-  equipoActual, }: TableroProps) {
-    if (!snapshotTablero) {
-        return <div className="text-white text-center mt-10 text-2xl w-full font-bold">Cargando Tablero...</div>;
-    }
-    
-    const casillas = snapshotTablero.casillas;
-    
+const COLORES_JUGADOR = [
+	"#ef4444", // rojo
+	"#3b82f6", // azul
+	"#22c55e", // verde
+	"#eab308", // amarillo
+];
+
+export default function Tablero({
+	snapshotTablero,
+	onMoverFicha,
+	equipoActual,
+	jugadores = [],
+	partidaJugadores = [],
+	movimientos = [],
+}: TableroProps) {
+	if (!snapshotTablero) {
+		return <div className="text-white text-center mt-10 text-2xl w-full font-bold">Cargando Tablero...</div>;
+	}
+
+	const casillas = snapshotTablero.casillas;
+
+	// Mapear fichas por casilla para renderizarlas
+	const fichasPorCasilla = useMemo(() => {
+		const mapa: Record<number, { jugadorIndex: number; username: string; fichaId: number; color: string; imagen: string }[]> = {};
+		jugadores.forEach((jugador, jIndex) => {
+			// Buscar el cosmético de ficha del jugador
+			const pj = partidaJugadores.find(p => p.nombre === jugador.username);
+			const fichaImg = pj?.fichaActualField
+				? `/${pj.fichaActualField}.png`
+				: "/ficha_default.png";
+
+			jugador.fichas.forEach((ficha) => {
+				if (!ficha.meta) {
+					// casilla 0 = posición inicial, las mostramos en la casilla 1
+					const casillaVisual = ficha.casilla === 0 ? 1 : ficha.casilla;
+					if (!mapa[casillaVisual]) mapa[casillaVisual] = [];
+					mapa[casillaVisual].push({
+						jugadorIndex: jIndex,
+						username: jugador.username,
+						fichaId: ficha.id,
+						color: COLORES_JUGADOR[jIndex % COLORES_JUGADOR.length],
+						imagen: fichaImg,
+					});
+				}
+			});
+		});
+		return mapa;
+	}, [jugadores, partidaJugadores]);
+
+	// Casillas destino válidas para el movimiento actual
+	const destinosValidos = useMemo(() => {
+		const mapa: Record<number, MovimientoDisponible> = {};
+		movimientos.forEach((mov) => {
+			mapa[mov.casillaDestino] = mov;
+		});
+		return mapa;
+	}, [movimientos]);
 
 	const saltosDinamicos = useMemo<Record<number, number>>(() => {
 		const saltos: Record<number, number> = {};
 		snapshotTablero.casillas?.forEach((casilla, index) => {
 			if (casilla?.saltoA !== undefined) {
-				saltos[index + 1] = casilla.saltoA+1;
+				saltos[index + 1] = casilla.saltoA + 1;
 			}
 		});
 		return saltos;
 	}, [snapshotTablero]);
 
-	const renderizarObstaculosPNG = () => {
-		const obtenerCoordenadas = (casilla: number) => {
-			const filaReal = Math.floor((casilla - 1) / 10);
-			const colReal = (casilla - 1) % 10;
-			const filaCSS = 9 - filaReal;
-			return { x: colReal * 10 + 5, y: filaCSS * 10 + 5 };
-		};
+	const obtenerCoordenadas = (casilla: number) => {
+		const filaReal = Math.floor((casilla - 1) / 10);
+		const colReal = (casilla - 1) % 10;
+		const filaCSS = 9 - filaReal;
+		return { x: colReal * 10 + 5, y: filaCSS * 10 + 5 };
+	};
 
+	const renderizarObstaculosPNG = () => {
 		return Object.entries(saltosDinamicos).map(([inicio, fin]) => {
 			const inicioNumero = Number(inicio);
 			const start = obtenerCoordenadas(inicioNumero);
@@ -141,13 +199,13 @@ export default function Tablero({   snapshotTablero,
 				<div className="w-full h-full grid grid-cols-10 grid-rows-10 relative overflow-hidden rounded-md">
 					<div className="absolute inset-0 w-full h-full pointer-events-none z-30">{renderizarObstaculosPNG()}</div>
 					{Array.from({ length: 100 }, (_, i) => {
-                        const filaVisual = Math.floor(i / 10);
-                        const colVisual = i % 10;
+						const filaVisual = Math.floor(i / 10);
+						const colVisual = i % 10;
 
-                        const filaReal = 9 - filaVisual;
-                        const num = filaReal * 10 + colVisual + 1;
+						const filaReal = 9 - filaVisual;
+						const num = filaReal * 10 + colVisual + 1;
 
-                        const datosCasilla = casillas[num - 1];
+						const datosCasilla = casillas[num - 1];
 						let imagenSrc = IMAGENES.VACIA;
 
 						if (datosCasilla) {
@@ -155,13 +213,23 @@ export default function Tablero({   snapshotTablero,
 							else if (datosCasilla.tipo === "Bifurcacion") imagenSrc = IMAGENES.BIFURCACION;
 							else if (datosCasilla.esCurva) imagenSrc = IMAGENES.CURVA;
 							else if (datosCasilla.tipo === "Vacía") imagenSrc = IMAGENES.VACIA;
-                            else imagenSrc = IMAGENES.NORMAL;
+							else imagenSrc = IMAGENES.NORMAL;
 						}
 
 						const rotacion = datosCasilla ? datosCasilla.rotacion : 0;
+						const fichasEnCasilla = fichasPorCasilla[num] || [];
+						const esDestino = destinosValidos[num];
 
 						return (
-							<div key={num} className="relative flex items-center justify-center">
+							<div
+								key={num}
+								className={`relative flex items-center justify-center ${esDestino ? "cursor-pointer" : ""}`}
+								onClick={() => {
+									if (esDestino && onMoverFicha) {
+										onMoverFicha(esDestino.fichaId, esDestino.casillaDestino, esDestino.pasosRestantes ?? 0);
+									}
+								}}
+							>
 								<div
 									className="absolute inset-0 w-full h-full z-0 pointer-events-none scale-105"
 									style={{
@@ -171,6 +239,69 @@ export default function Tablero({   snapshotTablero,
 										transform: `rotate(${rotacion}deg)`,
 									}}
 								/>
+
+								{/* Highlight de casilla destino válido */}
+								{esDestino && (
+									<div className="absolute inset-0 z-20 rounded-sm border-2 border-yellow-300 bg-yellow-300/30 animate-pulse pointer-events-none" />
+								)}
+
+								{/* Fichas de los jugadores - agrupadas por jugador */}
+								{fichasEnCasilla.length > 0 && (() => {
+									// Agrupar fichas por jugador
+									const gruposPorJugador: Record<string, typeof fichasEnCasilla> = {};
+									fichasEnCasilla.forEach((ficha) => {
+										if (!gruposPorJugador[ficha.username]) gruposPorJugador[ficha.username] = [];
+										gruposPorJugador[ficha.username].push(ficha);
+									});
+									const grupos = Object.values(gruposPorJugador);
+
+									return (
+										<div className="absolute inset-0 z-40 flex flex-wrap items-center justify-center gap-0.5 p-0.5 pointer-events-none">
+											{grupos.map((grupo) => {
+												const representante = grupo[0];
+												const cantidad = grupo.length;
+												return (
+													<div
+														key={representante.username}
+														className="rounded-full shadow-md flex items-center justify-center overflow-hidden relative"
+														style={{
+															width: grupos.length > 2 ? "35%" : grupos.length > 1 ? "40%" : "55%",
+															height: grupos.length > 2 ? "35%" : grupos.length > 1 ? "40%" : "55%",
+															border: `2px solid ${representante.color}`,
+															backgroundColor: "rgba(0,0,0,0.3)",
+														}}
+														title={`${representante.username} - ${cantidad} ficha${cantidad > 1 ? "s" : ""}`}
+													>
+														<img
+															src={representante.imagen}
+															alt={`Ficha de ${representante.username}`}
+															className="w-full h-full object-contain"
+															onError={(e) => {
+																(e.target as HTMLImageElement).src = "/ficha_default.png";
+															}}
+														/>
+														{cantidad > 1 && (
+															<span
+																className="absolute -top-0.5 -right-0.5 rounded-full flex items-center justify-center font-bold text-white"
+																style={{
+																	backgroundColor: representante.color,
+																	width: "14px",
+																	height: "14px",
+																	fontSize: "9px",
+																	lineHeight: "1",
+																	border: "1px solid white",
+																}}
+															>
+																{cantidad}
+															</span>
+														)}
+													</div>
+												);
+											})}
+										</div>
+									);
+								})()}
+
 								<span className="absolute top-0.5 left-1 text-[8px] lg:text-[10px] font-bold text-white/50 z-10 pointer-events-none select-none">
 									{num}
 								</span>
@@ -182,3 +313,4 @@ export default function Tablero({   snapshotTablero,
 		</div>
 	);
 }
+
