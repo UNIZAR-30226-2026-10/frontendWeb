@@ -54,12 +54,9 @@ export const MazoService = {
 
   // POST: Crear mazo
   createMazo: async (email: string, nombre: string, cartas: Carta[]) => {
-    // 1. FILTRO DE REPETIDAS: Obligatorio porque el compañero puso una PK en la tabla BarajaCarta
-    const cartasUnicas = Array.from(new Map(cartas.map(c => [c.nombre, c])).values());
-
     const payload = { 
       nombre: nombre, 
-      cartas: cartasUnicas.map(c => ({
+      cartas: cartas.map(c => ({
         nombre: c.nombre, // Nombre exacto que vino del catálogo (Ej: "Moisés")
         // Limpiamos ENUMS (Quitar tildes y Capitalizar: Épica -> Epica)
         calidad: c.calidad.normalize("NFD").replace(/[\u0300-\u036f]/g, "").charAt(0).toUpperCase() + c.calidad.slice(1).toLowerCase(),

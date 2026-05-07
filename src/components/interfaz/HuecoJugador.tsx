@@ -75,12 +75,12 @@ const HuecoJugador: React.FC<HuecoJugadorProps> = ({
           )}
         </div>
         <span className="text-white text-3xl font-bold font-sans">{nomJugador}</span>
-        {esBot && onEliminarBot && (
+        {onEliminarBot && (
           <button
             className="mt-3 rounded-full bg-red-600 px-4 py-2 text-sm font-bold text-white shadow-lg transition-colors hover:bg-red-500"
             onClick={onEliminarBot}
           >
-            Eliminar bot
+              {esBot ? 'Eliminar bot' : 'Expulsar jugador'}
           </button>
         )}
       </div>

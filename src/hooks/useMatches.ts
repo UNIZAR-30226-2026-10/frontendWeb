@@ -1,7 +1,9 @@
 "use client";
 
-import { useCallback, useState, useEffect } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { MatchesService } from "../services/matches.service";
+import { MazoService } from "../services/mazos.service";
+import { Carta } from "@/types/carta";
 import {
   Partida,
   throwDiceResponse,
@@ -23,25 +25,38 @@ export function usePartida({
   const [ultimaTirada, setUltimaTirada] = useState<number | null>(null);
   const [tiradaExtra, setTiradaExtra] = useState<number | null>(null);
   const [movimientos, setMovimientos] = useState<movimientosResponse[]>([]);
-
   const [cargandoAccion, setCargandoAccion] = useState(false);
   const [errorPartida, setErrorPartida] = useState<string | null>(null);
+  const [cargandoPartida, setCargandoPartida] = useState(true);
+  const [mazoEnMano, setMazoEnMano] = useState<Carta[]>([]);
 
   const cargarPartida = useCallback(async () => {
-    if (!partidaId || !username) return;
+    if (!partidaId || !username) {
+      setCargandoPartida(false);
+      return;
+    }
 
     try {
+      setCargandoPartida(true);
+      setErrorPartida(null);
+
       const data = await MatchesService.obtenerEstadoPartida(partidaId, username);
+
       setPartida(data);
     } catch (error) {
       setErrorPartida(
         error instanceof Error ? error.message : "Error al cargar la partida"
       );
+    } finally {
+      setCargandoPartida(false);
     }
   }, [partidaId, username]);
 
   useEffect(() => {
-    if (!partidaId || !username) return;
+    if (!partidaId || !username) {
+      setCargandoPartida(false);
+      return;
+    }
 
     cargarPartida();
 
@@ -54,6 +69,83 @@ export function usePartida({
     };
   }, [partidaId, username, cargarPartida]);
 
+  const miJugador = useMemo(() => {
+    if (!partida || !username) return null;
+
+    return (
+      partida.snapshotJugadores.jugadores.find(
+        (jugador) => jugador.username === username
+      ) ?? null
+    );
+  }, [partida, username]);
+
+  const jugadorTurno = useMemo(() => {
+    if (!partida) return null;
+
+    return (
+      partida.snapshotJugadores.jugadores[
+        partida.snapshotJugadores.turnoActual
+      ] ?? null
+    );
+  }, [partida]);
+
+  const tuTurno = useMemo(() => {
+    if (!username || !jugadorTurno) return false;
+
+    return jugadorTurno.username === username;
+  }, [jugadorTurno, username]);
+
+  const jugadores = useMemo(() => {
+    if (!partida) return [];
+
+    const jugadorActual =
+      partida.snapshotJugadores.jugadores[
+        partida.snapshotJugadores.turnoActual
+      ];
+
+    return partida.snapshotJugadores.jugadores.map((jugador) => ({
+      nombreJugador: jugador.username,
+      esTurno: jugadorActual?.username === jugador.username,
+      iconoJugador: partida.partidaJugadores.find(
+        (j) => j.nombre === jugador.username
+      )?.iconoActualField,
+    }));
+  }, [partida]);
+
+  const tablero = partida?.snapshotTablero ?? null;
+
+  useEffect(() => {
+    if (!partida || !miJugador?.mazo) {
+      setMazoEnMano([]);
+      return;
+    }
+
+    let cancelado = false;
+
+    const cargarMazoEnMano = async () => {
+      try {
+        const mazo: Carta[] = [];
+
+        if (cancelado) return;
+
+        if (!mazo) {
+          setMazoEnMano([]);
+          return;
+        }
+        setMazoEnMano(mazo);
+      } catch {
+        if (!cancelado) {
+          setMazoEnMano([]);
+        }
+      }
+    };
+
+    cargarMazoEnMano();
+
+    return () => {
+      cancelado = true;
+    };
+  }, [partida, miJugador]);
 
   const tirarDado = useCallback(async (): Promise<throwDiceResponse | null> => {
     if (!partidaId || !username || cargandoAccion) return null;
@@ -167,17 +259,26 @@ export function usePartida({
     partida,
     setPartida,
 
+    jugadores,
+    tablero,
+    miJugador,
+    jugadorTurno,
+    tuTurno,
+    mazoEnMano,
+
     ultimaTirada,
     tiradaExtra,
     movimientos,
+
+    cargandoPartida,
+    cargandoAccion,
+    errorPartida,
 
     cargarPartida,
     tirarDado,
     moverFicha,
     jugarCarta,
 
-    cargandoAccion,
-    errorPartida,
     limpiarErrorPartida,
     limpiarMovimientos,
   };

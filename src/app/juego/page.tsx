@@ -12,6 +12,8 @@ import { useMazos } from "@/hooks/useMazos";
 import { useUser } from "@/context/userContext";
 import { Jugador } from "@/types/lobby";
 import { LobbiesService } from "@/services/lobbies.service";
+import { MatchesService } from "@/services/matches.service";
+import { Partida } from "@/types/partida";
 
 export default function JuegoPrincipalPage() {
   const router = useRouter();
@@ -32,7 +34,8 @@ export default function JuegoPrincipalPage() {
     cambiarTablero,
     eliminarJugador,
     agregarBot,
-    limpiarError
+    limpiarError,
+    limpiarLobby
   } = useLobby();
 
   const [mostrarPopupSalir, setMostrarPopupSalir] = useState(false);
@@ -104,7 +107,7 @@ export default function JuegoPrincipalPage() {
     const cargarTableros = async () => {
       try {
         const data = await LobbiesService.obtenerTablerosDisponibles();
-        setTablerosDisponibles(data.map((t) => t.nombre));
+        setTablerosDisponibles(data);
       } catch (err) {
         console.error("Error al obtener los tableros disponibles:", err);
       }
@@ -117,6 +120,25 @@ export default function JuegoPrincipalPage() {
       setTableroElegido(lobby.tablero);
     }
   }, [lobby?.tablero]);
+
+  useEffect(() => {
+    if (!username || !lobbyId) return;
+
+    const verificarLobbyActivo = async () => {
+      const lobbyActual = await obtenerLobbyDeJugador();
+
+      if (!lobbyActual) {
+        limpiarLobby();
+        const nuevoLobby = await crearLobby();
+        if (nuevoLobby) {
+          setLobbyId(nuevoLobby.idLobby);
+        }
+      }
+    };
+
+    const intervalId = window.setInterval(verificarLobbyActivo, 5000);
+    return () => window.clearInterval(intervalId);
+  }, [username, lobbyId, obtenerLobbyDeJugador, crearLobby, limpiarLobby]);
 
 
   // -------------------------------------------------------------------
@@ -150,6 +172,12 @@ export default function JuegoPrincipalPage() {
   const manejarAgregarBot = async () => {
     if (lobbyId && lobby?.idCreador === username) {
       await agregarBot(lobbyId);
+    }
+  };
+
+  const manejarEliminarBot = async (nombreBot: string) => {
+    if (lobbyId && lobby?.idCreador === username) {
+      await eliminarJugador(lobbyId, nombreBot);
     }
   };
 
@@ -235,7 +263,9 @@ export default function JuegoPrincipalPage() {
               esLider={huecos[0]?.nombre === lobby?.idCreador}
               nomJugador={huecos[0]?.nombre}
               iconoJugador={huecos[0]?.icono}
+              esBot={huecos[0]?.esIA}
               onAgregarBot={lobby?.idCreador === username ? manejarAgregarBot : undefined}
+              onEliminarBot={huecos[0] && huecos[0].nombre !== lobby?.idCreador && lobby?.idCreador === username ? () => manejarEliminarBot(huecos[0]!.nombre) : undefined}
             />
           </div>
           <div className="flex-1 min-h-0 flex flex-col justify-center">
@@ -244,7 +274,9 @@ export default function JuegoPrincipalPage() {
               esLider={huecos[1]?.nombre === lobby?.idCreador}
               nomJugador={huecos[1]?.nombre}
               iconoJugador={huecos[1]?.icono}
+              esBot={huecos[1]?.esIA}
               onAgregarBot={lobby?.idCreador === username ? manejarAgregarBot : undefined}
+              onEliminarBot={huecos[1] && huecos[1].nombre !== lobby?.idCreador && lobby?.idCreador === username ? () => manejarEliminarBot(huecos[1]!.nombre) : undefined}
             />
           </div>
         </div>
@@ -278,7 +310,18 @@ export default function JuegoPrincipalPage() {
 
           <button
             className="w-full bg-[#2078B4] hover:bg-[#00aeb5] text-white font-bold py-3 px-4 rounded-lg border-[#EFB810] border-white shadow-lg text-lg transition-colors disabled:opacity-50"
-            onClick={() => router.push('/partida')}
+            onClick={async () => {
+              if(!lobby?.idLobby) return;
+              try{
+                const partida = await MatchesService.iniciarPartida(lobby?.idLobby)
+
+                router.push(`/partida?matchId=${encodeURIComponent(partida.ID)}`);
+            }
+            catch(err) {
+              console.error("Error al iniciar la partida:", err);
+            }
+          }
+          }
             disabled={loading || !estoyListo}
           >
             Comenzar Partida
@@ -292,7 +335,9 @@ export default function JuegoPrincipalPage() {
               esLider={huecos[2]?.nombre === lobby?.idCreador}
               nomJugador={huecos[2]?.nombre}
               iconoJugador={huecos[2]?.icono}
+              esBot={huecos[2]?.esIA}
               onAgregarBot={lobby?.idCreador === username ? manejarAgregarBot : undefined}
+              onEliminarBot={huecos[2] && huecos[2].nombre !== lobby?.idCreador && lobby?.idCreador === username ? () => manejarEliminarBot(huecos[2]!.nombre) : undefined}
             />
           </div>
           <div className="flex-1 min-h-0 flex flex-col justify-center">
@@ -301,7 +346,9 @@ export default function JuegoPrincipalPage() {
               esLider={huecos[3]?.nombre === lobby?.idCreador}
               nomJugador={huecos[3]?.nombre}
               iconoJugador={huecos[3]?.icono}
+              esBot={huecos[3]?.esIA}
               onAgregarBot={lobby?.idCreador === username ? manejarAgregarBot : undefined}
+              onEliminarBot={huecos[3] && huecos[3].nombre !== lobby?.idCreador && lobby?.idCreador === username ? () => manejarEliminarBot(huecos[3]!.nombre) : undefined}
             />
           </div>
         </div>
