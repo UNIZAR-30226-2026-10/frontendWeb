@@ -13,4 +13,5 @@ export interface Lobby {
   numJugadores: number;
   numBots: number;
   tablero: string;
+  idPartida?: string;
 }

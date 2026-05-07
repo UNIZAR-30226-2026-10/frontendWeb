@@ -67,7 +67,7 @@ export default function Home() {
     );
   }
 
-  if (cargandoPartida) {
+  if (cargandoPartida && !partida) {
     return (
       <div className="text-white text-center mt-10 text-2xl w-full font-bold">
         Cargando Partida...

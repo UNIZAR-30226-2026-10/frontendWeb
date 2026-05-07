@@ -133,6 +133,8 @@ export default function JuegoPrincipalPage() {
         if (nuevoLobby) {
           setLobbyId(nuevoLobby.idLobby);
         }
+      } else if (lobbyActual.idPartida) {
+        router.push(`/partida?matchId=${encodeURIComponent(lobbyActual.idPartida)}`);
       }
     };
 
@@ -308,24 +310,24 @@ export default function JuegoPrincipalPage() {
             {estoyListo ? '✓ Listo' : 'Marcar como Listo'}
           </button>
 
-          <button
-            className="w-full bg-[#2078B4] hover:bg-[#00aeb5] text-white font-bold py-3 px-4 rounded-lg border-[#EFB810] border-white shadow-lg text-lg transition-colors disabled:opacity-50"
-            onClick={async () => {
-              if(!lobby?.idLobby) return;
-              try{
-                const partida = await MatchesService.iniciarPartida(lobby?.idLobby)
-
-                router.push(`/partida?matchId=${encodeURIComponent(partida.ID)}`);
-            }
-            catch(err) {
-              console.error("Error al iniciar la partida:", err);
-            }
-          }
-          }
-            disabled={loading || !estoyListo}
-          >
-            Comenzar Partida
-          </button>
+          {lobby?.idCreador === username && (
+            <button
+              className="w-full bg-[#2078B4] hover:bg-[#00aeb5] text-white font-bold py-3 px-4 rounded-lg border-[#EFB810] border-white shadow-lg text-lg transition-colors disabled:opacity-50"
+              onClick={async () => {
+                if(!lobby?.idLobby) return;
+                try{
+                  const partida = await MatchesService.iniciarPartida(lobby?.idLobby)
+                  router.push(`/partida?matchId=${encodeURIComponent(partida.ID)}`);
+                }
+                catch(err) {
+                  console.error("Error al iniciar la partida:", err);
+                }
+              }}
+              disabled={loading || !estoyListo}
+            >
+              Comenzar Partida
+            </button>
+          )}
         </div>
 
         <div className="flex flex-col justify-center gap-4 h-full w-full max-w-[300px] min-h-0">
