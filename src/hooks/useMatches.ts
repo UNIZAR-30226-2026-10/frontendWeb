@@ -175,41 +175,51 @@ export function usePartida({
   }, [partidaId, username, cargandoAccion]);
 
   const moverFicha = useCallback(
-    async (
-      pawnId: number,
-      posicionFinal: number,
-      pasosRestantes = 0
-    ): Promise<Partida | null> => {
-      if (!partidaId || !username || cargandoAccion) return null;
+  async (
+    pawnId: number,
+    posicionFinal: number,
+    pasosRestantes = 0
+  ): Promise<Partida | null> => {
+    if (!partidaId || !username || cargandoAccion) return null;
 
-      try {
-        setCargandoAccion(true);
-        setErrorPartida(null);
+    try {
+      setCargandoAccion(true);
+      setErrorPartida(null);
 
-        const partidaActualizada = await MatchesService.moverFicha(
-          partidaId,
-          username,
-          pawnId,
-          posicionFinal,
-          pasosRestantes
-        );
+      const partidaActualizada = await MatchesService.moverFicha(
+        partidaId,
+        username,
+        pawnId,
+        posicionFinal,
+        pasosRestantes
+      );
 
-        setPartida(partidaActualizada);
+      setPartida(partidaActualizada);
+
+      const casillaDestino =
+        partidaActualizada.snapshotTablero?.casillas?.[posicionFinal];
+
+      const sigueEnBifurcacion =
+        pasosRestantes > 0 && casillaDestino?.tipo === "Bifurcacion";
+
+      if (!sigueEnBifurcacion) {
         setMovimientos([]);
         setUltimaTirada(null);
         setTiradaExtra(null);
 
-        return partidaActualizada;
-      } catch (error) {
-        setErrorPartida(
-          error instanceof Error ? error.message : "Error al mover la ficha"
-        );
-        return null;
-      } finally {
-        setCargandoAccion(false);
       }
-    },
-    [partidaId, username, cargandoAccion]
+
+      return partidaActualizada;
+    } catch (error) {
+      setErrorPartida(
+        error instanceof Error ? error.message : "Error al mover la ficha"
+      );
+      return null;
+    } finally {
+      setCargandoAccion(false);
+    }
+  },
+  [partidaId, username, cargandoAccion]
   );
 
   const jugarCarta = useCallback(
