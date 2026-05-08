@@ -96,5 +96,16 @@ export const MatchesService = {
             throw new Error(err.error || 'Error al mover la ficha');
         }
         return response.json();
+    },
+    obtenerPartidasPendientes: async (email: string): Promise<{ matches: Array<{ jugadores: string[], fecha: string, mapa: string, ID: string }> }> => {
+        const response = await fetch(`${API_URL}/users/${email}/matches`, {
+            method: 'GET',
+            credentials: 'include'
+        });
+        if (!response.ok) {
+            const err = await response.json().catch(() => ({}));
+            throw new Error(err.error || 'Error al obtener las partidas pendientes');
+        }
+        return response.json();
     }
 };

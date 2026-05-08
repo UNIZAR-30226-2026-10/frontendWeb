@@ -1,20 +1,70 @@
-import Link from "next/dist/client/link";
-import React from "react";
+"use client";
+
+import Link from "next/link";
+import React, { useEffect, useState } from "react";
 import SlotPartida from "@/components/interfaz/SlotPartida";
-{/*hacer petición al back con las partidas pendientes del usuario actual, guardarlas en una lista de componentes de partida y 
-    mostrarlas como lista en la página*/}
+import { MatchesService } from "@/services/matches.service";
+import { useUser } from "@/context/userContext";
+
+interface MatchData {
+    jugadores: string[];
+    fecha: string;
+    mapa: string;
+    ID: string;
+}
 
 export default function ContinuarPartida() {
+    const { userEmail } = useUser();
+    const [partidas, setPartidas] = useState<MatchData[]>([]);
+    const [cargando, setCargando] = useState(true);
+
+    useEffect(() => {
+        const cargarPartidas = async () => {
+            if (!userEmail) {
+                setCargando(false);
+                return;
+            }
+            try {
+                const data = await MatchesService.obtenerPartidasPendientes(userEmail);
+                setPartidas(data.matches);
+            } catch (error) {
+                console.error("Error al cargar las partidas pendientes:", error);
+            } finally {
+                setCargando(false);
+            }
+        };
+
+        cargarPartidas();
+    }, [userEmail]);
+
     return (
-        <main className="min-h-screen">
-            <div className="flex justify-between text-2xl">
-                <Link href="/juego"className="flex text-white font-sans pl-90">Crear Partida</Link>
-                <h1 className="flex underline font-sans pr-90 text-gray-400">Continuar</h1>
+        <main className="min-h-screen w-full h-full flex flex-col p-4 md:p-8 overflow-y-auto relative text-white">
+            <div className="flex justify-center items-center gap-12 text-3xl mb-2 shrink-0">
+                <Link href="/juego" className="text-center font-bold hover:text-gray-300">
+                    Crear Partida
+                </Link>
+                <h1 className="flex underline font-bold cursor-pointer text-white">
+                    Continuar
+                </h1>
             </div>
-            <ul className="mt-4 flex flex-col text-white w-full ">
-                <SlotPartida jugadores={["Jugador 1", "Jugador 2"]} fechaCreacion="2024-06-01" turnoActual="Jugador 1" creadorPartida="Jugador 1"/>
-                <SlotPartida jugadores={["Jugador 1", "Jugador 2", "Jugador 3"]} fechaCreacion="2024-06-02" turnoActual="Jugador 2" creadorPartida="Jugador 2"/>
-            </ul>
+            
+            {cargando ? (
+                <div className="text-center mt-10 text-xl font-bold">Cargando partidas...</div>
+            ) : partidas.length === 0 ? (
+                <div className="text-center mt-10 text-xl font-bold">No tienes partidas pendientes.</div>
+            ) : (
+                <ul className="mt-8 flex flex-col w-full max-w-4xl mx-auto gap-4">
+                    {partidas.map((partida) => (
+                        <SlotPartida 
+                            key={partida.ID}
+                            jugadores={partida.jugadores} 
+                            fecha={partida.fecha} 
+                            mapa={partida.mapa} 
+                            ID={partida.ID}
+                        />
+                    ))}
+                </ul>
+            )}
         </main>
     );
 }
