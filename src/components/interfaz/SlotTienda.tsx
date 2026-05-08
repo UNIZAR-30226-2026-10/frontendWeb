@@ -17,6 +17,8 @@ const SlotTienda: React.FC<SlotTiendaProps> = ({ item, onSelect, isComprado = it
     }
   };
 
+  const esIcono = item.tipo === 'Icono';
+
   return (
     <div 
       onClick={handleClick}
@@ -26,13 +28,14 @@ const SlotTienda: React.FC<SlotTiendaProps> = ({ item, onSelect, isComprado = it
           : 'bg-[#1a2a6c] border-white/5 hover:border-amber-400 hover:scale-105 cursor-pointer group'
         }`}
     >
-      <div className={`w-full aspect-square rounded-xl mb-4 flex items-center justify-center overflow-hidden transition-colors
+      <div className={`w-full aspect-square mb-4 flex items-center justify-center overflow-hidden transition-colors
+        ${esIcono ? 'rounded-full' : 'rounded-xl'}
         ${isComprado ? 'bg-white/5' : 'bg-white/10 group-hover:bg-white/20'}`}
       >
         <img 
           src={item.imagen} 
           alt={item.nombre} 
-          className={`w-full h-full object-contain p-2 ${isComprado ? 'grayscale opacity-50' : ''}`}
+          className={`w-full h-full ${esIcono ? 'object-cover' : 'object-contain p-2'} ${isComprado ? 'grayscale opacity-50' : ''}`}
         />
       </div>
       

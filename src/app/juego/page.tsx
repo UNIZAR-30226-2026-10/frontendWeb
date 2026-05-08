@@ -39,8 +39,8 @@ export default function JuegoPrincipalPage() {
   } = useLobby();
 
   const [mostrarPopupSalir, setMostrarPopupSalir] = useState(false);
-  const [mazoElegido, setMazoElegido] = useState("Mazo de Fuego");
-  const [tableroElegido, setTableroElegido] = useState("Tablero 1");
+  const [mazoElegido, setMazoElegido] = useState("");
+  const [tableroElegido, setTableroElegido] = useState("");
   const [tablerosDisponibles, setTablerosDisponibles] = useState<string[]>([]);
   const [lobbyId, setLobbyId] = useState<string | null>(null);
   const [miPosicion, setMiPosicion] = useState<number>(0);
@@ -92,16 +92,8 @@ export default function JuegoPrincipalPage() {
     const miJugadorEnLobby = lobby?.jugadores.find(j => j.nombre === username);
     if (miJugadorEnLobby?.nombreMazo) {
       setMazoElegido(miJugadorEnLobby.nombreMazo);
-      return;
     }
-
-    if (decks.length > 0) {
-      const existeMazoSeleccionado = decks.some(d => d.nombre === mazoElegido);
-      if (!existeMazoSeleccionado) {
-        setMazoElegido(decks[0].nombre);
-      }
-    }
-  }, [decks, lobby, username, mazoElegido]);
+  }, [decks, lobby, username]);
 
   useEffect(() => {
     const cargarTableros = async () => {

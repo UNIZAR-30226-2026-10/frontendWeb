@@ -37,7 +37,7 @@ const SelectorTablero: React.FC<SelectorTableroProps> = ({
             ✏️
           </span>
           <div>
-            <p className="text-white font-bold text-lg leading-tight">{tableroSeleccionado}</p>
+            <p className="text-white font-bold text-lg leading-tight">{tableroSeleccionado || 'Selecciona un tablero'}</p>
             <p className="text-white/60 text-xs uppercase tracking-widest mt-2">Seleccionar tablero</p>
           </div>
         </div>

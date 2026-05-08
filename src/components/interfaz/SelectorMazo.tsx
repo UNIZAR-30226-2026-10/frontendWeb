@@ -44,7 +44,7 @@ const SelectorMazo: React.FC<SelectorMazoProps> = ({
           ${(!hayMazos || isLoading) ? "opacity-70 cursor-not-allowed" : ""}`}
       >
         <span className="text-white font-bold">
-          {isLoading ? 'Cargando mazos...' : (hayMazos ? mazoSeleccionado : 'Sin mazos disponibles')}
+          {isLoading ? 'Cargando mazos...' : (hayMazos ? (mazoSeleccionado || 'Selecciona un mazo') : 'Sin mazos disponibles')}
         </span>
         <span 
           className={`text-white transition-transform duration-200 p-1 text-xl leading-none

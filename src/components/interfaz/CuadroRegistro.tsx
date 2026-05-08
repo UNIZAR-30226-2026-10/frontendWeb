@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { CuentaService } from '@/services/cuentas.service';
+import ModalExito from '@/components/interfaz/ModalExito';
 
 export default function CuadroRegistro() {
   const [email, setEmail] = useState('');
@@ -12,6 +13,7 @@ export default function CuadroRegistro() {
   const [passwordConfirm, setPasswordConfirm] = useState('');
   const [error, setError] = useState('');
   const [cargando, setCargando] = useState(false);
+  const [mostrarExito, setMostrarExito] = useState(false);
   
   const router = useRouter();
 
@@ -28,8 +30,7 @@ export default function CuadroRegistro() {
 
     try {
       await CuentaService.register(email, nombre, password);
-      alert("¡Cuenta creada con éxito! Ya puedes iniciar sesión.");
-      router.push('/'); 
+      setMostrarExito(true);
     } catch (err) {
       if (err instanceof Error) {
         setError(err.message || 'Error al registrar la cuenta');
@@ -42,6 +43,13 @@ export default function CuadroRegistro() {
   };
 
   return (
+    <>
+      {mostrarExito && (
+        <ModalExito
+          mensaje="Cuenta creada correctamente"
+          onClose={() => router.push('/')}
+        />
+      )}
     <div className="relative z-10 w-full max-w-md bg-[#121943] p-8 rounded-xl shadow-2xl border border-blue-500/30">
       
       {/* FLECHA PARA VOLVER AL INICIO DE SESION */}
@@ -122,5 +130,6 @@ export default function CuadroRegistro() {
         </button>
       </form>
     </div> 
+    </>
   );
 }

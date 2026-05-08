@@ -9,9 +9,12 @@ interface Props {
   onClose: () => void;
   onSelect: (item: Cosmetico) => void;
   skinSeleccionadaId?: string;
+  tipo?: string;
 }
 
-const SelectorSkin: React.FC<Props> = ({ titulo, items, onClose, onSelect, skinSeleccionadaId }) => {
+const SelectorSkin: React.FC<Props> = ({ titulo, items, onClose, onSelect, skinSeleccionadaId, tipo }) => {
+  const esIcono = tipo === 'Icono';
+
   return (
     <div className="absolute inset-0 z-[100] flex items-center justify-center p-6">
       <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={onClose} />
@@ -29,11 +32,15 @@ const SelectorSkin: React.FC<Props> = ({ titulo, items, onClose, onSelect, skinS
                 skin.nombre === skinSeleccionadaId ? "border-yellow-400 bg-yellow-400/10" : "border-transparent bg-black/20 hover:bg-black/40"
               }`}
             >
-              <div className="w-full aspect-square bg-white rounded-xl flex items-center justify-center text-gray-200 text-[10px] font-bold uppercase overflow-hidden">
+              <div className={`w-24 h-24 flex items-center justify-center overflow-hidden bg-white/10 ${
+                esIcono ? 'rounded-full' : 'rounded-xl'
+              }`}>
                 {skin.imagen ? (
-                  <img src={skin.imagen} alt={skin.nombre} className="w-full h-full object-contain p-2" />
+                  <img src={skin.imagen} alt={skin.nombre} className={`w-full h-full ${
+                    esIcono ? 'object-cover' : 'object-contain p-2'
+                  }`} />
                 ) : (
-                  <span>Imagen</span>
+                  <span className="text-white/50 text-[10px] font-bold uppercase">Imagen</span>
                 )}
               </div>
               <p className="font-bold text-xs text-center text-white uppercase">{skin.nombre}</p>
@@ -45,4 +52,4 @@ const SelectorSkin: React.FC<Props> = ({ titulo, items, onClose, onSelect, skinS
   );
 };
 
-export default SelectorSkin;
+export default SelectorSkin;

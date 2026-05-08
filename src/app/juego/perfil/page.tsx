@@ -65,6 +65,7 @@ export default function Perfil() {
               ? perfil.fotoPerfil 
               : perfil.cosmeticos.find(c => c.tipo === tipoEdicion)?.nombre
           }
+          tipo={tipoEdicion}
         />
       )}
 

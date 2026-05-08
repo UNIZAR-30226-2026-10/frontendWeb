@@ -50,7 +50,12 @@ export default function MisMazosPage() {
             href="/juego/mazos/editarmazos" 
             className="flex rounded-lg bg-[#283F9F] border-amber-400 border-2 font-sans font-bold w-60 h-14 items-center justify-center text-white hover:bg-[#1a237e] gap-3 shadow-md transition-all group"
           >  
-            <div className="border-2 border-white/70 rounded-full w-6 h-6 flex items-center justify-center text-xl font-normal">+</div>
+            <div className="border-2 border-white/70 rounded-full w-7 h-7 flex items-center justify-center">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" className="w-4 h-4 text-white">
+                <line x1="12" y1="5" x2="12" y2="19" />
+                <line x1="5" y1="12" x2="19" y2="12" />
+              </svg>
+            </div>
             <span className="group-hover:underline uppercase text-sm">Nuevo Mazo</span>
           </Link>
         )}

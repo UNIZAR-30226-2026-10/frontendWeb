@@ -11,6 +11,7 @@
     const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
     const [errorMazo, setErrorMazo] = useState({ abierto: false, mensaje: '' });
+    const [exitoGuardado, setExitoGuardado] = useState(false);
 
     const limiteMazo = 10;
 
@@ -73,8 +74,7 @@
         } else {
           await MazoService.createMazo(email, nombreMazo, cartasSeleccionadas);
         }
-        alert("¡Mazo guardado con éxito!");
-        window.location.href = "/juego/mazos"; // Redirección simple para asegurar limpieza de estado
+        setExitoGuardado(true);
       } catch (err) {
         setErrorMazo({ abierto: true, mensaje: 'Error al guardar' });
       } finally {
@@ -90,6 +90,7 @@
       isLoading, isSaving,
       getCantidad: (nombre: string) => cartasSeleccionadas.filter(c => c.nombre === nombre).length,
       addCarta, removeCarta, guardarMazo,
-      errorMazo, cerrarError: () => setErrorMazo({ ...errorMazo, abierto: false })
+      errorMazo, cerrarError: () => setErrorMazo({ ...errorMazo, abierto: false }),
+      exitoGuardado
     };
   };

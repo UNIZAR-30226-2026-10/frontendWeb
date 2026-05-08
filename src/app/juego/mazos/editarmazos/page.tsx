@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation"; // Importar esto
 import { DisplayCarta } from "@/components/interfaz/DisplayCarta";
 import ErrorMazo from "@/components/interfaz/ErrorMazo";
+import ModalExito from "@/components/interfaz/ModalExito";
 import { useEditorMazos } from "@/hooks/useEditorMazos";
 import { useUser } from "@/context/userContext";
 
@@ -12,21 +13,22 @@ export default function EditorMazosPage() {
   const { userEmail } = useUser();
   const searchParams = useSearchParams();
   const deckId = searchParams.get("id"); // Capturamos el ID de la URL (?id=...)
-  
+
   const {
     cartasDisponibles,
     cartasSeleccionadas,
-    nombreMazo, 
+    nombreMazo,
     setNombreMazo,
     limiteMazo,
-    isLoading, 
+    isLoading,
     isSaving,
-    getCantidad, 
-    addCarta, 
-    removeCarta, 
+    getCantidad,
+    addCarta,
+    removeCarta,
     guardarMazo,
-    errorMazo, 
-    cerrarError
+    errorMazo,
+    cerrarError,
+    exitoGuardado
   } = useEditorMazos(userEmail || "", deckId || undefined);
 
   // Si no hay usuario cargado aún, no renderizamos para evitar errores de API
@@ -44,21 +46,29 @@ export default function EditorMazosPage() {
 
   return (
     <main className="w-full h-full flex flex-col p-4 md:p-8 overflow-y-auto bg-[#0a0f2c] custom-scroll">
-      
+
       {/* Modal de error (lleno, nombre vacío, etc) */}
       {errorMazo.abierto && (
-        <ErrorMazo 
-          mensaje={errorMazo.mensaje} 
-          onClose={cerrarError} 
+        <ErrorMazo
+          mensaje={errorMazo.mensaje}
+          onClose={cerrarError}
+        />
+      )}
+
+      {/* Modal de éxito al guardar mazo */}
+      {exitoGuardado && (
+        <ModalExito
+          mensaje="Mazo guardado correctamente"
+          onClose={() => { window.location.href = '/juego/mazos'; }}
         />
       )}
 
       {/* CABECERA: Título, Input y Contador */}
       <div className="flex flex-col items-center justify-center text-white shrink-0 mb-12 gap-4">
         <h1 className="text-4xl font-bold tracking-tight text-yellow-400">Editor de Mazos</h1>
-        
-        <input 
-          type="text" 
+
+        <input
+          type="text"
           value={nombreMazo}
           onChange={(e) => setNombreMazo(e.target.value)}
           placeholder="Escribe el nombre de tu mazo..."
@@ -79,8 +89,8 @@ export default function EditorMazosPage() {
           <h2 className="text-white font-bold mb-4 uppercase text-sm tracking-widest text-center">Cartas en tu mazo (Haz click para quitar)</h2>
           <div className="flex flex-wrap justify-center gap-4">
             {cartasSeleccionadas.map((carta, index) => (
-              <div 
-                key={`selected-${index}`} 
+              <div
+                key={`selected-${index}`}
                 onClick={() => removeCarta(carta.nombre)}
                 className="cursor-pointer hover:scale-105 transition-transform"
               >
@@ -98,13 +108,13 @@ export default function EditorMazosPage() {
 
       {/* CATÁLOGO DE CARTAS (Todas las disponibles en el juego) */}
       <h2 className="text-white text-2xl font-bold mb-6 ml-10">Tu Colección</h2>
-      
+
       <div className="flex flex-row flex-wrap gap-12 justify-center pb-32">
         {cartasDisponibles.map((carta, index) => {
           const cantidad = getCantidad(carta.nombre);
           return (
-            <div 
-              key={index} 
+            <div
+              key={index}
               onClick={() => addCarta(carta)}
               className="relative cursor-pointer group"
             >
@@ -114,14 +124,14 @@ export default function EditorMazosPage() {
                   x{cantidad}
                 </div>
               )}
-              
+
               <div className="group-hover:drop-shadow-[0_0_15px_rgba(250,204,21,0.5)] transition-all">
                 <DisplayCarta carta={carta} />
               </div>
 
               {/* Overlay de "Click para añadir" */}
               <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity rounded-[1.5rem]">
-                 <span className="text-white font-bold bg-black/60 px-3 py-1 rounded-full border border-white/20">Añadir</span>
+                <span className="text-white font-bold bg-black/60 px-3 py-1 rounded-full border border-white/20">Añadir</span>
               </div>
             </div>
           );
@@ -130,20 +140,20 @@ export default function EditorMazosPage() {
 
       {/* BOTONERA FLOTANTE DE ACCIÓN */}
       <div className="fixed bottom-0 left-0 w-full p-6 bg-gradient-to-t from-[#0a0f2c] to-transparent flex justify-between items-center px-10">
-        <Link 
-          href="/juego/mazos" 
+        <Link
+          href="/juego/mazos"
           className="bg-gray-700 hover:bg-gray-600 text-white px-8 py-3 rounded-lg font-bold transition-colors"
         >
           Volver
         </Link>
 
-        <button 
+        <button
           onClick={guardarMazo}
           disabled={isSaving || cartasSeleccionadas.length === 0}
           className={`
             flex items-center gap-3 px-12 py-4 rounded-xl font-sans font-bold text-xl shadow-2xl transition-all
-            ${isSaving || cartasSeleccionadas.length === 0 
-              ? "bg-gray-600 cursor-not-allowed opacity-50" 
+            ${isSaving || cartasSeleccionadas.length === 0
+              ? "bg-gray-600 cursor-not-allowed opacity-50"
               : "bg-yellow-500 hover:bg-yellow-400 text-black transform hover:-translate-y-1 active:scale-95"}
           `}
         >
