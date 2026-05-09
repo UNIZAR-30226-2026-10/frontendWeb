@@ -23,7 +23,7 @@ export const DadoPartida: React.FC<DadoPartidaProps> = ({ onTirar, resultado, re
       
       {/* Contenedor del resultado */}
       <div className="h-12 flex items-center justify-center">
-        {resultado !== null && resultadoAux !== null && resultadoAux === 0 && (
+        {resultado !== null && resultado !== 0 && resultadoAux !== null && resultadoAux === 0 && (
           <div className="bg-white/20 backdrop-blur-sm border border-white/30 px-6 py-1 rounded-xl animate-bounce">
             <span className="text-white text-3xl font-black drop-shadow-md">
               {resultado}
@@ -35,6 +35,15 @@ export const DadoPartida: React.FC<DadoPartidaProps> = ({ onTirar, resultado, re
             <span className="text-yellow-300 text-xl font-bold drop-shadow-md">
               {resultado - resultadoAux}
             <span className="mx-1 text-white">+</span>
+              {resultadoAux}
+            </span>
+           </div>
+        )}
+        {resultado !== null && resultadoAux !== null && resultadoAux < 0  && (
+          <div className="bg-red-500/30 backdrop-blur-sm border border-red-500/50 px-4 py-1 rounded-xl animate-pulse ml-2">
+            <span className="text-red-300 text-xl font-bold drop-shadow-md">
+              {resultado - resultadoAux}
+              <span className="text-white"></span>
               {resultadoAux}
             </span>
            </div>

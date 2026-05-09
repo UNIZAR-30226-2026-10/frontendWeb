@@ -8,13 +8,23 @@ const CARTAS_CON_OBJETIVO_JUGADOR = [
   "Mal de ojo",
   "Pickpocket",
   "Dado envenenado",
-  "Serpiente en tu bota",
+  "Noqueo",
+  "Bolsillo roto",
 ];
 
 // Cartas que necesitan seleccionar casillas inicio y fin
 const CARTAS_CON_CASILLAS = [
   "Wild Frank",
   "Carpintero",
+];
+
+// Cartas que necesitan seleccionar una única casilla de destino
+const CARTAS_CON_CASILLA_UNICA = [
+  "Día de la marmota",
+  "Dia de la marmota",
+  "Agujero de serpiente",
+  "Salto de longitud",
+  "Serpiente en tu bota",
 ];
 
 // Cartas que necesitan seleccionar una ficha propia (who = number)
@@ -48,6 +58,7 @@ export const ModalCarta: React.FC<ModalCartaProps> = ({
 
   const necesitaObjetivo = CARTAS_CON_OBJETIVO_JUGADOR.includes(carta.nombre);
   const necesitaCasillas = CARTAS_CON_CASILLAS.includes(carta.nombre);
+  const necesitaCasillaUnica = CARTAS_CON_CASILLA_UNICA.includes(carta.nombre);
   const necesitaFicha = CARTAS_CON_FICHA.includes(carta.nombre);
 
   const puedeJugar = esMiTurno && !yaJugadoCarta;
@@ -60,13 +71,20 @@ export const ModalCarta: React.FC<ModalCartaProps> = ({
       }
       onJugar(carta, jugadorObjetivo);
     } else if (necesitaCasillas) {
-      const inicio = parseInt(casillaInicio);
-      const fin = parseInt(casillaFin);
+      const inicio = parseInt(casillaInicio) - 1;
+      const fin = parseInt(casillaFin) - 1;
       if (isNaN(inicio) || isNaN(fin)) {
         alert("Introduce casillas válidas.");
         return;
       }
       onJugar(carta, undefined, inicio, fin);
+    } else if (necesitaCasillaUnica) {
+      const inicio = parseInt(casillaInicio) - 1;
+      if (isNaN(inicio)) {
+        alert("Introduce una casilla válida.");
+        return;
+      }
+      onJugar(carta, undefined, inicio);
     } else if (necesitaFicha) {
       const fichaId = parseInt(fichaSeleccionada);
       if (isNaN(fichaId)) {
@@ -143,6 +161,22 @@ export const ModalCarta: React.FC<ModalCartaProps> = ({
                 placeholder="1-100"
               />
             </div>
+          </div>
+        )}
+
+        {/* Selección de casilla única */}
+        {puedeJugar && necesitaCasillaUnica && (
+          <div className="w-full">
+            <label className="text-white text-xs font-bold mb-1 block">Selecciona la casilla objetivo:</label>
+            <input
+              type="number"
+              min={1}
+              max={100}
+              value={casillaInicio}
+              onChange={(e) => setCasillaInicio(e.target.value)}
+              className="w-full p-2 rounded-lg bg-slate-800 text-white border border-blue-600 text-sm"
+              placeholder="1-100"
+            />
           </div>
         )}
 

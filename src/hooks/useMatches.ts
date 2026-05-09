@@ -11,6 +11,105 @@ import {
   movimientosResponse,
 } from "../types/partida";
 
+function calcularMovimientosFrontend(
+  partida: Partida,
+  miJugador: any,
+  tirada: number
+): movimientosResponse[] {
+  const movimientos: movimientosResponse[] = [];
+  const tablero = partida.snapshotTablero;
+  const estadoJugadores = partida.snapshotJugadores;
+
+  const checkBlockInBox = (casilla: number): boolean => {
+    let count = 0;
+    for (const j of estadoJugadores.jugadores) {
+      for (const f of j.fichas) {
+        if (!f.meta && f.casilla === casilla) {
+          count++;
+        }
+      }
+    }
+    return count >= 2;
+  };
+
+  let fichasBloqueadas: number[] = [];
+  if (tirada === 6) {
+    const posicionesFichas = miJugador.fichas
+      .filter((f: any) => !f.meta)
+      .map((f: any) => f.casilla);
+    const bloqueoUsuario = posicionesFichas.find(
+      (pos: number, index: number) => posicionesFichas.indexOf(pos) !== index
+    );
+    if (bloqueoUsuario !== undefined) {
+      fichasBloqueadas = miJugador.fichas
+        .filter((f: any) => f.casilla === bloqueoUsuario && !f.meta)
+        .map((f: any) => f.id);
+    }
+  }
+
+  for (const ficha of miJugador.fichas) {
+    if (fichasBloqueadas.length > 0 && !fichasBloqueadas.includes(ficha.id))
+      continue;
+    if (ficha.meta) continue;
+
+    let casillaActual = ficha.casilla;
+    let pasos = tirada;
+    let haciaAtras = false;
+    let esBifurcacion = false;
+    let casillaTablero;
+
+    while (pasos > 0) {
+      casillaTablero = tablero.casillas[casillaActual];
+      if (!casillaTablero) break;
+
+      if (!haciaAtras) {
+        if (casillaTablero.tipo === "Meta") {
+          haciaAtras = true;
+          continue;
+        }
+        if (casillaTablero.tipo === "Bifurcacion") {
+          esBifurcacion = true;
+          break;
+        }
+        if (checkBlockInBox(casillaTablero.siguientes[0])) {
+          if (
+            miJugador.efectosActivos.some(
+              (e: any) => e.resumenEfecto === "Saltar bloqueo"
+            )
+          ) {
+            pasos++;
+          } else {
+            break;
+          }
+        }
+        casillaActual = casillaTablero.siguientes[0];
+        pasos--;
+      } else {
+        const indexAnterior = tablero.casillas.findIndex((casilla) =>
+          casilla.siguientes.includes(casillaActual)
+        );
+        if (indexAnterior === -1 || checkBlockInBox(indexAnterior)) {
+          break;
+        }
+        casillaActual = indexAnterior;
+        pasos--;
+      }
+    }
+
+    const movimiento: movimientosResponse = {
+      fichaId: ficha.id,
+      casillaDestino: casillaActual,
+      esBifurcacion: esBifurcacion,
+    };
+    if (esBifurcacion && pasos > 0) {
+      movimiento.pasosRestantes = pasos;
+    }
+    movimientos.push(movimiento);
+  }
+
+  return movimientos;
+}
+
 type UsePartidaParams = {
   partidaId?: string | null;
   username?: string | null;
@@ -69,6 +168,31 @@ export function usePartida({
       window.clearInterval(intervalId);
     };
   }, [partidaId, username, cargarPartida]);
+
+  useEffect(() => {
+    if (partida && username) {
+      const miJugador = partida.snapshotJugadores.jugadores.find(
+        (jugador) => jugador.username === username
+      );
+
+      if (
+        miJugador &&
+        miJugador.fase === "Movimiento" &&
+        miJugador.ultimaTirada !== undefined &&
+        miJugador.ultimaTirada !== null &&
+        ultimaTirada === null &&
+        movimientos.length === 0
+      ) {
+        setUltimaTirada(miJugador.ultimaTirada);
+        const reconstructedMovs = calcularMovimientosFrontend(
+          partida,
+          miJugador,
+          miJugador.ultimaTirada
+        );
+        setMovimientos(reconstructedMovs);
+      }
+    }
+  }, [partida, username, ultimaTirada, movimientos]);
 
   const miJugador = useMemo(() => {
     if (!partida || !username) return null;

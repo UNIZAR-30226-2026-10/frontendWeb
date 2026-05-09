@@ -55,6 +55,12 @@ export default function Tablero({
     siguientes: number[];
   } | null>(null);
 
+  const [escaleraPendiente, setEscaleraPendiente] = useState<{
+    movimiento: MovimientoDisponible;
+    base: number;
+    cima: number;
+  } | null>(null);
+
   const casillas = snapshotTablero?.casillas ?? [];
 
   const fichasPorCasilla = useMemo(() => {
@@ -254,6 +260,34 @@ export default function Tablero({
     if (!esDestino || !onMoverFicha || !snapshotTablero) return;
 
     const pasosRestantes = esDestino.pasosRestantes ?? 0;
+    const destinoCasilla = snapshotTablero.casillas[esDestino.casillaDestino];
+
+    // --- MANEJO DE SERPIENTES ---
+    if (destinoCasilla?.tipo === "Serpiente" && destinoCasilla.saltoA !== undefined) {
+      const miJugador = jugadores.find((j) => j.username === equipoActual);
+      const tieneAntidoto = miJugador?.efectosActivos.some(
+        (e) => e.resumenEfecto === "Antidoto"
+      );
+
+      if (!tieneAntidoto) {
+        await onMoverFicha(
+          esDestino.fichaId,
+          destinoCasilla.saltoA,
+          pasosRestantes
+        );
+        return;
+      }
+    }
+
+    // --- MANEJO DE ESCALERAS ---
+    if (destinoCasilla?.tipo === "Escalera" && destinoCasilla.saltoA !== undefined) {
+      setEscaleraPendiente({
+        movimiento: esDestino,
+        base: esDestino.casillaDestino,
+        cima: destinoCasilla.saltoA,
+      });
+      return;
+    }
 
     if (esDestino.esBifurcacion && pasosRestantes > 0) {
       const casillaBifurcacion =
@@ -353,6 +387,26 @@ export default function Tablero({
                     transform: `rotate(${rotacion}deg)`,
                   }}
                 />
+
+                {datosCasilla?.efecto && (
+                  <div className="absolute inset-0 z-10 flex items-center justify-center p-1 pointer-events-none">
+                    <img
+                      src={
+                        datosCasilla.efecto === "-4"
+                          ? "/efecto_menos_cuatro.png"
+                          : datosCasilla.efecto === "+4"
+                          ? "/efecto_mas_cuatro.png"
+                          : datosCasilla.efecto === "Agujero de serpiente"
+                          ? "/agujero_de_serpiente.png"
+                          : datosCasilla.efecto === "Serpiente en tu bota"
+                          ? "/serpiente_en_tu_bota.png"
+                          : ""
+                      }
+                      alt={datosCasilla.efecto}
+                      className="w-[85%] h-[85%] object-contain drop-shadow-[0_0_8px_rgba(255,255,255,0.4)]"
+                    />
+                  </div>
+                )}
 
                 {esDestino && (
                   <div className="absolute inset-0 z-20 rounded-sm border-2 border-yellow-300 bg-yellow-300/30 animate-pulse pointer-events-none" />
@@ -520,6 +574,46 @@ export default function Tablero({
             >
               Cancelar
             </button>
+          </div>
+        </div>
+      )}
+      {escaleraPendiente && (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60">
+          <div className="w-80 rounded-2xl border-4 border-yellow-400 bg-blue-900 p-6 text-center shadow-2xl">
+            <h2 className="mb-2 text-2xl font-black text-white">Escalera</h2>
+            <p className="mb-4 text-sm font-semibold text-blue-100">
+              ¿Quieres subir la escalera hasta la casilla {escaleraPendiente.cima + 1}?
+            </p>
+            <div className="flex justify-center gap-4">
+              <button
+                type="button"
+                className="rounded-xl bg-green-500 px-5 py-3 font-black text-white shadow-lg transition hover:scale-105 active:scale-95 cursor-pointer"
+                onClick={async () => {
+                  if (!onMoverFicha || !escaleraPendiente) return;
+                  const { movimiento, cima } = escaleraPendiente;
+                  const pasos = movimiento.pasosRestantes ?? 0;
+                  setEscaleraPendiente(null);
+                  await onMoverFicha(movimiento.fichaId, cima, pasos);
+                }}
+              >
+                Subir
+                <span className="block text-xs font-bold text-white/80">Casilla {escaleraPendiente.cima + 1}</span>
+              </button>
+              <button
+                type="button"
+                className="rounded-xl bg-red-500 px-5 py-3 font-black text-white shadow-lg transition hover:scale-105 active:scale-95 cursor-pointer"
+                onClick={async () => {
+                  if (!onMoverFicha || !escaleraPendiente) return;
+                  const { movimiento, base } = escaleraPendiente;
+                  const pasos = movimiento.pasosRestantes ?? 0;
+                  setEscaleraPendiente(null);
+                  await onMoverFicha(movimiento.fichaId, base, pasos);
+                }}
+              >
+                Quedarse
+                <span className="block text-xs font-bold text-white/80">Casilla {escaleraPendiente.base + 1}</span>
+              </button>
+            </div>
           </div>
         </div>
       )}
