@@ -61,6 +61,12 @@ export default function Tablero({
     cima: number;
   } | null>(null);
 
+  const [fichaSeleccionada, setFichaSeleccionada] = useState<number | null>(null);
+
+  React.useEffect(() => {
+    if (movimientos.length === 0) setFichaSeleccionada(null);
+  }, [movimientos]);
+
   const casillas = snapshotTablero?.casillas ?? [];
 
   const fichasPorCasilla = useMemo(() => {
@@ -105,13 +111,17 @@ export default function Tablero({
   const destinosValidos = useMemo(() => {
     const mapa: Record<number, MovimientoDisponible> = {};
 
-    movimientos.forEach((mov) => {
-      const casillaVisual = mov.casillaDestino + 1;
-      mapa[casillaVisual] = mov;
-    });
+    if (fichaSeleccionada !== null) {
+      movimientos.forEach((mov) => {
+        if (mov.fichaId === fichaSeleccionada) {
+          const casillaVisual = mov.casillaDestino + 1;
+          mapa[casillaVisual] = mov;
+        }
+      });
+    }
 
     return mapa;
-  }, [movimientos]);
+  }, [movimientos, fichaSeleccionada]);
 
   const saltosDinamicos = useMemo<Record<number, number>>(() => {
     const saltos: Record<number, number> = {};
@@ -258,6 +268,8 @@ export default function Tablero({
     esDestino: MovimientoDisponible | undefined
   ) => {
     if (!esDestino || !onMoverFicha || !snapshotTablero) return;
+    
+    setFichaSeleccionada(null);
 
     const pasosRestantes = esDestino.pasosRestantes ?? 0;
     const destinoCasilla = snapshotTablero.casillas[esDestino.casillaDestino];
@@ -333,7 +345,10 @@ export default function Tablero({
   }
 
   return (
-    <div className="flex flex-col items-center justify-center gap-2 h-full max-h-full w-full mx-auto p-2 min-h-0 relative">
+    <div 
+      className="flex flex-col items-center justify-center gap-2 h-full max-h-full w-full mx-auto p-2 min-h-0 relative"
+      onClick={() => setFichaSeleccionada(null)}
+    >
       <div className="h-full aspect-square max-w-full max-h-full bg-gray-900 p-1.5 rounded-2xl shadow-2xl shrink min-h-0 relative">
         <div className="w-full h-full grid grid-cols-10 grid-rows-10 relative overflow-hidden rounded-md">
           <div className="absolute inset-0 w-full h-full pointer-events-none z-30">
@@ -374,8 +389,13 @@ export default function Tablero({
                 className={`relative flex items-center justify-center ${
                   esDestino ? "cursor-pointer" : ""
                 }`}
-                onClick={() => {
-                  void manejarClickCasilla(esDestino);
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (esDestino) {
+                    void manejarClickCasilla(esDestino);
+                  } else {
+                    setFichaSeleccionada(null);
+                  }
                 }}
               >
                 <div
@@ -434,11 +454,16 @@ export default function Tablero({
                         {grupos.map((grupo) => {
                           const representante = grupo[0];
                           const cantidad = grupo.length;
+                          
+                          const tieneMovimiento = representante.username === equipoActual && movimientos.some(m => grupo.some(f => f.fichaId === m.fichaId));
+                          const esSeleccionada = grupo.some(f => f.fichaId === fichaSeleccionada);
 
                           return (
                             <div
                               key={representante.username}
-                              className="rounded-full shadow-md flex items-center justify-center overflow-hidden relative"
+                              className={`rounded-full shadow-md flex items-center justify-center overflow-hidden relative transition-all duration-200 pointer-events-auto ${
+                                tieneMovimiento ? 'cursor-pointer' : ''
+                              }`}
                               style={{
                                 width:
                                   grupos.length > 2
@@ -458,6 +483,17 @@ export default function Tablero({
                               title={`${representante.username} - ${cantidad} ficha${
                                 cantidad > 1 ? "s" : ""
                               }`}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                if (tieneMovimiento) {
+                                  const movForGroup = movimientos.find(m => grupo.some(f => f.fichaId === m.fichaId));
+                                  if (movForGroup) {
+                                    setFichaSeleccionada(movForGroup.fichaId);
+                                  }
+                                } else {
+                                  setFichaSeleccionada(null);
+                                }
+                              }}
                             >
                               <img
                                 src={representante.imagen}
