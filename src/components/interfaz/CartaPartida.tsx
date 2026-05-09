@@ -1,7 +1,7 @@
 "use client";
 import React, { useState } from 'react';
 import Carta from '@/types/carta';
-import { JugadorEstado } from '@/types/partida';
+import { Ficha, JugadorEstado } from '@/types/partida';
 
 // Cartas que necesitan seleccionar un jugador objetivo
 const CARTAS_CON_OBJETIVO_JUGADOR = [
@@ -39,6 +39,7 @@ interface ModalCartaProps {
   esMiTurno: boolean;
   yaJugadoCarta: boolean;
   jugadores?: JugadorEstado[];
+  fichasPropias?: Ficha[];
 }
 
 export const ModalCarta: React.FC<ModalCartaProps> = ({ 
@@ -48,6 +49,7 @@ export const ModalCarta: React.FC<ModalCartaProps> = ({
   esMiTurno, 
   yaJugadoCarta,
   jugadores = [],
+  fichasPropias = [],
 }) => {
   const [jugadorObjetivo, setJugadorObjetivo] = useState<string>("");
   const [casillaInicio, setCasillaInicio] = useState<string>("");
@@ -60,6 +62,7 @@ export const ModalCarta: React.FC<ModalCartaProps> = ({
   const necesitaCasillas = CARTAS_CON_CASILLAS.includes(carta.nombre);
   const necesitaCasillaUnica = CARTAS_CON_CASILLA_UNICA.includes(carta.nombre);
   const necesitaFicha = CARTAS_CON_FICHA.includes(carta.nombre);
+  const fichasDisponibles = fichasPropias.filter((ficha) => !ficha.meta);
 
   const puedeJugar = esMiTurno && !yaJugadoCarta;
 
@@ -188,12 +191,20 @@ export const ModalCarta: React.FC<ModalCartaProps> = ({
               value={fichaSeleccionada}
               onChange={(e) => setFichaSeleccionada(e.target.value)}
               className="w-full p-2 rounded-lg bg-slate-800 text-white border border-blue-600 text-sm"
+              disabled={fichasDisponibles.length === 0}
             >
               <option value="">-- Elige ficha --</option>
-              <option value="0">Ficha 1</option>
-              <option value="1">Ficha 2</option>
-              <option value="2">Ficha 3</option>
+              {fichasDisponibles.map((ficha, index) => (
+                <option key={ficha.id} value={ficha.id}>
+                  Ficha {index + 1}
+                </option>
+              ))}
             </select>
+            {fichasDisponibles.length === 0 && (
+              <p className="mt-2 text-center text-xs text-yellow-300">
+                No tienes fichas disponibles para esta carta.
+              </p>
+            )}
           </div>
         )}
 

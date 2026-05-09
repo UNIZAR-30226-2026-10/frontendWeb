@@ -5,6 +5,7 @@ import type {
   SnapshotTablero,
   JugadorEstado,
   PartidaJugador,
+  Partida,
 } from "@/types/partida";
 
 type MovimientoDisponible = {
@@ -24,7 +25,7 @@ type TableroProps = {
     fichaId: number,
     casillaDestino: number,
     pasosRestantes: number
-  ) => void | Promise<unknown>;
+  ) => Promise<Partida| null>;
 };
 
 const IMAGENES = {
@@ -40,6 +41,13 @@ const COLORES_JUGADOR = [
   "#3b82f6",
   "#22c55e",
   "#eab308",
+];
+
+const NOMBRES_COLOR_JUGADOR = [
+  "rojo",
+  "azul",
+  "verde",
+  "amarillo",
 ];
 
 export default function Tablero({
@@ -59,6 +67,7 @@ export default function Tablero({
     movimiento: MovimientoDisponible;
     base: number;
     cima: number;
+    desdeBifurcacion?: boolean;
   } | null>(null);
 
   const casillas = snapshotTablero?.casillas ?? [];
@@ -77,10 +86,12 @@ export default function Tablero({
 
     jugadores.forEach((jugador, jIndex) => {
       const pj = partidaJugadores.find((p) => p.nombre === jugador.username);
+      const colorJugador = NOMBRES_COLOR_JUGADOR[
+        jIndex % NOMBRES_COLOR_JUGADOR.length
+      ];
 
-      const fichaImg = pj?.fichaActualField
-        ? `/${pj.fichaActualField}.png`
-        : "/ficha_default.png";
+      const fichaNombre = pj?.fichaActualField || "ficha_default";
+      const fichaImg = `/${fichaNombre}_${colorJugador}.png`;
 
       jugador.fichas.forEach((ficha) => {
         if (!ficha.meta) {
@@ -133,6 +144,57 @@ export default function Tablero({
       y: filaCSS * 10 + 5,
     };
   };
+  const comprobarEscaleraTrasBifurcacion = (
+  partidaActualizada: Partida | null,
+  fichaId: number
+) => {
+  if (!partidaActualizada?.snapshotTablero){
+
+    console.log("No hay partidaActualizada o snapshotTablero");
+    return; 
+  }
+
+  const jugadorActualizado = partidaActualizada.snapshotJugadores.jugadores.find(
+  (jugador) => jugador.username === equipoActual
+);
+
+const fichaActualizada = jugadorActualizado?.fichas.find(
+  (ficha) => ficha.id === fichaId
+);
+
+  console.log("Ficha buscada:", fichaId);
+  console.log("Ficha actualizada:", fichaActualizada);
+  if (!fichaActualizada || fichaActualizada.meta) {
+    console.log("No se encontró la ficha o está en meta");
+    return;
+  }
+
+  const casillaFinal = fichaActualizada.casilla;
+  const datosCasillaFinal =
+    partidaActualizada.snapshotTablero.casillas[casillaFinal];
+
+  if (
+    datosCasillaFinal?.tipo === "Escalera" &&
+    datosCasillaFinal.saltoA !== undefined
+  ) {
+    console.log("ABRIENDO POPUP ESCALERA DESDE BIFURCACIÓN");    
+    setBifurcacionPendiente(null);
+    setEscaleraPendiente({
+      movimiento: {
+        fichaId,
+        casillaDestino: casillaFinal,
+        esBifurcacion: false,
+        pasosRestantes: 0,
+      },
+      base: casillaFinal,
+      cima: datosCasillaFinal.saltoA,
+      desdeBifurcacion: true,
+    });
+  } else {
+    setBifurcacionPendiente(null);
+    console.log("La casilla final no es escalera");
+  }
+};
 
   const renderizarObstaculosPNG = () => {
     return Object.entries(saltosDinamicos).map(([inicio, fin]) => {
@@ -438,22 +500,21 @@ export default function Tablero({
                           return (
                             <div
                               key={representante.username}
-                              className="rounded-full shadow-md flex items-center justify-center overflow-hidden relative"
+                              className="shadow-md flex items-center justify-center overflow-hidden relative"
                               style={{
                                 width:
                                   grupos.length > 2
-                                    ? "35%"
+                                    ? "45%"
                                     : grupos.length > 1
-                                    ? "40%"
-                                    : "55%",
+                                    ? "50%"
+                                    : "75%",
                                 height:
                                   grupos.length > 2
-                                    ? "35%"
+                                    ? "45%"
                                     : grupos.length > 1
-                                    ? "40%"
-                                    : "55%",
-                                border: `2px solid ${representante.color}`,
-                                backgroundColor: "rgba(0,0,0,0.3)",
+                                    ? "50%"
+                                    : "75%",
+                                backgroundColor: "transparent",
                               }}
                               title={`${representante.username} - ${cantidad} ficha${
                                 cantidad > 1 ? "s" : ""
@@ -521,7 +582,7 @@ export default function Tablero({
               <button
                 type="button"
                 className="rounded-xl bg-yellow-400 px-5 py-3 font-black text-blue-950 shadow-lg transition hover:scale-105 active:scale-95"
-                onClick={() => {
+                onClick={async () => {
                   if (!onMoverFicha || !bifurcacionPendiente) return;
 
                   const { movimiento, siguientes } = bifurcacionPendiente;
@@ -529,14 +590,20 @@ export default function Tablero({
 
                   setBifurcacionPendiente(null);
 
-                  void onMoverFicha(
+                  const partidaActualizada = await onMoverFicha(
                     movimiento.fichaId,
                     destinoIzquierda,
                     movimiento.pasosRestantes ?? 0
                   );
+                  if(partidaActualizada)
+                  comprobarEscaleraTrasBifurcacion(
+                    partidaActualizada,
+                    movimiento.fichaId
+                  );
+                  
                 }}
               >
-                Izquierda
+                Direccion a la 
                 <span className="block text-xs font-bold">
                   Casilla {bifurcacionPendiente.siguientes[0] + 1}
                 </span>
@@ -545,35 +612,30 @@ export default function Tablero({
               <button
                 type="button"
                 className="rounded-xl bg-yellow-400 px-5 py-3 font-black text-blue-950 shadow-lg transition hover:scale-105 active:scale-95"
-                onClick={() => {
-                  if (!onMoverFicha || !bifurcacionPendiente) return;
+                  onClick={async () => {
+                    if (!onMoverFicha || !bifurcacionPendiente) return;
 
-                  const { movimiento, siguientes } = bifurcacionPendiente;
-                  const destinoDerecha = siguientes[1];
+                    const { movimiento, siguientes } = bifurcacionPendiente;
+                    const destinoDerecha = siguientes[1];
 
-                  setBifurcacionPendiente(null);
 
-                  void onMoverFicha(
-                    movimiento.fichaId,
-                    destinoDerecha,
-                    movimiento.pasosRestantes ?? 0
-                  );
-                }}
+                    const partidaActualizada = await onMoverFicha(
+                      movimiento.fichaId,
+                      destinoDerecha,
+                      movimiento.pasosRestantes ?? 0
+                    );
+                      comprobarEscaleraTrasBifurcacion(
+                        partidaActualizada,
+                        movimiento.fichaId
+                      );
+          }}
               >
-                Derecha
+                Direccion a la
                 <span className="block text-xs font-bold">
                   Casilla {bifurcacionPendiente.siguientes[1] + 1}
                 </span>
               </button>
             </div>
-
-            <button
-              type="button"
-              className="mt-5 text-sm font-bold text-white/70 underline"
-              onClick={() => setBifurcacionPendiente(null)}
-            >
-              Cancelar
-            </button>
           </div>
         </div>
       )}
@@ -588,13 +650,19 @@ export default function Tablero({
               <button
                 type="button"
                 className="rounded-xl bg-green-500 px-5 py-3 font-black text-white shadow-lg transition hover:scale-105 active:scale-95 cursor-pointer"
-                onClick={async () => {
-                  if (!onMoverFicha || !escaleraPendiente) return;
-                  const { movimiento, cima } = escaleraPendiente;
-                  const pasos = movimiento.pasosRestantes ?? 0;
-                  setEscaleraPendiente(null);
-                  await onMoverFicha(movimiento.fichaId, cima, pasos);
-                }}
+                  onClick={async () => {
+                    if (!onMoverFicha || !escaleraPendiente) return;
+
+                    const { movimiento, cima, desdeBifurcacion } = escaleraPendiente;
+
+                    setEscaleraPendiente(null);
+
+                    await onMoverFicha(
+                      movimiento.fichaId,
+                      cima,
+                      desdeBifurcacion ? -1 : movimiento.pasosRestantes ?? 0
+                    );
+                  }}
               >
                 Subir
                 <span className="block text-xs font-bold text-white/80">Casilla {escaleraPendiente.cima + 1}</span>
@@ -604,9 +672,12 @@ export default function Tablero({
                 className="rounded-xl bg-red-500 px-5 py-3 font-black text-white shadow-lg transition hover:scale-105 active:scale-95 cursor-pointer"
                 onClick={async () => {
                   if (!onMoverFicha || !escaleraPendiente) return;
-                  const { movimiento, base } = escaleraPendiente;
+                  const { movimiento, base,desdeBifurcacion } = escaleraPendiente;
                   const pasos = movimiento.pasosRestantes ?? 0;
                   setEscaleraPendiente(null);
+                  if(desdeBifurcacion){
+                    return;
+                  }
                   await onMoverFicha(movimiento.fichaId, base, pasos);
                 }}
               >

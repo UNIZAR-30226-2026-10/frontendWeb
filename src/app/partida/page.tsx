@@ -38,6 +38,7 @@ export default function Home() {
   });
 
   const [cartaEnFoco, setCartaEnFoco] = useState<Carta | null>(null);
+  const [mostrarTurnoCancelado, setMostrarTurnoCancelado] = useState(false);
 
   // Info cosmética del jugador actual
   const miJugadorPJ = partida?.partidaJugadores.find(p => p.nombre === username) ?? null;
@@ -116,7 +117,7 @@ export default function Home() {
           partidaJugadores={partida.partidaJugadores}
           movimientos={movimientos}
           onMoverFicha={(fichaId, nuevaPosicion, pasosRestantes) => {
-            void moverFicha(fichaId, nuevaPosicion, pasosRestantes ?? 0);
+            return moverFicha(fichaId, nuevaPosicion, pasosRestantes ?? 0);
           }}
         />
       </div>
@@ -150,7 +151,11 @@ export default function Home() {
             resultado={ultimaTirada}
             resultadoAux={tiradaExtra}
             onTirar={async () => {
-              await tirarDado();
+              if (miJugador?.efectosActivos.some(e => e.resumenEfecto === "Salto de turno")) {
+                setMostrarTurnoCancelado(true);
+              } else {
+                await tirarDado();
+              }
             }}
             deshabilitado={!tuTurno || miJugador?.fase !== "Cartas"}
           />
@@ -170,7 +175,26 @@ export default function Home() {
         esMiTurno={tuTurno}
         yaJugadoCarta={miJugador?.cartaJugadaEnTurno ?? false}
         jugadores={partida.snapshotJugadores.jugadores.filter(j => j.username !== username)}
+        fichasPropias={miJugador?.fichas ?? []}
       />
+
+      {mostrarTurnoCancelado && (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60">
+          <div className="w-80 rounded-2xl border-4 border-red-500 bg-blue-900 p-6 text-center shadow-2xl">
+            <h2 className="mb-4 text-2xl font-black text-white">Turno Cancelado</h2>
+            <p className="mb-6 text-sm font-semibold text-blue-100">
+              Tu turno ha sido cancelado por un efecto. Espera al siguiente turno.
+            </p>
+            <button
+              type="button"
+              className="rounded-xl bg-red-500 px-6 py-3 font-black text-white shadow-lg transition hover:scale-105 active:scale-95"
+              onClick={() => setMostrarTurnoCancelado(false)}
+            >
+              Entendido
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
