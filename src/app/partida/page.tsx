@@ -8,6 +8,7 @@ import { MazoVisual } from "@/components/interfaz/MazoPartida";
 import Tablero from "../../components/interfaz/Tablero";
 import { DadoPartida } from "@/components/interfaz/DadoPartida";
 import { ModalCarta } from "@/components/interfaz/CartaPartida";
+import { ChatPartida } from "@/components/interfaz/ChatPartida";
 import type Carta from "@/types/carta";
 import { usePartida } from "@/hooks/useMatches";
 
@@ -122,8 +123,8 @@ export default function Home() {
         />
       </div>
 
-      <div className="flex flex-col justify-evenly items-center w-60 lg:w-64 shrink-0 h-full pb-4">
-        <div className="bg-yellow-500 rounded-[2rem] p-4 w-full flex flex-col items-center shadow-lg border-b-8 border-yellow-600">
+      <div className="flex flex-col gap-4 items-center w-60 lg:w-64 shrink-0 h-full pb-4">
+        <div className="bg-yellow-500 rounded-[2rem] p-4 w-full flex flex-col items-center shadow-lg border-b-8 border-yellow-600 shrink-0">
           <div className="w-16 h-16 bg-white rounded-full border-4 border-black mb-2 overflow-hidden flex items-center justify-center">
             <img
               src={miIcono}
@@ -135,7 +136,11 @@ export default function Home() {
           <h2 className="text-white text-3xl font-bold">{username ?? "Tú"}</h2>
         </div>
 
-        <div className="flex flex-col items-center gap-2 w-full">
+        <div className="flex-1 w-full min-h-0">
+          <ChatPartida partidaId={partidaId} username={username ?? ""} />
+        </div>
+
+        <div className="flex flex-col items-center gap-2 w-full shrink-0">
           <div className="text-center mb-2">
             <h2 className="text-white text-2xl font-bold">
               {tuTurno ? "Tu Turno" : "Espera tu turno"}

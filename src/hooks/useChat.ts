@@ -13,7 +13,7 @@ type UseChatPartidaParams = {
 export function useChatPartida({
   partidaId,
   username,
-  pollingMs = 3000,
+  pollingMs = 7000,
 }: UseChatPartidaParams) {
   const [chat, setChat] = useState<ChatMessage[]>([]);
   const [mensaje, setMensaje] = useState("");
