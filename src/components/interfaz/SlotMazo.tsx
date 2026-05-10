@@ -83,20 +83,22 @@ export const SlotMazo = (props: SlotMazoProps) => {
                 return (
                   <div
                     key={`${props.id}-${index}`}
-                    className={`aspect-[2/3] rounded-md border-2 ${getBorderClass(rareza)} bg-black shadow-md p-1 flex flex-col items-center`}
+                    className={`flex flex-col bg-black p-2 rounded-lg shadow-md border-[3px] ${getBorderClass(rareza)} transition-all duration-300 h-full w-full`}
                   >
-                    <div className="w-full text-[10px] font-bold leading-tight text-white text-center truncate px-1">
-                      {carta.nombre}
-                    </div>
-
-                    <div className="mt-1 w-[82%] h-[65%] rounded-sm border border-white/20 bg-gray-900 overflow-hidden flex items-center justify-center">
+                    <h2 className="text-[11px] sm:text-xs font-bold text-white mb-2 text-center truncate">{carta.nombre}</h2>
+                    
+                    <div className="self-center w-[95%] sm:w-full border border-white/10 rounded bg-gray-900 overflow-hidden flex items-center justify-center">
                       <img
                         src={carta.imagen}
                         alt={carta.nombre}
-                        className="h-full w-full object-contain -translate-y-1"
+                        className="w-full h-auto block object-contain"
                         loading="lazy"
                       />
                     </div>
+                    
+                    <p className="text-white mt-2 text-[9px] sm:text-[10px] overflow-hidden italic text-center line-clamp-3 flex-1 flex items-start justify-center">
+                      &quot;{carta.descripcion}&quot;
+                    </p>
                   </div>
                 );
               })}

@@ -7,6 +7,7 @@ interface HuecoJugadorProps {
     nomJugador?: string;
     iconoJugador?: string;
   esBot?: boolean;
+  estaListo?: boolean;
     onAgregarBot?: () => void;
   onEliminarBot?: () => void;
 }
@@ -17,6 +18,7 @@ const HuecoJugador: React.FC<HuecoJugadorProps> = ({
     nomJugador,
     iconoJugador,
   esBot,
+  estaListo,
   onAgregarBot,
   onEliminarBot
 }) => {
@@ -83,6 +85,10 @@ const HuecoJugador: React.FC<HuecoJugadorProps> = ({
               {esBot ? 'Eliminar bot' : 'Expulsar jugador'}
           </button>
         )}
+        <div 
+          className={`absolute bottom-6 right-6 w-6 h-6 rounded-full border-2 border-white shadow-md ${estaListo ? 'bg-green-500' : 'bg-red-500'}`}
+          title={estaListo ? "Listo" : "No Listo"}
+        />
       </div>
     );
 }

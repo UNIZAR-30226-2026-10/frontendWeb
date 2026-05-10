@@ -14,6 +14,11 @@ export default function CajaCambiarNombre({ nombreActual, onClose, onSave }: Caj
   const [enviando, setEnviando] = useState(false);
 
   const handleGuardar = async () => {
+    if (nuevoNombre.length > 10) {
+      setErrorLocal('El nombre de usuario debe tener 10 caracteres o menos');
+      return;
+    }
+
     try {
       setEnviando(true);
       setErrorLocal(null);
@@ -37,6 +42,7 @@ export default function CajaCambiarNombre({ nombreActual, onClose, onSave }: Caj
           type="text"
           value={nuevoNombre}
           onChange={(e) => setNuevoNombre(e.target.value)}
+          maxLength={10}
           className="w-full bg-white/10 border-2 border-white/20 rounded-xl px-4 py-3 text-white text-xl outline-none focus:border-amber-400 transition-colors mb-2"
           placeholder="Nuevo nombre de usuario..."
           autoFocus

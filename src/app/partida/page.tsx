@@ -129,7 +129,7 @@ export default function Home() {
             <img
               src={miIcono}
               alt="Tu icono"
-              className="w-full h-full object-contain"
+              className="w-full h-full object-cover"
               onError={(e) => { (e.target as HTMLImageElement).src = "/icono_default.png"; }}
             />
           </div>
@@ -193,7 +193,10 @@ export default function Home() {
             <button
               type="button"
               className="rounded-xl bg-red-500 px-6 py-3 font-black text-white shadow-lg transition hover:scale-105 active:scale-95"
-              onClick={() => setMostrarTurnoCancelado(false)}
+              onClick={async () => {
+                setMostrarTurnoCancelado(false);
+                await tirarDado();
+              }}
             >
               Entendido
             </button>

@@ -21,6 +21,11 @@ export default function CuadroRegistro() {
     e.preventDefault();
     setError(''); 
 
+    if (nombre.length > 10) {
+      setError('El nombre de usuario debe tener 10 caracteres o menos');
+      return;
+    }
+
     if (password !== passwordConfirm) {
       setError('Las contraseñas no coinciden');
       return;
@@ -91,6 +96,7 @@ export default function CuadroRegistro() {
             type="text"
             value={nombre}
             onChange={(e) => setNombre(e.target.value)}
+            maxLength={10}
             className="bg-[#0a0f2c] border border-blue-900 focus:border-blue-400 outline-none text-white p-3 rounded-md transition-all"
             placeholder="Tu nombre"
             required 

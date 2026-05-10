@@ -258,6 +258,7 @@ export default function JuegoPrincipalPage() {
               nomJugador={huecos[0]?.nombre}
               iconoJugador={huecos[0]?.icono}
               esBot={huecos[0]?.esIA}
+              estaListo={huecos[0]?.estaListo}
               onAgregarBot={lobby?.idCreador === username ? manejarAgregarBot : undefined}
               onEliminarBot={huecos[0] && huecos[0].nombre !== lobby?.idCreador && lobby?.idCreador === username ? () => manejarEliminarBot(huecos[0]!.nombre) : undefined}
             />
@@ -269,6 +270,7 @@ export default function JuegoPrincipalPage() {
               nomJugador={huecos[1]?.nombre}
               iconoJugador={huecos[1]?.icono}
               esBot={huecos[1]?.esIA}
+              estaListo={huecos[1]?.estaListo}
               onAgregarBot={lobby?.idCreador === username ? manejarAgregarBot : undefined}
               onEliminarBot={huecos[1] && huecos[1].nombre !== lobby?.idCreador && lobby?.idCreador === username ? () => manejarEliminarBot(huecos[1]!.nombre) : undefined}
             />
@@ -330,6 +332,7 @@ export default function JuegoPrincipalPage() {
               nomJugador={huecos[2]?.nombre}
               iconoJugador={huecos[2]?.icono}
               esBot={huecos[2]?.esIA}
+              estaListo={huecos[2]?.estaListo}
               onAgregarBot={lobby?.idCreador === username ? manejarAgregarBot : undefined}
               onEliminarBot={huecos[2] && huecos[2].nombre !== lobby?.idCreador && lobby?.idCreador === username ? () => manejarEliminarBot(huecos[2]!.nombre) : undefined}
             />
@@ -341,6 +344,7 @@ export default function JuegoPrincipalPage() {
               nomJugador={huecos[3]?.nombre}
               iconoJugador={huecos[3]?.icono}
               esBot={huecos[3]?.esIA}
+              estaListo={huecos[3]?.estaListo}
               onAgregarBot={lobby?.idCreador === username ? manejarAgregarBot : undefined}
               onEliminarBot={huecos[3] && huecos[3].nombre !== lobby?.idCreador && lobby?.idCreador === username ? () => manejarEliminarBot(huecos[3]!.nombre) : undefined}
             />
