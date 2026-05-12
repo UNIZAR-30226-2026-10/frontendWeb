@@ -527,7 +527,7 @@ const fichaActualizada = jugadorActualizado?.fichas.find(
                           return (
                             <div
                               key={representante.username}
-                              className={`rounded-full shadow-md flex items-center justify-center overflow-hidden relative transition-all duration-200 pointer-events-auto ${
+                              className={` shadow-md flex items-center justify-center overflow-hidden relative transition-all duration-200 pointer-events-auto ${
                                 tieneMovimiento ? 'cursor-pointer' : ''
                               }`}
                               style={{
@@ -572,14 +572,17 @@ const fichaActualizada = jugadorActualizado?.fichas.find(
 
                               {cantidad > 1 && (
                                 <span
-                                  className="absolute -top-0.5 -right-0.5 rounded-full flex items-center justify-center font-bold text-white"
+                                  className="absolute rounded-full flex items-center justify-center font-bold text-white"
                                   style={{
                                     backgroundColor: representante.color,
-                                    width: "14px",
-                                    height: "14px",
-                                    fontSize: "9px",
+                                    width: "18px",
+                                    height: "18px",
+                                    fontSize: "10px",
                                     lineHeight: "1",
-                                    border: "1px solid white",
+                                    border: "2px solid white",
+                                    top: "-4px",
+                                    right: "-4px",
+                                    zIndex: 50,
                                   }}
                                 >
                                   {cantidad}
@@ -715,7 +718,8 @@ const fichaActualizada = jugadorActualizado?.fichas.find(
                   const { movimiento, base,desdeBifurcacion } = escaleraPendiente;
                   const pasos = movimiento.pasosRestantes ?? 0;
                   setEscaleraPendiente(null);
-                  if(desdeBifurcacion){
+                  if(desdeBifurcacion){                    
+                    await onMoverFicha(movimiento.fichaId, base, -1);
                     return;
                   }
                   await onMoverFicha(movimiento.fichaId, base, pasos);
