@@ -39,7 +39,10 @@ export const ListaJugadores: React.FC<Props> = ({ jugadores }) => {
                 : 'bg-[#1E1B4B] border-transparent opacity-90'    // Azul oscuro si no
             }`}
           >
-            <div className="relative w-6 h-6 shrink-0 rounded-full border border-black bg-white flex items-center justify-center overflow-visible">
+            <div
+              className="relative w-6 h-6 shrink-0 rounded-full border border-black flex items-center justify-center overflow-visible"
+              style={{ backgroundColor: jugador.colorFichas ?? 'white' }}
+            >
               {jugador.iconoJugador ? (
                 <img
                   src={resolverRutaIcono(jugador.iconoJugador)}
@@ -55,7 +58,10 @@ export const ListaJugadores: React.FC<Props> = ({ jugadores }) => {
             </div>
 
             <div className="flex items-center gap-2 min-w-0 flex-1">
-              <span className={`inline-block w-3 h-3 rounded-full border border-white/80 shrink-0 ${jugador.colorFichas ?? 'bg-white'}`} />
+              <span
+                className="inline-block w-3 h-3 rounded-full border border-white/80 shrink-0"
+                style={{ backgroundColor: jugador.colorFichas ?? 'white' }}
+              />
               <span className={`font-black text-xs lg:text-sm truncate ${jugador.esTurno ? 'text-white drop-shadow-md' : 'text-gray-200'}`}>
                 {jugador.nombreJugador}
               </span>

@@ -228,12 +228,20 @@ export function usePartida({
         partida.snapshotJugadores.turnoActual
       ];
 
-    return partida.snapshotJugadores.jugadores.map((jugador) => ({
+    const COLORES_JUGADOR = [
+      '#ef4444',
+      '#3b82f6',
+      '#22c55e',
+      '#eab308',
+    ];
+
+    return partida.snapshotJugadores.jugadores.map((jugador, index) => ({
       nombreJugador: jugador.username,
       esTurno: jugadorActual?.username === jugador.username,
       iconoJugador: partida.partidaJugadores.find(
         (j) => j.nombre === jugador.username
       )?.iconoActualField,
+      colorFichas: COLORES_JUGADOR[index % COLORES_JUGADOR.length],
     }));
   }, [partida]);
 
