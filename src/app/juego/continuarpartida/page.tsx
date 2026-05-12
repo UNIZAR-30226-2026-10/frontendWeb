@@ -26,7 +26,18 @@ export default function ContinuarPartida() {
             }
             try {
                 const data = await MatchesService.obtenerPartidasPendientes(userEmail);
-                setPartidas(data.matches);
+                const partidasCompletas = await Promise.all(data.matches.map(async (partida) => {
+                    try {
+                        const estado = await MatchesService.obtenerEstadoPartida(partida.ID, userEmail);
+                        return {
+                            ...partida,
+                            jugadores: estado.snapshotJugadores.jugadores.map((j) => j.username)
+                        };
+                    } catch (e) {
+                        return partida;
+                    }
+                }));
+                setPartidas(partidasCompletas);
             } catch (error) {
                 console.error("Error al cargar las partidas pendientes:", error);
             } finally {
@@ -47,19 +58,19 @@ export default function ContinuarPartida() {
                     Continuar
                 </h1>
             </div>
-            
+
             {cargando ? (
                 <div className="text-center mt-10 text-xl font-bold">Cargando partidas...</div>
             ) : partidas.length === 0 ? (
                 <div className="text-center mt-10 text-xl font-bold">No tienes partidas pendientes.</div>
             ) : (
-                <ul className="mt-8 flex flex-col w-full max-w-4xl mx-auto gap-4">
+                <ul className="mt-8 flex flex-col w-full max-w-7xl mx-auto gap-2">
                     {partidas.map((partida) => (
-                        <SlotPartida 
+                        <SlotPartida
                             key={partida.ID}
-                            jugadores={partida.jugadores} 
-                            fecha={partida.fecha} 
-                            mapa={partida.mapa} 
+                            jugadores={partida.jugadores}
+                            fecha={partida.fecha}
+                            mapa={partida.mapa}
                             ID={partida.ID}
                         />
                     ))}
