@@ -11,6 +11,7 @@ import { ModalCarta } from "@/components/interfaz/CartaPartida";
 import { ChatPartida } from "@/components/interfaz/ChatPartida";
 import type Carta from "@/types/carta";
 import { usePartida } from "@/hooks/useMatches";
+import ModalError from "@/components/interfaz/ModalError";
 
 export default function Home() {
   const searchParams = useSearchParams();
@@ -33,6 +34,7 @@ export default function Home() {
     tuTurno,
     miJugador,
     mazoEnMano,
+    limpiarErrorPartida,
   } = usePartida({
     partidaId,
     username: username || undefined,
@@ -77,13 +79,7 @@ export default function Home() {
     );
   }
 
-  if (errorPartida) {
-    return (
-      <div className="text-red-300 text-center mt-10 text-2xl w-full font-bold">
-        {errorPartida}
-      </div>
-    );
-  }
+
 
   if (!partida) {
     return (
@@ -202,6 +198,12 @@ export default function Home() {
             </button>
           </div>
         </div>
+      )}
+      {errorPartida && (
+        <ModalError
+          mensaje={errorPartida}
+          onClose={limpiarErrorPartida}
+        />
       )}
     </div>
   );

@@ -10,6 +10,32 @@ const generarUrlImagen = (nombre: string): string => {
 };
 
 
+const CALIDAD_MAP: Record<string, string> = {
+  'comun': 'Comun',
+  'común': 'Comun',
+  'rara': 'Rara',
+  'epica': 'Epica',
+  'épica': 'Epica',
+  'legendaria': 'Legendaria',
+};
+const TIPO_MAP: Record<string, string> = {
+  'ofensiva': 'Ofensiva',
+  'defensiva': 'Defensiva',
+  'entorno': 'Entorno',
+};
+
+const normalizarCarta = (c: Carta) => {
+  const normalizedCalidad = String(c.calidad || '').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+  const normalizedTipo = String(c.tipo || '').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+
+  return {
+    nombre: c.nombre || '',
+    calidad: CALIDAD_MAP[normalizedCalidad] ?? c.calidad,
+    tipo: TIPO_MAP[normalizedTipo] ?? c.tipo,
+    descripcion: c.descripcion || '' // Muy importante: si es undefined/null, TypeBox falla al validar el array de cartas y da 'required property cartas'
+  };
+};
+
 export const MazoService = {
   // GET: Obtener mazos
   getMazos: async (email: string): Promise<Mazo[]> => {
@@ -56,13 +82,7 @@ export const MazoService = {
   createMazo: async (email: string, nombre: string, cartas: Carta[]) => {
     const payload = { 
       nombre: nombre, 
-      cartas: cartas.map(c => ({
-        nombre: c.nombre, 
-        // Limpiamos ENUMS (Quitar tildes y Capitalizar: Épica -> Epica)
-        calidad: c.calidad.normalize("NFD").replace(/[\u0300-\u036f]/g, "").charAt(0).toUpperCase() + c.calidad.slice(1).toLowerCase(),
-        tipo: c.tipo.charAt(0).toUpperCase() + c.tipo.slice(1).toLowerCase(),
-        descripcion: c.descripcion
-      }))
+      cartas: cartas.map(normalizarCarta)
     };  
 
     const response = await fetch(`${API_URL}/users/${encodeURIComponent(email)}/decks`, {
@@ -87,28 +107,9 @@ export const MazoService = {
   },
 
   updateMazo: async (email: string, id: string, name: string, newCards: Carta[]) => {
-    const CALIDAD_MAP: Record<string, string> = {
-      'comun': 'Comun', 'común': 'Comun',
-      'rara': 'Rara',
-      'epica': 'Epica', 'épica': 'Epica',
-      'legendaria': 'Legendaria',
-    };
-    const TIPO_MAP: Record<string, string> = {
-      'ofensiva': 'Ofensiva',
-      'defensiva': 'Defensiva',
-      'entorno': 'Entorno',
-    };
-
-    const format = (c: Carta) => ({
-      nombre: c.nombre,
-      calidad: CALIDAD_MAP[c.calidad.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "")] ?? c.calidad,
-      tipo: TIPO_MAP[c.tipo.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "")] ?? c.tipo,
-      descripcion: c.descripcion
-    });
-
     const payload = {
       nombre: name,
-      cartas: newCards.map(format)
+      cartas: newCards.map(normalizarCarta)
     };
 
     const url = `${API_URL}/users/${encodeURIComponent(email)}/decks/${encodeURIComponent(id)}`;
