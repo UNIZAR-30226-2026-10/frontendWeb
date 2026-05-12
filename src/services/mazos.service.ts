@@ -48,10 +48,12 @@ export const MazoService = {
     const data = await res.json(); 
     
     // El backend devuelve el objeto { decks: [...] } y dentro de cada mazo el array .cartas
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return (data.decks || []).map((m: any) => ({
       id: m.nombre,
       nombre: m.nombre,
       is_in_use: false, 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       cartas: (m.cartas || []).map((c: any) => ({
         ...c,
         imagen: generarUrlImagen(c.nombre),

@@ -71,6 +71,7 @@ export const useLogros = (email: string) => {
 
   useEffect(() => {
     if (email) fetchLogros();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [email]);
 
   return { logros, isLoading, error, reclamar };

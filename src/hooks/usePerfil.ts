@@ -39,7 +39,7 @@ export const usePerfil = (email: string) => {
         setPerfil({ ...perfil, cosmeticos: nuevosEquipados });
       }
     }
-    } catch (err) {
+    } catch {
       alert("No se pudo equipar el item en el servidor.");
     }
   };

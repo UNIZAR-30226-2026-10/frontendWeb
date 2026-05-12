@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 import React from 'react';
 import Carta from '../../types/carta';
 // 1. Definimos la forma de las props que el componente va a recibir

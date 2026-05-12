@@ -1,5 +1,6 @@
+/* eslint-disable @next/next/no-img-element */
 "use client";
-import React, { useState } from "react";
+import React from "react";
 
 interface HuecoJugadorProps {
   estaOcupado: boolean;

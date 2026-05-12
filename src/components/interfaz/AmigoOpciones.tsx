@@ -54,8 +54,8 @@ const AmigoOpciones: React.FC<AmigoOpcionesProps> = ({
       await LobbiesService.enviarInvitacion(lobby.idLobby, currentUsername, amigo.nombre);
       setInviteMsg({ texto: '¡Invitación enviada! 🎉', ok: true });
       setTimeout(() => setInviteMsg(null), 3000);
-    } catch (err: any) {
-      const msg = err.message || 'Error al enviar la invitación';
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Error al enviar la invitación';
       setInviteMsg({ texto: msg, ok: false });
     } finally {
       setInvitando(false);

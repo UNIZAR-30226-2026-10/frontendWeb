@@ -14,7 +14,6 @@ import { useUser } from "@/context/userContext";
 import { Jugador } from "@/types/lobby";
 import { LobbiesService } from "@/services/lobbies.service";
 import { MatchesService } from "@/services/matches.service";
-import { Partida } from "@/types/partida";
 
 export default function JuegoPrincipalPage() {
   const router = useRouter();
@@ -45,7 +44,6 @@ export default function JuegoPrincipalPage() {
   const [tableroElegido, setTableroElegido] = useState("");
   const [tablerosDisponibles, setTablerosDisponibles] = useState<string[]>([]);
   const [lobbyId, setLobbyId] = useState<string | null>(null);
-  const [miPosicion, setMiPosicion] = useState<number>(0);
   const [estoyListo, setEstoyListo] = useState(false);
   const inicializadoRef = useRef(false);
 
@@ -79,20 +77,14 @@ export default function JuegoPrincipalPage() {
     inicializarLobby();
   }, [username, crearLobby, obtenerLobby, obtenerLobbyDeJugador]);
 
-  useEffect(() => {
-    if (lobby && username) {
-      const posicion = lobby.jugadores.findIndex(j => j.nombre === username);
-      if (posicion !== -1) {
-        setMiPosicion(posicion);
-      }
-    }
-  }, [lobby, username]);
+
 
   useEffect(() => {
     if (!username) return;
 
     const miJugadorEnLobby = lobby?.jugadores.find(j => j.nombre === username);
     if (miJugadorEnLobby?.nombreMazo) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setMazoElegido(miJugadorEnLobby.nombreMazo);
     }
   }, [decks, lobby, username]);
@@ -111,6 +103,7 @@ export default function JuegoPrincipalPage() {
 
   useEffect(() => {
     if (lobby?.tablero) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setTableroElegido(lobby.tablero);
     }
   }, [lobby?.tablero]);
@@ -134,7 +127,7 @@ export default function JuegoPrincipalPage() {
 
     const intervalId = window.setInterval(verificarLobbyActivo, 5000);
     return () => window.clearInterval(intervalId);
-  }, [username, lobbyId, obtenerLobbyDeJugador, crearLobby, limpiarLobby]);
+  }, [username, lobbyId, obtenerLobbyDeJugador, crearLobby, limpiarLobby, router]);
 
 
   // -------------------------------------------------------------------
@@ -315,9 +308,10 @@ export default function JuegoPrincipalPage() {
                   const partida = await MatchesService.iniciarPartida(lobby?.idLobby)
                   router.push(`/partida?matchId=${encodeURIComponent(partida.ID)}`);
                 }
-                catch(err: any) {
+                catch(err: unknown) {
                   console.error("Error al iniciar la partida:", err);
-                  setErrorIniciandoPartida(err.message || "Error desconocido al iniciar la partida");
+                  const errorMessage = err instanceof Error ? err.message : "Error desconocido al iniciar la partida";
+                  setErrorIniciandoPartida(errorMessage);
                 }
               }}
               disabled={loading || !estoyListo}

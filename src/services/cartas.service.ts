@@ -22,6 +22,7 @@ export const CardsService = {
 
     const data = await response.json();
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return data.cards.map((c: any) => ({
       nombre: c.nombre,
       tipo: c.tipo,
@@ -45,6 +46,7 @@ export const CardsService = {
 
     const data = await response.json();
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return data.cards.map((c: any) => ({
       nombre: c.nombre,
       tipo: c.tipo,

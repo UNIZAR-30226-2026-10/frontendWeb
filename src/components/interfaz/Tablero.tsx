@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import React, { useMemo, useState } from "react";
@@ -522,7 +523,7 @@ const fichaActualizada = jugadorActualizado?.fichas.find(
                           const cantidad = grupo.length;
                           
                           const tieneMovimiento = representante.username === equipoActual && movimientos.some(m => grupo.some(f => f.fichaId === m.fichaId));
-                          const esSeleccionada = grupo.some(f => f.fichaId === fichaSeleccionada);
+
 
                           return (
                             <div

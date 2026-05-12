@@ -34,7 +34,7 @@ export default function ContinuarPartida() {
                             fecha: estado.fechaInicio,
                             jugadores: estado.snapshotJugadores.jugadores.map((j) => j.username)
                         };
-                    } catch (e) {
+                    } catch {
                         return partida;
                     }
                 }));
