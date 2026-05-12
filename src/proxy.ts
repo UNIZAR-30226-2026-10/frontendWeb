@@ -2,13 +2,13 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
 export function proxy(request: NextRequest) {
-  const sessionCookie = request.cookies.get('session');
+  /*const sessionCookie = request.cookies.get('session');
   if (!sessionCookie) {
     const loginUrl = new URL('/?error=nocookie', request.url);
     return NextResponse.redirect(loginUrl);
   }
   
-  return NextResponse.next();
+  return NextResponse.next();*/
 }
 
 export const config = {
