@@ -102,7 +102,7 @@ export default function Home() {
 
         <div className="flex flex-col gap-2 relative z-10 min-h-0 flex-1">
           <h2 className="text-white text-sm font-bold">
-            Mano: ({mazoEnMano.length}/{miJugador?.mano.length ?? 0})
+            Mano: ({mazoEnMano.length}/4)
           </h2>
           <div className="w-full overflow-y-auto flex-1 pr-1 pb-2">
             <MazoVisual onSelectCarta={setCartaEnFoco} cartas={mazoEnMano} />

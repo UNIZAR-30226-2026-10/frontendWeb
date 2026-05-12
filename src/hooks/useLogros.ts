@@ -26,7 +26,8 @@ export const useLogros = (email: string) => {
           case 'Partidas': progreso = stats.PartidasJugadas || 0; break;
           case 'SEP': progreso = stats.SEP || 0; break;
           case 'CartasJugadas': progreso = stats.CartasJugadas || 0; break;
-          case 'CartasColeccionadas': progreso = stats.CartasLegendarias || 0; break; // O la lógica que prefieras
+          case 'LogrosDesbloqueados': progreso = stats.LogrosCompletados?.length || 0; break;
+          case 'CartasColeccionadas': progreso = stats.CartasTotales || 0; break;
           default: progreso = 0;
         }
 

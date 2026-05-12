@@ -57,7 +57,7 @@ export const MazoService = {
     const payload = { 
       nombre: nombre, 
       cartas: cartas.map(c => ({
-        nombre: c.nombre, // Nombre exacto que vino del catálogo (Ej: "Moisés")
+        nombre: c.nombre, 
         // Limpiamos ENUMS (Quitar tildes y Capitalizar: Épica -> Epica)
         calidad: c.calidad.normalize("NFD").replace(/[\u0300-\u036f]/g, "").charAt(0).toUpperCase() + c.calidad.slice(1).toLowerCase(),
         tipo: c.tipo.charAt(0).toUpperCase() + c.tipo.slice(1).toLowerCase(),

@@ -31,6 +31,7 @@ export default function ContinuarPartida() {
                         const estado = await MatchesService.obtenerEstadoPartida(partida.ID, userEmail);
                         return {
                             ...partida,
+                            fecha: estado.fechaInicio,
                             jugadores: estado.snapshotJugadores.jugadores.map((j) => j.username)
                         };
                     } catch (e) {

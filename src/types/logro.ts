@@ -26,6 +26,7 @@ export interface UserStatsApi {
   PartidasJugadas?: number;  // Coincide con el backend
   NumeroAmigos?: number;
   CartasLegendarias?: number;
+  CartasTotales?: number;
   LogrosCompletados?: string[];
 }
 
