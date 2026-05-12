@@ -87,23 +87,6 @@ export const MazoService = {
   },
 
   updateMazo: async (email: string, id: string, name: string, newCards: Carta[]) => {
-    const currentMazo = await MazoService.getMazoById(email, id);
-    const currentCards = currentMazo.cartas;
-
-    const currentCount: Record<string, number> = {};
-    const currentMap: Record<string, Carta> = {};
-    currentCards.forEach(c => {
-      currentCount[c.nombre] = (currentCount[c.nombre] || 0) + 1;
-      currentMap[c.nombre] = c;
-    });
-
-    const newCount: Record<string, number> = {};
-    const newMap: Record<string, Carta> = {};
-    newCards.forEach(c => {
-      newCount[c.nombre] = (newCount[c.nombre] || 0) + 1;
-      newMap[c.nombre] = c;
-    });
-
     const format = (c: Carta) => ({
       nombre: c.nombre,
       calidad: c.calidad.normalize("NFD").replace(/[\u0300-\u036f]/g, "").charAt(0).toUpperCase() + c.calidad.slice(1).toLowerCase(),
@@ -111,27 +94,9 @@ export const MazoService = {
       descripcion: c.descripcion
     });
 
-    const cartaAñadir: any[] = [];
-    const cartaEliminar: any[] = [];
-
-    for (const nameKey in newCount) {
-      const diff = newCount[nameKey] - (currentCount[nameKey] || 0);
-      for (let i = 0; i < diff; i++) {
-        cartaAñadir.push(format(newMap[nameKey]));
-      }
-    }
-
-    for (const nameKey in currentCount) {
-      const diff = currentCount[nameKey] - (newCount[nameKey] || 0);
-      for (let i = 0; i < diff; i++) {
-        cartaEliminar.push(format(currentMap[nameKey]));
-      }
-    }
-
     const payload = {
       nombre: name,
-      cartaAñadir,
-      cartaEliminar
+      cartas: newCards.map(format)
     };
 
     const url = `${API_URL}/users/${encodeURIComponent(email)}/decks/${encodeURIComponent(id)}`;

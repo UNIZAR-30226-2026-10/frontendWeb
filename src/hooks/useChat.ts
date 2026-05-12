@@ -29,7 +29,12 @@ export function useChatPartida({
       setErrorChat(null);
 
       const data = await MatchesService.obtenerChatPartida(partidaId, username);
-      setChat(data.chat);
+      setChat((prevChat) => {
+        if (prevChat.length === data.chat.length) {
+          return prevChat;
+        }
+        return data.chat;
+      });
     } catch (error) {
       setErrorChat(
         error instanceof Error ? error.message : "Error al cargar el chat"
