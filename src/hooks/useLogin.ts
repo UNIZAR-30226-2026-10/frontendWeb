@@ -12,7 +12,7 @@ export const useAuth = () => {
   const [isLoading, setIsLoading] = useState(false);
   
   const router = useRouter();
-  const { setUserEmail } = useUser();
+  const { setUser } = useUser();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -21,8 +21,8 @@ export const useAuth = () => {
 
     try {
       // 2. Usamos el método dentro del objeto
-      await CuentaService.login(email, password);
-      setUserEmail(email); // Guardamos el email en el contexto
+      const loginData = await CuentaService.login(email, password);
+      setUser(email, loginData.username); // Guardamos el email y username en el contexto
       router.push('/juego');
     } catch (err: unknown) {
       setError((err as Error).message || 'Error de conexión con el servidor.');

@@ -1,25 +1,31 @@
 "use client";
 import React, { useState } from "react";
-
-interface TableroOption {
-  id: string;
-  nombre: string;
-}
+import Image from "next/image";
 
 interface SelectorTableroProps {
   tableroSeleccionado: string;
   onTableroSeleccionado: (tableroId: string) => void;
+  tablerosDisponibles?: string[];
 }
 
-const SelectorTablero: React.FC<SelectorTableroProps> = ({ tableroSeleccionado, onTableroSeleccionado }) => {
+const SelectorTablero: React.FC<SelectorTableroProps> = ({ 
+  tableroSeleccionado, 
+  onTableroSeleccionado,
+  tablerosDisponibles
+}) => {
   const [isOpen, setIsOpen] = useState(false);
 
-  const listaTableros: TableroOption[] = [
-    { id: "clasico", nombre: "Tablero Clásico" },
-    { id: "oscuro", nombre: "Tablero Oscuro" },
-    { id: "neon", nombre: "Tablero Neón" },
-    { id: "retro", nombre: "Tablero Retro" },
-  ];
+  // Formatear nombre del tablero para la ruta de imagen
+  const formatearNombreTablero = (nombre: string) => {
+    return nombre
+      .toLowerCase()
+      .replace(/\s+/g, "_")
+      .replace(/[^a-z0-9_]/g, "");
+  };
+
+  const listaTableros = tablerosDisponibles && tablerosDisponibles.length > 0
+    ? tablerosDisponibles
+    : [];
 
   const seleccionarYSalir = (tableroId: string) => {
     onTableroSeleccionado(tableroId);
@@ -31,16 +37,29 @@ const SelectorTablero: React.FC<SelectorTableroProps> = ({ tableroSeleccionado, 
       {/* BOTÓN DISPARADOR (En el Lobby) */}
       <div 
         onClick={() => setIsOpen(true)}
-        className="group bg-[#283F9F] border-[2px] border-[#EFB810] rounded-xl p-3 w-full aspect-square max-h-[220px] flex flex-col items-center shadow-lg cursor-pointer transition-all z-10"
+        className="group bg-[#283F9F] border-[2px] border-[#EFB810] rounded-xl p-3 w-full aspect-square max-h-[220px] flex flex-col items-center justify-between shadow-lg cursor-pointer transition-all z-10"
       >
-        <p className="font-bold text-xl text-white mb-2 self-start ml-1">Tablero</p>
+        <p className="font-bold text-xl text-white self-start ml-1">Tablero</p>
 
-        {/* CUADRO BLANCO CON EL LÁPIZ */}
-        <div className="w-full flex-1 bg-white rounded-sm shadow-inner relative overflow-hidden flex flex-col items-center justify-center border border-black/10">
-            {/* Solo aquí mostramos el emoji */}
-            <span className="text-6xl transform group-hover:rotate-12 group-hover:scale-110 transition-transform duration-200 select-none">
-              ✏️
-            </span>
+        <div className="w-full flex-1 rounded-2xl border border-white/20 bg-gradient-to-br from-white/10 to-white/5 flex items-center justify-center px-4 text-center flex-col gap-2 relative overflow-hidden">
+          {/* Imagen de fondo del tablero seleccionado */}
+          {tableroSeleccionado && (
+            <Image
+              src={`/tablero_${formatearNombreTablero(tableroSeleccionado)}.png`}
+              alt={tableroSeleccionado}
+              fill
+              className="object-cover opacity-30 absolute inset-0"
+              sizes="220px"
+            />
+          )}
+          
+          <span className="text-6xl transform group-hover:rotate-12 group-hover:scale-110 transition-transform duration-200 select-none z-10 drop-shadow">
+            ✏️
+          </span>
+          <div className="relative z-10">
+            <p className="text-white font-bold text-lg leading-tight">{tableroSeleccionado || 'Selecciona un tablero'}</p>
+            <p className="text-white/60 text-xs uppercase tracking-widest mt-2">Seleccionar tablero</p>
+          </div>
         </div>
       </div>
 
@@ -66,37 +85,44 @@ const SelectorTablero: React.FC<SelectorTableroProps> = ({ tableroSeleccionado, 
                 </button>
             </div>
             
-            {/* GRID DE OPCIONES */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 overflow-y-auto p-2 pr-4 flex-1 custom-scroll">
-              {listaTableros.map((tablero) => (
-                <div
-                  key={tablero.id}
-                  onClick={() => seleccionarYSalir(tablero.id)}
-                  className={`cursor-pointer rounded-2xl p-3 border-4 transition-all flex flex-col ${
-                    tablero.id === tableroSeleccionado 
-                    ? "border-yellow-400 bg-yellow-400/10 scale-[1.02]" 
-                    : "border-transparent bg-white/5 hover:bg-white/10"
-                  }`}
-                >
-                  {/* CUADRO EN BLANCO (Placeholder para imagen futura) */}
-                  <div className="w-full aspect-video bg-white rounded-lg shadow-md border border-gray-200 flex items-center justify-center">
-                      <span className="text-gray-200 font-bold text-[10px] uppercase tracking-widest">
-                        Vista Previa
-                      </span>
+            {listaTableros.length === 0 ? (
+              <div className="flex-1 flex items-center justify-center text-white/70 text-sm">
+                No hay tableros disponibles.
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 overflow-y-auto p-2 pr-4 flex-1 custom-scroll">
+                {listaTableros.map((tableroNombre) => (
+                  <div
+                    key={tableroNombre}
+                    onClick={() => seleccionarYSalir(tableroNombre)}
+                    className={`cursor-pointer rounded-2xl p-4 border-4 transition-all flex flex-col ${
+                      tableroNombre === tableroSeleccionado 
+                      ? "border-yellow-400 bg-yellow-400/10 scale-[1.02]" 
+                      : "border-transparent bg-white/5 hover:bg-white/10"
+                    }`}
+                  >
+                    <div className="w-full aspect-video rounded-lg border border-white/15 bg-black/20 flex items-center justify-center overflow-hidden relative">
+                      <Image
+                        src={`/tablero_${formatearNombreTablero(tableroNombre)}.png`}
+                        alt={tableroNombre}
+                        fill
+                        className="object-cover"
+                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                      />
+                    </div>
+                    
+                    <div className="pt-4 text-center">
+                      <p className={`font-bold text-lg ${tableroNombre === tableroSeleccionado ? "text-yellow-400" : "text-white"}`}>
+                          {tableroNombre}
+                      </p>
+                      {tableroNombre === tableroSeleccionado && (
+                        <span className="text-[10px] text-yellow-400 font-bold uppercase">Seleccionado</span>
+                      )}
+                    </div>
                   </div>
-                  
-                  {/* NOMBRE DEL TABLERO */}
-                  <div className="pt-4 text-center">
-                    <p className={`font-bold text-lg ${tablero.id === tableroSeleccionado ? "text-yellow-400" : "text-white"}`}>
-                        {tablero.nombre}
-                    </p>
-                    {tablero.id === tableroSeleccionado && (
-                      <span className="text-[10px] text-yellow-400 font-bold uppercase">Seleccionado</span>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       )}

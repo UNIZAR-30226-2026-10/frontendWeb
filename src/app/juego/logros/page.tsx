@@ -7,7 +7,7 @@ import { useUser } from '@/context/userContext';
 export default function Home() {
   const { userEmail } = useUser(); 
   
-  const { logros, isLoading, error } = useLogros(userEmail || '');
+  const { logros, isLoading, error, reclamar } = useLogros(userEmail || '');
 
   if (!userEmail) {
     return <div className="text-white text-center mt-10 text-2xl w-full font-bold">Por favor, inicia sesión para ver tus logros.</div>;
@@ -43,6 +43,8 @@ export default function Home() {
               progresoLogro={logro.progresoLogro}
               metaLogro={logro.metaLogro}
               recompensaLogro={logro.recompensaLogro}
+              completado={logro.completado}
+              onReclamar={() => reclamar(logro.id)}
             />
           ))
         )}

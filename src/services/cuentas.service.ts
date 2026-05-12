@@ -1,14 +1,18 @@
-// src/services/auth.service.ts
-
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
 
-export interface CuentaResponse {
+export interface LoginResponse {
+  email: string;
+  username: string;
+}
+
+export interface MensajeResponse {
   message?: string;
+  error?: string;
 }
 
 export const CuentaService = {
   
-  login: async (email: string, password: string): Promise<CuentaResponse> => {
+  login: async (email: string, password: string): Promise<LoginResponse> => {
     const response = await fetch(`${API_URL}/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -19,10 +23,10 @@ export const CuentaService = {
     const data = await response.json();
     if (!response.ok) throw new Error(data.error || data.message || 'Correo o contraseña incorrectos');
     
-    return data as CuentaResponse;
+    return data as LoginResponse;
   },
 
-  register: async (email: string, username: string, password: string): Promise<CuentaResponse> => {
+  register: async (email: string, username: string, password: string): Promise<MensajeResponse> => {
     const response = await fetch(`${API_URL}/auth/new_users`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -35,33 +39,33 @@ export const CuentaService = {
     
     try {
       data = JSON.parse(text); 
-    } catch (e) {
+    } catch {
       data = { message: text }; 
     }
     
     if (!response.ok) throw new Error(data.error || data.message || 'Error al crear la cuenta');
     
-    return data as CuentaResponse;
+    return data as MensajeResponse;
   },
 
-  cookieLogin: async (): Promise<{ email: string; username: string }> => {
+  cookieLogin: async (): Promise<LoginResponse> => {
     const response = await fetch(`${API_URL}/auth/cookie_login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      credentials: 'include', // CRUCIAL: Envía las cookies al servidor
-      body: JSON.stringify({}), // No es necesario enviar datos, pero el servidor espera un cuerpo JSON
+      credentials: 'include',
+      body: JSON.stringify({}), 
     });
 
     const data = await response.json();
     if (!response.ok) throw new Error(data.error || 'Sesión no válida');
 
-    return data;
+    return data as LoginResponse;
   },
 
   logout: async (): Promise<void> => {
     const response = await fetch(`${API_URL}/auth/logout`, {
       method: 'POST',
-      credentials: 'include', // Para que el servidor sepa qué sesión cerrar
+      credentials: 'include', 
     });
 
     if (!response.ok) {

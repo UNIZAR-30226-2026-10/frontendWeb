@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { CuentaService } from '@/services/cuentas.service';
+import ModalExito from '@/components/interfaz/ModalExito';
 
 export default function CuadroRegistro() {
   const [email, setEmail] = useState('');
@@ -12,12 +13,18 @@ export default function CuadroRegistro() {
   const [passwordConfirm, setPasswordConfirm] = useState('');
   const [error, setError] = useState('');
   const [cargando, setCargando] = useState(false);
+  const [mostrarExito, setMostrarExito] = useState(false);
   
   const router = useRouter();
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(''); 
+
+    if (nombre.length > 10) {
+      setError('El nombre de usuario debe tener 10 caracteres o menos');
+      return;
+    }
 
     if (password !== passwordConfirm) {
       setError('Las contraseñas no coinciden');
@@ -28,13 +35,22 @@ export default function CuadroRegistro() {
 
     try {
       await CuentaService.register(email, nombre, password);
-      alert("¡Cuenta creada con éxito! Ya puedes iniciar sesión.");
-      router.push('/'); 
+      setMostrarExito(true);
     } catch (err) {
-      if (err instanceof Error) {
-        setError(err.message || 'Error al registrar la cuenta');
-      } else {
-        setError('Error al registrar la cuenta');
+      // El backend a veces crea el usuario pero falla en pasos de inicialización posteriores
+      // (cosméticos por defecto, etc.) y devuelve error aunque el usuario sí quedó creado.
+      // Intentamos un login silencioso para comprobarlo.
+      try {
+        await CuentaService.login(email, password);
+        // Si el login tuvo éxito, el usuario existe: tratamos como registro exitoso
+        setMostrarExito(true);
+      } catch {
+        // Si el login también falla, el registro realmente falló
+        if (err instanceof Error) {
+          setError(err.message || 'Error al registrar la cuenta');
+        } else {
+          setError('Error al registrar la cuenta');
+        }
       }
     } finally {
       setCargando(false);
@@ -42,6 +58,13 @@ export default function CuadroRegistro() {
   };
 
   return (
+    <>
+      {mostrarExito && (
+        <ModalExito
+          mensaje="Cuenta creada correctamente"
+          onClose={() => router.push('/')}
+        />
+      )}
     <div className="relative z-10 w-full max-w-md bg-[#121943] p-8 rounded-xl shadow-2xl border border-blue-500/30">
       
       {/* FLECHA PARA VOLVER AL INICIO DE SESION */}
@@ -83,6 +106,7 @@ export default function CuadroRegistro() {
             type="text"
             value={nombre}
             onChange={(e) => setNombre(e.target.value)}
+            maxLength={10}
             className="bg-[#0a0f2c] border border-blue-900 focus:border-blue-400 outline-none text-white p-3 rounded-md transition-all"
             placeholder="Tu nombre"
             required 
@@ -122,5 +146,6 @@ export default function CuadroRegistro() {
         </button>
       </form>
     </div> 
+    </>
   );
 }

@@ -7,10 +7,11 @@ import ConfirmarCompra from "@/components/interfaz/ConfirmarCompra";
 import ItemTienda from "@/types/itemTienda";
 import { useTienda } from '@/hooks/useTienda';
 import { useUser } from '@/context/userContext';
+import { formatearNombreItem } from '@/hooks/useTienda';
 
 export default function Tienda() {
   const { userEmail } = useUser();
-  const { tienda, isLoading, error, isComprando, mensajeCompra, setMensajeCompra, manejarCompra } = useTienda(userEmail || '');
+  const { tienda, isLoading, error, isComprando, mensajeCompra, manejarCompra } = useTienda(userEmail || '');
   const [itemSeleccionado, setItemSeleccionado] = useState<ItemTienda | null>(null);
 
   if (isLoading) {
@@ -64,7 +65,7 @@ export default function Tienda() {
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
               {seccion.items.map((item, idx) => (
                 <SlotTienda 
-                  key={`${item.nombre}-${idx}`} 
+                  key={formatearNombreItem(`${item.nombre}-${idx}`)} 
                   item={item} 
                   onSelect={setItemSeleccionado}
                   isComprado={item.comprado}

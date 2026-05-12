@@ -1,10 +1,9 @@
-interface Carta {
-    nombre: string;
-    tipo: string;
-    rareza: string;
-    imagen: string; //URL de la imagen de la carta
-    descripcion: string;
-    efecto: string;
+export interface Carta {
+  nombre: string;
+  tipo: string;
+  calidad: string; // Cambiado de 'rareza' a 'calidad' (como en el back)
+  descripcion: string;
+  imagen: string;
+  efecto: string;
 }
-
 export default Carta;

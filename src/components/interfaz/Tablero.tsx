@@ -1,380 +1,231 @@
+/* eslint-disable @next/next/no-img-element */
 "use client";
-import React, { useState, useEffect } from "react";
-import { generarTableros, type SnapshotTablero } from "./tableros";
 
-// Definición de tipos
-type Ficha = {
-  id: string;
-  posicion: number;
-  color: string;
-  equipo: string;
+import React, { useMemo, useState } from "react";
+import type {
+  SnapshotTablero,
+  JugadorEstado,
+  PartidaJugador,
+  Partida,
+} from "@/types/partida";
+
+type MovimientoDisponible = {
+  fichaId: number;
+  casillaDestino: number;
+  esBifurcacion: boolean;
+  pasosRestantes?: number;
 };
 
-
-
-interface TableroProps {
-  equipoActual: string;
-  onAvanzarTurno: () => void;
-  onResetTurno: () => void;
-  valorDadoExterno: number | null;
-  onTirarDadoManual: (valor: number | null) => void;
-}
-
+type TableroProps = {
+  equipoActual?: string;
+  snapshotTablero?: SnapshotTablero | null;
+  jugadores?: JugadorEstado[];
+  partidaJugadores?: PartidaJugador[];
+  movimientos?: MovimientoDisponible[];
+  onMoverFicha?: (
+    fichaId: number,
+    casillaDestino: number,
+    pasosRestantes: number
+  ) => Promise<Partida| null>;
+};
 
 const IMAGENES = {
   VACIA: "casilla_vacia.png",
-  NORMAL: "casilla_vertical.png", 
+  NORMAL: "casilla_vertical.png",
   CURVA: "casilla_curva.png",
   META: "casilla_meta1.png",
   BIFURCACION: "casilla_bifurcacion.png",
-  EFECTO_MAS_CUATRO: "efecto_mas_cuatro.png",
-  EFECTO_AGUJERO: "agujero_de_serpiente.png",
-  EFECTO_MENOS_CUATRO: "efecto_menos_cuatro.png"
 };
 
-const sparseCasillasArray = new Array(100);
+const COLORES_JUGADOR = [
+  "#ef4444",
+  "#3b82f6",
+  "#22c55e",
+  "#eab308",
+];
 
-for (let numeroCasilla = 1; numeroCasilla < 45; numeroCasilla++) {
-  const indice = numeroCasilla - 1;
-  const fila = Math.floor((numeroCasilla - 1) / 10);
-  const enBordeDerecho = numeroCasilla % 10 === 0;
-  const enBordeIzquierdo = numeroCasilla % 10 === 1;
-  const filaPar = fila % 2 === 0;
-  const ultimaFilaCamino = Math.floor((45 - 1) / 10);
+const NOMBRES_COLOR_JUGADOR = [
+  "rojo",
+  "azul",
+  "verde",
+  "amarillo",
+];
 
-  const inicioFila = filaPar ? fila * 10 + 1 : fila * 10 + 10;
-  const finFila = filaPar ? fila * 10 + 10 : fila * 10 + 1;
+export default function Tablero({
+  snapshotTablero,
+  onMoverFicha,
+  equipoActual,
+  jugadores = [],
+  partidaJugadores = [],
+  movimientos = [],
+}: TableroProps) {
+  const [bifurcacionPendiente, setBifurcacionPendiente] = useState<{
+    movimiento: MovimientoDisponible;
+    siguientes: number[];
+  } | null>(null);
 
-  const esCurvaSubida = numeroCasilla === finFila && fila < ultimaFilaCamino;
-  const esCurvaBajada = numeroCasilla === inicioFila && fila > 0;
+  const [escaleraPendiente, setEscaleraPendiente] = useState<{
+    movimiento: MovimientoDisponible;
+    base: number;
+    cima: number;
+    desdeBifurcacion?: boolean;
+  } | null>(null);
 
-  const esCurvaBorde = esCurvaSubida || esCurvaBajada;
+  const [fichaSeleccionada, setFichaSeleccionada] = useState<number | null>(null);
 
-  let rotacion = 90;
-  if (esCurvaSubida) {
-    rotacion = enBordeDerecho ? 180 : 270;
-  } else if (esCurvaBajada) {
-    rotacion = enBordeDerecho ? 90 : 0;
-  }
+  React.useEffect(() => {
+    if (movimientos.length === 0) setFichaSeleccionada(null);
+  }, [movimientos]);
 
-  let siguiente: number | undefined;
-  if (numeroCasilla < 45 ) {
-    if (filaPar) {
-      siguiente = enBordeDerecho ? numeroCasilla + 10 : numeroCasilla + 1;
-    } else {
-      siguiente = enBordeIzquierdo ? numeroCasilla + 10 : numeroCasilla - 1;
+  const casillas = snapshotTablero?.casillas ?? [];
+
+  const fichasPorCasilla = useMemo(() => {
+    const mapa: Record<
+      number,
+      {
+        jugadorIndex: number;
+        username: string;
+        fichaId: number;
+        color: string;
+        imagen: string;
+      }[]
+    > = {};
+
+    jugadores.forEach((jugador, jIndex) => {
+      const pj = partidaJugadores.find((p) => p.nombre === jugador.username);
+      const colorJugador = NOMBRES_COLOR_JUGADOR[
+        jIndex % NOMBRES_COLOR_JUGADOR.length
+      ];
+
+      const fichaNombre = pj?.fichaActualField || "ficha_default";
+      const fichaImg = `/${fichaNombre}_${colorJugador}.png`;
+
+      jugador.fichas.forEach((ficha) => {
+        if (!ficha.meta) {
+          const casillaVisual = ficha.casilla + 1;
+
+          if (!mapa[casillaVisual]) mapa[casillaVisual] = [];
+
+          mapa[casillaVisual].push({
+            jugadorIndex: jIndex,
+            username: jugador.username,
+            fichaId: ficha.id,
+            color: COLORES_JUGADOR[jIndex % COLORES_JUGADOR.length],
+            imagen: fichaImg,
+          });
+        }
+      });
+    });
+
+    return mapa;
+  }, [jugadores, partidaJugadores]);
+
+  const destinosValidos = useMemo(() => {
+    const mapa: Record<number, MovimientoDisponible> = {};
+
+    if (fichaSeleccionada !== null) {
+      movimientos.forEach((mov) => {
+        if (mov.fichaId === fichaSeleccionada) {
+          const casillaVisual = mov.casillaDestino + 1;
+          mapa[casillaVisual] = mov;
+        }
+      });
     }
-  }
 
-  sparseCasillasArray[indice] = {
-    esCurva: esCurvaBorde,
-    rotacion,
-    tipo: "Normal",
-    siguientes: siguiente !== undefined ? [siguiente] : []
-  };
-} 
-sparseCasillasArray[44] = { esCurva: false, rotacion: 90, tipo: "Normal", siguientes: [46] };
-sparseCasillasArray[45] = { esCurva: true, rotacion: 180, tipo: "Normal", siguientes: [56] };
-for (let i = 51; i <= 90; i++) {
-  const modulo = i % 10;
-  const fila = Math.floor((i - 1) / 10);
-  const esFilaInferior = (fila % 2) == 1;
-  const filaPar = fila % 2 === 0;
-  if(modulo==5){
-    sparseCasillasArray[i - 1] = {
-      esCurva: true,
-      rotacion: esFilaInferior ? 0 : 270,
-      tipo: "Normal",
-      siguientes: esFilaInferior ? [i + 1] : [i + 10]
-    };
-  }
-  if(modulo < 5 && modulo > 1){
-    sparseCasillasArray[i - 1] = {
-      esCurva: false,
-      rotacion: 90,
-      tipo: "Normal",
-      siguientes: filaPar ? [i + 1] : [i - 1]
-    };
-  }
-  if (modulo > 5 && modulo <= 9){
-    sparseCasillasArray[i - 1] = {
-      esCurva: false,
-      rotacion: 90,
-      tipo: "Normal",
-      siguientes: filaPar ? [i - 1] : [i + 1]
-    };
-  }
-  if(modulo ==0){
-    sparseCasillasArray[i - 1] = {
-      esCurva: true,
-      rotacion: esFilaInferior ? 180 : 90,
-      tipo: "Curva",
-      siguientes: esFilaInferior ? [i + 10] : [i - 1]
-    };
-  }
-  if(modulo ==1){
-  sparseCasillasArray[i - 1] = {
-      esCurva: true,
-      rotacion: esFilaInferior ? 270 : 0,
-      tipo: "Curva",
-      siguientes: esFilaInferior ? [i + 10] : [i + 1]
-    };
-  }
-  if(modulo ==4){
-    sparseCasillasArray[i - 1] = {
-      esCurva: true,
-      rotacion: esFilaInferior ? 90 : 180,
-      tipo: "Curva",
-      siguientes: esFilaInferior ? [i - 1] : [i + 10]
-    };
-  }
-}
-sparseCasillasArray[53] = { esCurva: false, rotacion: 90, tipo: "Normal", siguientes: [53] };
-sparseCasillasArray[54] = { esCurva: false, rotacion: 90, tipo: "Normal", siguientes: [54] };
-sparseCasillasArray[55] = { esCurva: false, rotacion: 270, tipo: "Bifurcacion", siguientes: [57, 55] };
-sparseCasillasArray[93] = { esCurva: true, rotacion: 0, tipo: "Curva", siguientes: [95] };
-for(let i = 96; i < 100; i++) {
-  sparseCasillasArray[i - 1] = { esCurva: false, rotacion: 90, tipo: "Normal", siguientes: [i+1] };
-}
-sparseCasillasArray[94] = { esCurva: false, rotacion: 270, tipo: "Bifurcacion", siguientes: [96] };
-sparseCasillasArray[99] = { esCurva: false, rotacion: 270, tipo: "Meta", siguientes: [] };
+    return mapa;
+  }, [movimientos, fichaSeleccionada]);
 
-//serpientes
-sparseCasillasArray[16] = { esCurva: false, rotacion: 90, tipo: "Serpiente", siguientes: [16], saltoA: 9 };
-sparseCasillasArray[53] = { esCurva: false, rotacion: 90, tipo: "Serpiente", siguientes: [53], saltoA: 43 };
-sparseCasillasArray[67] = { esCurva: false, rotacion: 90, tipo: "Serpiente", siguientes: [67], saltoA: 19 };
-sparseCasillasArray[82] = { esCurva: false, rotacion: 90, tipo: "Serpiente", siguientes: [82], saltoA: 56 };
-sparseCasillasArray[98] = { esCurva: false, rotacion: 90, tipo: "Serpiente", siguientes: [100], saltoA: 25 };
-//escaleras
-sparseCasillasArray[6] = { esCurva: false, rotacion: 90, tipo: "Escalera", siguientes: [8], saltoA: 26 };
-sparseCasillasArray[14] = { esCurva: false, rotacion: 90, tipo: "Escalera", siguientes: [14], saltoA: 31 };
-sparseCasillasArray[50] = { esCurva: true, rotacion: 270, tipo: "Escalera", siguientes: [61], saltoA: 73 };
-sparseCasillasArray[36] = { esCurva: false, rotacion: 90, tipo: "Escalera", siguientes: [36], saltoA: 98 };
-sparseCasillasArray[64] = { esCurva: true, rotacion: 270, tipo: "Escalera", siguientes: [75], saltoA: 84 };
-
-
-const MOCK_BACKEND_DATA: SnapshotTablero = generarTableros(2);
-
-const obtenerDestinosTrasTirada = (casillaInicio: number, pasos: number): number[] => {
-  const indiceInicio = casillaInicio - 1;
-  const destinos = new Set<number>();
-
-  const obtenerAnteriores = (indiceObjetivo: number): number[] => {
-    const anteriores: number[] = [];
-    MOCK_BACKEND_DATA.casillas.forEach((casilla, index) => {
-      if (casilla?.siguientes.includes(indiceObjetivo)) {
-        anteriores.push(index);
+  const saltosDinamicos = useMemo<Record<number, number>>(() => {
+    const saltos: Record<number, number> = {};
+    snapshotTablero?.casillas?.forEach((casilla, index) => {
+      if (casilla?.saltoA !== undefined) {
+        saltos[index + 1] = casilla.saltoA + 1;
       }
     });
-    return anteriores;
+    return saltos;
+  }, [snapshotTablero]);
+
+  const obtenerCoordenadas = (casilla: number) => {
+    const filaReal = Math.floor((casilla - 1) / 10);
+    const colReal = (casilla - 1) % 10;
+    const filaCSS = 9 - filaReal;
+
+    return {
+      x: colReal * 10 + 5,
+      y: filaCSS * 10 + 5,
+    };
   };
+  const comprobarEscaleraTrasBifurcacion = (
+  partidaActualizada: Partida | null,
+  fichaId: number
+) => {
+  if (!partidaActualizada?.snapshotTablero){
 
-  const obtenerReboteDesdeMeta = (indiceMeta: number, pasosSobrantes: number): number[] => {
-    if (pasosSobrantes === 0) return [indiceMeta];
-    const anteriores = obtenerAnteriores(indiceMeta);
-    if (anteriores.length === 0) return [indiceMeta];
-    return Array.from(new Set(anteriores.flatMap((anterior) => obtenerReboteDesdeMeta(anterior, pasosSobrantes - 1))));
-  };
-
-  const recorrer = (indiceActual: number, pasosRestantes: number, direccion: "adelante" | "atras" = "adelante") => {
-    const datosCasilla = MOCK_BACKEND_DATA.casillas[indiceActual];
-    const siguientes = datosCasilla?.siguientes ?? [];
-
-    if (pasosRestantes === 0) {
-      destinos.add(indiceActual);
-      return;
-    }
-
-    if (direccion === "atras") {
-      const anteriores = obtenerAnteriores(indiceActual);
-      anteriores.forEach((anterior) => recorrer(anterior, pasosRestantes - 1, "atras"));
-      return;
-    }
-
-    if (datosCasilla?.tipo === "Meta") {
-      obtenerReboteDesdeMeta(indiceActual, pasosRestantes).forEach((destino) => destinos.add(destino));
-      return;
-    }
-
-    if (pasosRestantes > 0 && datosCasilla?.tipo === "Bifurcacion" && siguientes.length > 1) {
-      const pasosTrasElegirRama = pasosRestantes - 1;
-      if (pasosTrasElegirRama <= 0) {
-        siguientes.forEach((opcion) => destinos.add(opcion));
-        return;
-      }
-      siguientes.forEach((opcion) => recorrer(opcion, pasosTrasElegirRama));
-      return;
-    }
-
-    siguientes.forEach((siguiente) => recorrer(siguiente, pasosRestantes - 1));
-  };
-
-  recorrer(indiceInicio, pasos);
-  destinos.delete(indiceInicio);
-
-  return Array.from(destinos).map((indice) => indice + 1);
-};
-
-const esperar = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
-
-export default function Tablero({ equipoActual, onAvanzarTurno, onResetTurno, valorDadoExterno, onTirarDadoManual }: TableroProps) {
-  const [misFichas, setMisFichas] = useState<Ficha[]>([
-    { id: "Ficha 1", posicion: 1, color: "bg-red-400", equipo: "miEquipo" },
-    { id: "Ficha 2", posicion: 1, color: "bg-red-500", equipo: "miEquipo" },
-    { id: "Ficha 3", posicion: 1, color: "bg-red-600", equipo: "miEquipo" },
-    { id: "Jugador 2 - Ficha 1", posicion: 1, color: "bg-blue-400", equipo: "equipoAzul" },
-    { id: "Jugador 2 - Ficha 2", posicion: 1, color: "bg-blue-500", equipo: "equipoAzul" },
-    { id: "Jugador 2 - Ficha 3", posicion: 1, color: "bg-blue-600", equipo: "equipoAzul" },
-    { id: "Jugador 3 - Ficha 1", posicion: 1, color: "bg-green-400", equipo: "equipoVerde" },
-    { id: "Jugador 3 - Ficha 2", posicion: 1, color: "bg-green-500", equipo: "equipoVerde" },
-    { id: "Jugador 3 - Ficha 3", posicion: 1, color: "bg-green-600", equipo: "equipoVerde" },
-    { id: "Jugador 4 - Ficha 1", posicion: 1, color: "bg-yellow-300", equipo: "equipoAmarillo" },
-    { id: "Jugador 4 - Ficha 2", posicion: 1, color: "bg-yellow-400", equipo: "equipoAmarillo" },
-    { id: "Jugador 4 - Ficha 3", posicion: 1, color: "bg-yellow-500", equipo: "equipoAmarillo" }
-  ]);
-
-  const [movimientosPermitidos, setMovimientosPermitidos] = useState<Record<string, number[]>>({});
-  const [fichaSeleccionada, setFichaSeleccionada] = useState<string | null>(null);
-  const [confirmacionEscalera, setConfirmacionEscalera] = useState<{ fichaId: string; casillaBase: number; casillaSalto: number} | null>(null);
-
-  const saltosDinamicos: Record<number, number> = {};
-  MOCK_BACKEND_DATA.casillas?.forEach((casilla, index) => {
-    if (casilla && casilla.saltoA !== undefined) {
-      saltosDinamicos[index + 1] = casilla.saltoA + 1;
-    }
-  });
-
-  useEffect(() => {
-    if (valorDadoExterno === null) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setMovimientosPermitidos({});
-      return;
-    }
-    setFichaSeleccionada(null);
-
-    const nuevosMovimientos = Object.fromEntries(
-      misFichas.map((ficha) => {
-        if (ficha.equipo !== equipoActual) return [ficha.id, []];
-        const casillaActual = MOCK_BACKEND_DATA.casillas[ficha.posicion - 1];
-        if (casillaActual?.tipo === "Meta") return [ficha.id, []];
-        return [ficha.id, obtenerDestinosTrasTirada(ficha.posicion, valorDadoExterno)];
-      })
-    );
-    setMovimientosPermitidos(nuevosMovimientos);
-  }, [valorDadoExterno, equipoActual, misFichas]);
-
-  const seleccionarFicha = (idFicha: string) => {
-    const ficha = misFichas.find((f) => f.id === idFicha);
-    if (ficha?.equipo !== equipoActual) return;
-    if (movimientosPermitidos[idFicha] && movimientosPermitidos[idFicha].length > 0) {
-      setFichaSeleccionada(idFicha);
-    }
-  };
-
-  const resolverCadenaSerpientes = (casillaInicio: number): number[] => {
-    const destinos: number[] = [];
-    const visitadas = new Set<number>();
-    let casillaActual = casillaInicio;
-
-    while (!visitadas.has(casillaActual)) {
-      visitadas.add(casillaActual);
-
-      const datosCasilla = MOCK_BACKEND_DATA.casillas[casillaActual - 1];
-      if (datosCasilla?.tipo !== "Serpiente" || datosCasilla.saltoA === undefined) {
-        break;
-      }
-
-      const casillaDestino = datosCasilla.saltoA + 1;
-      if (casillaDestino === casillaActual) {
-        break;
-      }
-
-      destinos.push(casillaDestino);
-      casillaActual = casillaDestino;
-    }
-
-    return destinos;
-  };
-
-  const ejecutarMovimientoFinal = async (fichaId: string, base: number, final: number) => {
-    setMovimientosPermitidos({});
-    setFichaSeleccionada(null);
-
-    const cadenaSerpientes = resolverCadenaSerpientes(final);
-    const trayectoria = base !== final ? [base, final, ...cadenaSerpientes] : [base, ...cadenaSerpientes];
-
-    for (let i = 0; i < trayectoria.length; i++) {
-      const destino = trayectoria[i];
-      setMisFichas((f) => f.map((fi) => (fi.id === fichaId ? { ...fi, posicion: destino } : fi)));
-      if (i < trayectoria.length - 1) {
-        await esperar(800);
-      }
-    }
-    
-    onTirarDadoManual(null);
-    onAvanzarTurno();
-  };
-
-  const moverFichaAlDestino = async (casillaDestino: number) => {
-    if (!fichaSeleccionada) return;
-    const fichaActual = fichaSeleccionada;
-    const datosCasilla = MOCK_BACKEND_DATA.casillas[casillaDestino - 1];
-
-    if (datosCasilla?.tipo === "Escalera" && datosCasilla.saltoA !== undefined) {
-      setConfirmacionEscalera({ fichaId: fichaActual, casillaBase: casillaDestino, casillaSalto: datosCasilla.saltoA + 1 });
-      return; 
-    }
-    ejecutarMovimientoFinal(
-      fichaActual,
-      casillaDestino,
-      datosCasilla?.saltoA !== undefined ? datosCasilla.saltoA + 1 : casillaDestino
-    );
-  };
-
-  const enviarFichasACasa = () => {
-    setFichaSeleccionada(null);
-    setMovimientosPermitidos({});
-    onTirarDadoManual(null);
-    setMisFichas((fichas) => fichas.map((ficha) => ({ ...ficha, posicion: 1 })));
-    onResetTurno();
-  };
-
-  const casillas: number[] = [];
-  for (let fila = 9; fila >= 0; fila--) {
-    for (let col = 1; col <= 10; col++) {
-      casillas.push(fila * 10 + col);
-    }
+    console.log("No hay partidaActualizada o snapshotTablero");
+    return; 
   }
 
-  const destinosIluminados = fichaSeleccionada ? movimientosPermitidos[fichaSeleccionada] : [];
+  const jugadorActualizado = partidaActualizada.snapshotJugadores.jugadores.find(
+  (jugador) => jugador.username === equipoActual
+);
+
+const fichaActualizada = jugadorActualizado?.fichas.find(
+  (ficha) => ficha.id === fichaId
+);
+
+  console.log("Ficha buscada:", fichaId);
+  console.log("Ficha actualizada:", fichaActualizada);
+  if (!fichaActualizada || fichaActualizada.meta) {
+    console.log("No se encontró la ficha o está en meta");
+    return;
+  }
+
+  const casillaFinal = fichaActualizada.casilla;
+  const datosCasillaFinal =
+    partidaActualizada.snapshotTablero.casillas[casillaFinal];
+
+  if (
+    datosCasillaFinal?.tipo === "Escalera" &&
+    datosCasillaFinal.saltoA !== undefined
+  ) {
+    console.log("ABRIENDO POPUP ESCALERA DESDE BIFURCACIÓN");    
+    setBifurcacionPendiente(null);
+    setEscaleraPendiente({
+      movimiento: {
+        fichaId,
+        casillaDestino: casillaFinal,
+        esBifurcacion: false,
+        pasosRestantes: 0,
+      },
+      base: casillaFinal,
+      cima: datosCasillaFinal.saltoA,
+      desdeBifurcacion: true,
+    });
+  } else {
+    setBifurcacionPendiente(null);
+    console.log("La casilla final no es escalera");
+  }
+};
 
   const renderizarObstaculosPNG = () => {
-    const obtenerCoordenadas = (casilla: number) => {
-      const filaReal = Math.floor((casilla - 1) / 10); 
-      const colReal = (casilla - 1) % 10; 
-      const filaCSS = 9 - filaReal; 
-      return {
-        x: colReal * 10 + 5, 
-        y: filaCSS * 10 + 5
-      };
-    };
+    const jugadorActual = partidaJugadores.find((p) => p.nombre === equipoActual);
+    const nombreSerpiente = jugadorActual?.serpienteActualField || "serpiente_default";
+    const nombreEscalera = jugadorActual?.escaleraActualField || "escalera_default";
 
     return Object.entries(saltosDinamicos).map(([inicio, fin]) => {
       const inicioNumero = Number(inicio);
       const start = obtenerCoordenadas(inicioNumero);
       const end = obtenerCoordenadas(fin);
-      const tipoInicio = MOCK_BACKEND_DATA.casillas[inicioNumero - 1]?.tipo;
-      
+      const tipoInicio = snapshotTablero?.casillas[inicioNumero - 1]?.tipo;
+
       const dx = end.x - start.x;
       const dy = end.y - start.y;
-      
       const longitud = Math.sqrt(dx * dx + dy * dy);
       const angulo = Math.atan2(dy, dx) * (180 / Math.PI);
       const esEscalera = tipoInicio === "Escalera";
 
       if (esEscalera) {
-        const flipScale = dx < 0 ? ' scaleY(-1)' : '';
-        const grosorEscalera = '8%'; 
+        const flipScale = dx < 0 ? " scaleY(-1)" : "";
 
         return (
           <div
@@ -384,255 +235,504 @@ export default function Tablero({ equipoActual, onAvanzarTurno, onResetTurno, va
               left: `${start.x}%`,
               top: `${start.y}%`,
               width: `${longitud}%`,
-              height: grosorEscalera,
-              transformOrigin: '0% 50%',
-              transform: `translateY(-50%) rotate(${angulo}deg)${flipScale}`
+              height: "8%",
+              transformOrigin: "0% 50%",
+              transform: `translateY(-50%) rotate(${angulo}deg)${flipScale}`,
             }}
           >
             <div className="h-full flex-shrink-0 overflow-hidden relative z-20">
               <img
-                src="/escalera_estratega_base.png"
+                src={`/${nombreEscalera}_base.png`}
                 alt="Base"
                 className="h-full w-auto block max-w-none"
               />
             </div>
-            
+
             <div
               className="h-full flex-1 relative z-10"
               style={{
-                backgroundImage: "url(/escalera_estratega_cuerpo.png)",
+                backgroundImage: `url(/${nombreEscalera}_cuerpo.png)`,
                 backgroundRepeat: "repeat-x",
                 backgroundSize: "auto 100%",
                 backgroundPosition: "left center",
-                transform: "scaleX(1.03)"
+                transform: "scaleX(1.03)",
               }}
             />
-            
+
             <div className="h-full flex-shrink-0 overflow-hidden relative z-20">
               <img
-                src="/escalera_estratega_tope.png"
+                src={`/${nombreEscalera}_tope.png`}
                 alt="Tope"
                 className="h-full w-auto block max-w-none"
               />
             </div>
           </div>
         );
-      } else {
-        const flipScale = dx < 0 ? " scaleY(-1)" : "";
+      }
 
-        const altoSerpiente = "6.5%";
-        const anchoCabeza = "52px";
-        const anchoCola = "70px";
-        const patronCuerpo = "22px 44%";
+      const flipScale = dx < 0 ? " scaleY(-1)" : "";
 
-        return (
+      return (
+        <div
+          key={`${inicio}-${fin}`}
+          className="absolute z-30 pointer-events-none drop-shadow-xl flex flex-row items-center"
+          style={{
+            left: `${start.x}%`,
+            top: `${start.y}%`,
+            width: `${longitud}%`,
+            height: "6.5%",
+            transformOrigin: "0% 50%",
+            transform: `translateY(-50%) rotate(${angulo}deg)${flipScale}`,
+          }}
+        >
           <div
-            key={`${inicio}-${fin}`}
-            className="absolute z-30 pointer-events-none drop-shadow-xl flex flex-row items-center"
-            style={{
-              left: `${start.x}%`,
-              top: `${start.y}%`,
-              width: `${longitud}%`,
-              height: altoSerpiente,
-              transformOrigin: "0% 50%",
-              transform: `translateY(-50%) rotate(${angulo}deg)${flipScale}`,
-            }}
+            className="h-full flex-shrink-0 overflow-hidden"
+            style={{ width: "52px" }}
           >
-
-            <div
-              className="h-full flex-shrink-0 overflow-hidden"
-              style={{ width: anchoCabeza }}
-            >
-              <img
-                src="/serpiente_futuro_cabeza.png"
-                alt="Cabeza"
-                className="h-full max-w-none"
-                style={{
-                  width: "100%",
-                  height: "50%",
-                  transform:"translateY(46%) translateX(1%)"
-                }}
-              />
-            </div>
-
-            <div
-              className="h-full flex-1"
+            <img
+              src={`/${nombreSerpiente}_cabeza.png`}
+              alt="Cabeza"
+              className="h-full max-w-none"
               style={{
-                backgroundImage: "url(/serpiente_futuro_cuerpo.png)",
-                backgroundRepeat: "repeat-x",
-                backgroundSize: patronCuerpo,
-                backgroundPosition: "left center",
+                width: "100%",
+                height: "50%",
+                transform: "translateY(46%) translateX(1%)",
               }}
             />
-
-            <div
-              className="h-full flex-shrink-0 overflow-hidden"
-              style={{ width: anchoCola }}
-            >
-              <img
-                src="/serpiente_futuro_cola.png"
-                alt="Cola"
-                className="h-full max-w-none"
-                style={{
-                  width: "140%",
-                  height: "113%",
-                  transform: "translateX(-29%)translateY(-5%)",
-                }}
-              />
-            </div>
           </div>
-        );
-      }
+
+          <div
+            className="h-full flex-1"
+            style={{
+              backgroundImage: `url(/${nombreSerpiente}_cuerpo.png)`,
+              backgroundRepeat: "repeat-x",
+              backgroundSize: "22px 44%",
+              backgroundPosition: "left center",
+            }}
+          />
+
+          <div
+            className="h-full flex-shrink-0 overflow-hidden"
+            style={{ width: "70px" }}
+          >
+            <img
+              src={`/${nombreSerpiente}_cola.png`}
+              alt="Cola"
+              className="h-full max-w-none"
+              style={{
+                width: "140%",
+                height: "113%",
+                transform: "translateX(-29%) translateY(-5%)",
+              }}
+            />
+          </div>
+        </div>
+      );
     });
   };
 
-  return (
-    <div className="flex flex-col items-center justify-center gap-2 h-full max-h-full w-full mx-auto p-2 min-h-0 relative">
-      {fichaSeleccionada && (
-        <div className="absolute top-4 z-50 bg-black/80 px-6 py-2 rounded-full pointer-events-none shadow-lg border border-green-500/30">
-          <p className="text-green-400 font-bold animate-pulse text-lg">
-            Moviendo {fichaSeleccionada}. {valorDadoExterno !== null ? `Dado: ${valorDadoExterno}.` : ""} ¡Elige una casilla verde!
-          </p>
-        </div>
-      )}
+  const manejarClickCasilla = async (
+    esDestino: MovimientoDisponible | undefined
+  ) => {
+    if (!esDestino || !onMoverFicha || !snapshotTablero) return;
+    
+    setFichaSeleccionada(null);
 
-      {confirmacionEscalera && (
-      <div className="absolute inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm rounded-2xl">
-        <div className="bg-slate-800 border-2 border-yellow-500 p-6 rounded-2xl shadow-2xl flex flex-col items-center gap-4 animate-in zoom-in duration-300">
-          <span className="text-4xl">🪜</span>
-          <h3 className="text-white font-bold text-center">
-            ¡Has caído en una escalera!<br/>
-            <span className="text-yellow-400 text-sm italic">
-              ¿Quieres subir a la casilla {confirmacionEscalera.casillaSalto}?
-            </span>
-          </h3>
-          <div className="flex gap-4 w-full">
-            <button onClick={() => { ejecutarMovimientoFinal(confirmacionEscalera.fichaId, confirmacionEscalera.casillaBase, confirmacionEscalera.casillaSalto); setConfirmacionEscalera(null); }} className="flex-1 py-2 bg-green-600 hover:bg-green-500 text-white font-bold rounded-lg transition-colors shadow-lg"> SÍ, SUBIR </button>
-            <button onClick={() => { ejecutarMovimientoFinal(confirmacionEscalera.fichaId, confirmacionEscalera.casillaBase, confirmacionEscalera.casillaBase); setConfirmacionEscalera(null); }} className="flex-1 py-2 bg-red-600 hover:bg-red-500 text-white font-bold rounded-lg transition-colors shadow-lg"> NO, QUEDARME </button>
-          </div>
-        </div>
+    const pasosRestantes = esDestino.pasosRestantes ?? 0;
+    const destinoCasilla = snapshotTablero.casillas[esDestino.casillaDestino];
+
+    // --- MANEJO DE SERPIENTES ---
+    if (destinoCasilla?.tipo === "Serpiente" && destinoCasilla.saltoA !== undefined) {
+      const miJugador = jugadores.find((j) => j.username === equipoActual);
+      const tieneAntidoto = miJugador?.efectosActivos.some(
+        (e) => e.resumenEfecto === "Antidoto"
+      );
+
+      if (!tieneAntidoto) {
+        await onMoverFicha(
+          esDestino.fichaId,
+          destinoCasilla.saltoA,
+          pasosRestantes
+        );
+        return;
+      }
+    }
+
+    // --- MANEJO DE ESCALERAS ---
+    if (destinoCasilla?.tipo === "Escalera" && destinoCasilla.saltoA !== undefined) {
+      setEscaleraPendiente({
+        movimiento: esDestino,
+        base: esDestino.casillaDestino,
+        cima: destinoCasilla.saltoA,
+      });
+      return;
+    }
+
+    if (esDestino.esBifurcacion && pasosRestantes > 0) {
+      const casillaBifurcacion =
+        snapshotTablero.casillas[esDestino.casillaDestino];
+
+      const siguientes = casillaBifurcacion?.siguientes ?? [];
+
+      await onMoverFicha(
+        esDestino.fichaId,
+        esDestino.casillaDestino,
+        pasosRestantes
+      );
+
+      if (siguientes.length === 1) {
+        await onMoverFicha(esDestino.fichaId, siguientes[0], pasosRestantes);
+        return;
+      }
+
+      if (siguientes.length > 1) {
+        setBifurcacionPendiente({
+          movimiento: esDestino,
+          siguientes,
+        });
+        return;
+      }
+
+      return;
+    }
+
+    await onMoverFicha(
+      esDestino.fichaId,
+      esDestino.casillaDestino,
+      pasosRestantes
+    );
+  };
+
+  if (!snapshotTablero) {
+    return (
+      <div className="text-white text-center mt-10 text-2xl w-full font-bold">
+        Cargando Tablero...
       </div>
-      )}
+    );
+  }
 
-      <button onClick={enviarFichasACasa} className="absolute -top-10 left-40 z-50 px-4 py-1 bg-red-600 hover:bg-red-500 text-white font-bold rounded shadow transition-all">
-        Reiniciar
-      </button>
-
+  return (
+    <div 
+      className="flex flex-col items-center justify-center gap-2 h-full max-h-full w-full mx-auto p-2 min-h-0 relative"
+      onClick={() => setFichaSeleccionada(null)}
+    >
       <div className="h-full aspect-square max-w-full max-h-full bg-gray-900 p-1.5 rounded-2xl shadow-2xl shrink min-h-0 relative">
         <div className="w-full h-full grid grid-cols-10 grid-rows-10 relative overflow-hidden rounded-md">
           <div className="absolute inset-0 w-full h-full pointer-events-none z-30">
             {renderizarObstaculosPNG()}
           </div>
-          {casillas.map((num) => {
-            const fichasAqui = misFichas.filter(f => f.posicion === num);
-            const datosCasilla = MOCK_BACKEND_DATA.casillas?.[num - 1];
-            const tieneEfectoMasCuatro = datosCasilla?.efecto?.trim() === "+4";
-            const tieneEfectoAgujero = datosCasilla?.efecto?.trim() === "Agujero de serpiente"; 
-            const tieneEfectoMenosCuatro = datosCasilla?.efecto?.trim() === "-4";
+
+          {Array.from({ length: 100 }, (_, i) => {
+            const filaVisual = Math.floor(i / 10);
+            const colVisual = i % 10;
+
+            const filaReal = 9 - filaVisual;
+            const num = filaReal * 10 + colVisual + 1;
+
+            const datosCasilla = casillas[num - 1];
             let imagenSrc = IMAGENES.VACIA;
+
             if (datosCasilla) {
-              if (datosCasilla.tipo === "Meta") imagenSrc = IMAGENES.META;
-              else if (datosCasilla.tipo === "Bifurcacion") imagenSrc = IMAGENES.BIFURCACION;
-              else if (datosCasilla.esCurva) imagenSrc = IMAGENES.CURVA;
-              else if (datosCasilla.tipo === "Vacía") imagenSrc = IMAGENES.VACIA;
-              else imagenSrc = IMAGENES.NORMAL;
+              if (datosCasilla.tipo === "Meta") {
+                imagenSrc = IMAGENES.META;
+              } else if (datosCasilla.tipo === "Bifurcacion") {
+                imagenSrc = IMAGENES.BIFURCACION;
+              } else if (datosCasilla.esCurva) {
+                imagenSrc = IMAGENES.CURVA;
+              } else if (datosCasilla.tipo === "Vacía") {
+                imagenSrc = IMAGENES.VACIA;
+              } else {
+                imagenSrc = IMAGENES.NORMAL;
+              }
             }
 
             const rotacion = datosCasilla ? datosCasilla.rotacion : 0;
-            const fichasAgrupadasPorEquipo = fichasAqui.reduce<Record<string, Ficha[]>>((grupos, ficha) => {
-              if (!grupos[ficha.equipo]) grupos[ficha.equipo] = [];
-              grupos[ficha.equipo].push(ficha);
-              return grupos;
-            }, {});
-            
-            const fichasVisibles = Object.values(fichasAgrupadasPorEquipo).map((grupo) => {
-                const tieneFichaSeleccionada = grupo.find(f => f.id === fichaSeleccionada);
-                if(tieneFichaSeleccionada) return tieneFichaSeleccionada;
-                return grupo[0];
-            });
-
-            const esDestinoPosible = destinosIluminados.includes(num);
+            const fichasEnCasilla = fichasPorCasilla[num] || [];
+            const esDestino = destinosValidos[num];
 
             return (
-              <div key={num} onClick={() => esDestinoPosible && moverFichaAlDestino(num)} className={`relative flex flex-wrap items-center justify-center gap-[2px] transition-all duration-300 ${esDestinoPosible ? "cursor-pointer ring-4 ring-green-300 ring-inset animate-pulse z-40 scale-105 shadow-[0_0_15px_rgba(34,197,94,0.8)]" : ""} ${!esDestinoPosible && fichaSeleccionada ? "opacity-30" : ""}`}>
-                <div className="absolute inset-0 w-full h-full z-0 pointer-events-none scale-105" style={{ backgroundImage: `url(${imagenSrc})`, backgroundSize: '100% 100%', backgroundPosition: 'center', transform: `rotate(${rotacion}deg)` }} />
-                {tieneEfectoMasCuatro && (
-                  <div
-                    className="absolute inset-0 z-10 pointer-events-none scale-105"
-                    style={{
-                      backgroundImage: `url(${IMAGENES.EFECTO_MAS_CUATRO})`,
-                      backgroundSize: "70% 70%",
-                      backgroundPosition: "center",
-                      backgroundRepeat: "no-repeat",
-                    }}
-                  />
-                )}
-                {tieneEfectoAgujero && (
-                  <div
-                    className="absolute inset-0 z-10 pointer-events-none scale-105"
-                    style={{
-                      backgroundImage: `url(${IMAGENES.EFECTO_AGUJERO})`,
-                      backgroundSize: "90% 100%",
-                      backgroundPosition: "center",
-                      backgroundRepeat: "no-repeat",
-                    }}
-                  />
-                )}
-                {tieneEfectoMenosCuatro && (
-                  <div
-                    className="absolute inset-0 z-10 pointer-events-none scale-105"
-                    style={{
-                      backgroundImage: `url(${IMAGENES.EFECTO_MENOS_CUATRO})`,
-                      backgroundSize: "100% 100%",
-                      backgroundPosition: "center",
-                      backgroundRepeat: "no-repeat",
-                    }}
-                  />
-                )}
-                <span className="absolute top-0.5 left-1 text-[8px] lg:text-[10px] font-bold text-white/50 z-10 pointer-events-none select-none">{num}</span>
-                <div className={`relative z-20 grid place-items-center gap-[1px] ${fichasAqui.length === 1 ? "w-[82%] grid-cols-1" : fichasAqui.length === 2 ? "w-[112%] grid-cols-2" : "w-[100%] grid-cols-2"}`}>
-                  {fichasVisibles.map(ficha => {
-                    const esSeleccionable = (movimientosPermitidos[ficha.id]?.length ?? 0) > 0;
-                    const estaSeleccionada = fichaSeleccionada === ficha.id;
-                    const cantidadEquipoEnCasilla = fichasAgrupadasPorEquipo[ficha.equipo]?.length ?? 1;
-                    const imagenFicha = ficha.equipo === "miEquipo"
-                      ? "/Jugador_rojo_explorador.png"
-                      : ficha.equipo === "equipoAzul"
-                        ? "/Jugador_azul_explorador.png"
-                        : ficha.equipo === "equipoVerde"
-                          ? "/Jugador_verde_explorador.png"
-                          : "/Jugador_amarillo_explorador.png";
+              <div
+                key={num}
+                className={`relative flex items-center justify-center ${
+                  esDestino ? "cursor-pointer" : ""
+                }`}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (esDestino) {
+                    void manejarClickCasilla(esDestino);
+                  } else {
+                    setFichaSeleccionada(null);
+                  }
+                }}
+              >
+                <div
+                  className="absolute inset-0 w-full h-full z-0 pointer-events-none scale-105"
+                  style={{
+                    backgroundImage: `url(${imagenSrc})`,
+                    backgroundSize: "100% 100%",
+                    backgroundPosition: "center",
+                    transform: `rotate(${rotacion}deg)`,
+                  }}
+                />
 
-                    const esDeTuEquipo = ficha.equipo === equipoActual;
+                {datosCasilla?.efecto && (
+                  <div className="absolute inset-0 z-10 flex items-center justify-center p-1 pointer-events-none">
+                    <img
+                      src={
+                        datosCasilla.efecto === "-4"
+                          ? "/efecto_menos_cuatro.png"
+                          : datosCasilla.efecto === "+4"
+                          ? "/efecto_mas_cuatro.png"
+                          : datosCasilla.efecto === "Agujero de serpiente"
+                          ? "/agujero_de_serpiente.png"
+                          : datosCasilla.efecto === "Serpiente en tu bota"
+                          ? "/serpiente_en_tu_bota.png"
+                          : ""
+                      }
+                      alt={datosCasilla.efecto}
+                      className="w-[85%] h-[85%] object-contain drop-shadow-[0_0_8px_rgba(255,255,255,0.4)]"
+                    />
+                  </div>
+                )}
+
+                {esDestino && (
+                  <div className="absolute inset-0 z-20 rounded-sm border-2 border-yellow-300 bg-yellow-300/30 animate-pulse pointer-events-none" />
+                )}
+
+                {fichasEnCasilla.length > 0 &&
+                  (() => {
+                    const gruposPorJugador: Record<
+                      string,
+                      typeof fichasEnCasilla
+                    > = {};
+
+                    fichasEnCasilla.forEach((ficha) => {
+                      if (!gruposPorJugador[ficha.username]) {
+                        gruposPorJugador[ficha.username] = [];
+                      }
+
+                      gruposPorJugador[ficha.username].push(ficha);
+                    });
+
+                    const grupos = Object.values(gruposPorJugador);
 
                     return (
-                      <div
-                        key={ficha.id}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          if (fichaSeleccionada && esDestinoPosible) {
-                            moverFichaAlDestino(num);
-                            return;
-                          }
-                          seleccionarFicha(ficha.id);
-                        }}
-                        className={`w-full aspect-square bg-transparent relative flex items-center justify-center ${esSeleccionable && esDeTuEquipo ? "cursor-pointer ring-2 ring-yellow-400 ring-offset-1 ring-offset-transparent" : ""} ${estaSeleccionada ? "scale-110" : ""} ${fichasAqui.length === 1 ? "scale-[1.10]" : fichasAqui.length === 2 ? "scale-[1.08]" : ""}`} title={ficha.id}>
-                        <img
-                          src={imagenFicha}
-                          alt={ficha.id}
-                          className="block w-full h-full object-contain pointer-events-none select-none"
-                          draggable={false}
-                        />
-                        {cantidadEquipoEnCasilla > 1 && ( <span className="absolute -top-1 -right-1 z-30 w-4 h-4 rounded-full bg-black/85 text-white text-[9px] font-bold flex items-center justify-center border border-white/60 pointer-events-none">{cantidadEquipoEnCasilla}</span> )}
+                      <div className="absolute inset-0 z-40 flex flex-wrap items-center justify-center gap-0.5 p-0.5 pointer-events-none">
+                        {grupos.map((grupo) => {
+                          const representante = grupo[0];
+                          const cantidad = grupo.length;
+                          
+                          const tieneMovimiento = representante.username === equipoActual && movimientos.some(m => grupo.some(f => f.fichaId === m.fichaId));
+
+
+                          return (
+                            <div
+                              key={representante.username}
+                              className={` shadow-md flex items-center justify-center overflow-hidden relative transition-all duration-200 pointer-events-auto ${
+                                tieneMovimiento ? 'cursor-pointer' : ''
+                              }`}
+                              style={{
+                                width:
+                                  grupos.length > 2
+                                    ? "45%"
+                                    : grupos.length > 1
+                                    ? "50%"
+                                    : "75%",
+                                height:
+                                  grupos.length > 2
+                                    ? "45%"
+                                    : grupos.length > 1
+                                    ? "50%"
+                                    : "75%",
+                                backgroundColor: "transparent",
+                              }}
+                              title={`${representante.username} - ${cantidad} ficha${
+                                cantidad > 1 ? "s" : ""
+                              }`}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                if (tieneMovimiento) {
+                                  const movForGroup = movimientos.find(m => grupo.some(f => f.fichaId === m.fichaId));
+                                  if (movForGroup) {
+                                    setFichaSeleccionada(movForGroup.fichaId);
+                                  }
+                                } else {
+                                  setFichaSeleccionada(null);
+                                }
+                              }}
+                            >
+                              <img
+                                src={representante.imagen}
+                                alt={`Ficha de ${representante.username}`}
+                                className="w-full h-full object-contain"
+                                onError={(e) => {
+                                  (e.target as HTMLImageElement).src =
+                                    "/ficha_default.png";
+                                }}
+                              />
+
+                              {cantidad > 1 && (
+                                <span
+                                  className="absolute rounded-full flex items-center justify-center font-bold text-white"
+                                  style={{
+                                    backgroundColor: representante.color,
+                                    width: "18px",
+                                    height: "18px",
+                                    fontSize: "10px",
+                                    lineHeight: "1",
+                                    border: "2px solid white",
+                                    top: "-4px",
+                                    right: "-4px",
+                                    zIndex: 50,
+                                  }}
+                                >
+                                  {cantidad}
+                                </span>
+                              )}
+                            </div>
+                          );
+                        })}
                       </div>
                     );
-                  })}
-                </div>
+                  })()}
+
+                <span className="absolute top-0.5 left-1 text-[8px] lg:text-[10px] font-bold text-white/50 z-10 pointer-events-none select-none">
+                  {num}
+                </span>
               </div>
             );
           })}
         </div>
       </div>
+
+      {bifurcacionPendiente && (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60">
+          <div className="w-80 rounded-2xl border-4 border-yellow-400 bg-blue-900 p-6 text-center shadow-2xl">
+            <h2 className="mb-2 text-2xl font-black text-white">
+              Bifurcación
+            </h2>
+
+            <p className="mb-2 text-sm font-semibold text-blue-100">
+              Elige por dónde quieres continuar.
+            </p>
+
+            <p className="mb-5 text-lg font-black text-yellow-300">
+              Quedan{" "}
+              {bifurcacionPendiente.movimiento.pasosRestantes ?? 0} pasos por
+              dar
+            </p>
+
+            <div className="flex justify-center gap-4">
+              <button
+                type="button"
+                className="rounded-xl bg-yellow-400 px-5 py-3 font-black text-blue-950 shadow-lg transition hover:scale-105 active:scale-95"
+                onClick={async () => {
+                  if (!onMoverFicha || !bifurcacionPendiente) return;
+
+                  const { movimiento, siguientes } = bifurcacionPendiente;
+                  const destinoIzquierda = siguientes[0];
+
+                  setBifurcacionPendiente(null);
+
+                  const partidaActualizada = await onMoverFicha(
+                    movimiento.fichaId,
+                    destinoIzquierda,
+                    movimiento.pasosRestantes ?? 0
+                  );
+                  if(partidaActualizada)
+                  comprobarEscaleraTrasBifurcacion(
+                    partidaActualizada,
+                    movimiento.fichaId
+                  );
+                  
+                }}
+              >
+                Direccion a la 
+                <span className="block text-xs font-bold">
+                  Casilla {bifurcacionPendiente.siguientes[0] + 1}
+                </span>
+              </button>
+
+              <button
+                type="button"
+                className="rounded-xl bg-yellow-400 px-5 py-3 font-black text-blue-950 shadow-lg transition hover:scale-105 active:scale-95"
+                  onClick={async () => {
+                    if (!onMoverFicha || !bifurcacionPendiente) return;
+
+                    const { movimiento, siguientes } = bifurcacionPendiente;
+                    const destinoDerecha = siguientes[1];
+
+
+                    const partidaActualizada = await onMoverFicha(
+                      movimiento.fichaId,
+                      destinoDerecha,
+                      movimiento.pasosRestantes ?? 0
+                    );
+                      comprobarEscaleraTrasBifurcacion(
+                        partidaActualizada,
+                        movimiento.fichaId
+                      );
+          }}
+              >
+                Direccion a la
+                <span className="block text-xs font-bold">
+                  Casilla {bifurcacionPendiente.siguientes[1] + 1}
+                </span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {escaleraPendiente && (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60">
+          <div className="w-80 rounded-2xl border-4 border-yellow-400 bg-blue-900 p-6 text-center shadow-2xl">
+            <h2 className="mb-2 text-2xl font-black text-white">Escalera</h2>
+            <p className="mb-4 text-sm font-semibold text-blue-100">
+              ¿Quieres subir la escalera hasta la casilla {escaleraPendiente.cima + 1}?
+            </p>
+            <div className="flex justify-center gap-4">
+              <button
+                type="button"
+                className="rounded-xl bg-green-500 px-5 py-3 font-black text-white shadow-lg transition hover:scale-105 active:scale-95 cursor-pointer"
+                  onClick={async () => {
+                    if (!onMoverFicha || !escaleraPendiente) return;
+
+                    const { movimiento, cima, desdeBifurcacion } = escaleraPendiente;
+
+                    setEscaleraPendiente(null);
+
+                    await onMoverFicha(
+                      movimiento.fichaId,
+                      cima,
+                      desdeBifurcacion ? -1 : movimiento.pasosRestantes ?? 0
+                    );
+                  }}
+              >
+                Subir
+                <span className="block text-xs font-bold text-white/80">Casilla {escaleraPendiente.cima + 1}</span>
+              </button>
+              <button
+                type="button"
+                className="rounded-xl bg-red-500 px-5 py-3 font-black text-white shadow-lg transition hover:scale-105 active:scale-95 cursor-pointer"
+                onClick={async () => {
+                  if (!onMoverFicha || !escaleraPendiente) return;
+                  const { movimiento, base,desdeBifurcacion } = escaleraPendiente;
+                  const pasos = movimiento.pasosRestantes ?? 0;
+                  setEscaleraPendiente(null);
+                  if(desdeBifurcacion){                    
+                    await onMoverFicha(movimiento.fichaId, base, -1);
+                    return;
+                  }
+                  await onMoverFicha(movimiento.fichaId, base, pasos);
+                }}
+              >
+                Quedarse
+                <span className="block text-xs font-bold text-white/80">Casilla {escaleraPendiente.base + 1}</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

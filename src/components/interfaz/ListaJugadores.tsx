@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 import React from 'react';
 interface jugador{
     nombreJugador?: string;
@@ -10,6 +11,18 @@ interface Props{
     jugadores: jugador[];
 }
 export const ListaJugadores: React.FC<Props> = ({ jugadores }) => {
+  const resolverRutaIcono = (icono?: string): string => {
+    if (!icono || icono.trim() === '' || icono.toLowerCase() === 'null') {
+      return '/icono_default.png';
+    }
+
+    if (icono.startsWith('http://') || icono.startsWith('https://') || icono.startsWith('/')) {
+      return icono;
+    }
+
+    return `/${icono.replace(/\s+/g, '_')}.png`;
+  };
+
     return (
     // Hemos quitado "absolute top-2 left-10 z-10 w-44" y puesto "w-full relative z-10"
     <div className="w-full relative z-10 bg-black/40 backdrop-blur-sm p-3 rounded-xl border border-white/20 shadow-2xl">
@@ -27,15 +40,29 @@ export const ListaJugadores: React.FC<Props> = ({ jugadores }) => {
                 : 'bg-[#1E1B4B] border-transparent opacity-90'    // Azul oscuro si no
             }`}
           >
-            <div className="relative w-6 h-6 shrink-0 rounded-full border border-black bg-white flex items-center justify-center overflow-visible">
+            <div
+              className="relative w-6 h-6 shrink-0 rounded-full border border-black flex items-center justify-center overflow-visible"
+              style={{ backgroundColor: jugador.colorFichas ?? 'white' }}
+            >
+              {jugador.iconoJugador ? (
+                <img
+                  src={resolverRutaIcono(jugador.iconoJugador)}
+                  alt={jugador.nombreJugador}
+                  className="w-full h-full object-cover rounded-full"
+                />
+              ) : (
                 <span className="text-xs drop-shadow-sm">🐍</span>
+              )}
               {jugador.esLider && (
                 <span className="absolute -top-5 -right-1 text-xl drop-shadow-md rotate-12">👑</span>
               )}
             </div>
 
             <div className="flex items-center gap-2 min-w-0 flex-1">
-              <span className={`inline-block w-3 h-3 rounded-full border border-white/80 shrink-0 ${jugador.colorFichas ?? 'bg-white'}`} />
+              <span
+                className="inline-block w-3 h-3 rounded-full border border-white/80 shrink-0"
+                style={{ backgroundColor: jugador.colorFichas ?? 'white' }}
+              />
               <span className={`font-black text-xs lg:text-sm truncate ${jugador.esTurno ? 'text-white drop-shadow-md' : 'text-gray-200'}`}>
                 {jugador.nombreJugador}
               </span>

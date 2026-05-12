@@ -1,4 +1,5 @@
 'use client';
+
 import { useState, useEffect } from 'react';
 import { MazoService } from '@/services/mazos.service';
 import { Mazo } from '@/types/mazo';
@@ -8,30 +9,38 @@ export const useMazos = (email: string) => {
   const [isLoading, setIsLoading] = useState(true);
 
   const fetchDecks = async () => {
-    setIsLoading(true);
-    const data = await MazoService.getMazos(email);
-    setDecks(data);
-    setIsLoading(false);
+    if (!email) return;
+    try {
+      setIsLoading(true);
+      const data = await MazoService.getMazos(email);
+      setDecks(data);
+    } catch (err) {
+      console.error("Error cargando mazos:", err);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
- const handleDelete = async (id: string) => {
-
-  try {
-    await MazoService.deleteMazo(email, id);
-    setDecks(prev => prev.filter(d => d.id !== id));
-  } catch (err: unknown) {
-    alert("Error al borrar el mazo en el servidor");
-  }
-};
-
-  const handleSelect = async (id: string) => {
-    await MazoService.setMainMazo(email, id);
-    setDecks(prev => prev.map(d => ({ ...d, is_in_use: d.id === id })));
+  const handleDelete = async (id: string) => {
+    try {
+      await MazoService.deleteMazo(email, id);
+      // Tras borrar con éxito en el back, actualizamos la lista local
+      setDecks(prev => prev.filter(d => d.id !== id));
+    } catch (err: unknown) {
+      // El backend lanza error si el mazo está en una partida activa
+      alert((err as Error).message);
+    }
   };
 
-  //Comentario para evit que eslint se queje de que no se usa fetchDecks, aunque realmente sí se usa en el useEffect
-  // eslint-disable-next-line react-hooks/set-state-in-effect
-  useEffect(() => { fetchDecks(); }, [email]);
+  useEffect(() => {
+    fetchDecks();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [email]);
 
-  return { decks, isLoading, handleDelete, handleSelect };
+  return {
+    decks,
+    isLoading,
+    handleDelete,
+    refresh: fetchDecks
+  };
 };

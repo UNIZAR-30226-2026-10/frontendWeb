@@ -1,92 +1,69 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { Amigo } from '@/types/amigo';
 import { AmigosService } from '@/services/amigos.service';
-
-const POLLING_MIN_MS = 10_000;
-const POLLING_MAX_MS = 15_000;
-
-const getRandomPollingInterval = () => {
-  return Math.floor(Math.random() * (POLLING_MAX_MS - POLLING_MIN_MS + 1)) + POLLING_MIN_MS;
-};
 
 export const useAmigos = (email: string) => {
   const [amigos, setAmigos] = useState<Amigo[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const isFetchingRef = useRef(false);
+  const [isAdding, setIsAdding] = useState(false);
+  const [addError, setAddError] = useState<string | null>(null);
+  const [isRemoving, setIsRemoving] = useState(false);
 
-  useEffect(() => {
-    if (!email) {
-      setAmigos([]);
-      setIsLoading(false);
+  const fetchAmigos = useCallback(async () => {
+    try {
+      const list = await AmigosService.getAmigos(email);
+      setAmigos(list);
       setError(null);
-      return;
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Error desconocido');
+    } finally {
+      setIsLoading(false);
     }
-
-    let isMounted = true;
-    let timeoutId: ReturnType<typeof setTimeout> | null = null;
-
-    const fetchAmigos = async (showLoader: boolean) => {
-      if (isFetchingRef.current) return;
-
-      isFetchingRef.current = true;
-
-      try {
-        if (showLoader && isMounted) {
-          setIsLoading(true);
-        }
-
-        if (isMounted) {
-          setError(null);
-        }
-
-        const amigosList = await AmigosService.getAmigos(email);
-
-        if (isMounted) {
-          setAmigos(amigosList);
-        }
-      } catch (err: unknown) {
-        if (isMounted) {
-          setError((err as Error).message || 'Error al cargar los amigos');
-        }
-      } finally {
-        if (isMounted) {
-          setIsLoading(false);
-        }
-
-        isFetchingRef.current = false;
-      }
-    };
-
-    const scheduleNextFetch = () => {
-      timeoutId = setTimeout(async () => {
-        await fetchAmigos(false);
-        if (isMounted) {
-          scheduleNextFetch();
-        }
-      }, getRandomPollingInterval());
-    };
-
-    fetchAmigos(true).finally(() => {
-      if (isMounted) {
-        scheduleNextFetch();
-      }
-    });
-
-    return () => {
-      isMounted = false;
-      if (timeoutId) {
-        clearTimeout(timeoutId);
-      }
-      isFetchingRef.current = false;
-    };
   }, [email]);
 
-  return {
-    amigos,
-    isLoading,
-    error,
-  };
+  useEffect(() => {
+    if (!email) return;
+    
+    fetchAmigos();
+
+    // Polling cada 15 segundos para refrescar la lista automáticamente
+    const interval = setInterval(fetchAmigos, 15000);
+    
+    return () => clearInterval(interval);
+  }, [email, fetchAmigos]);
+
+  const agregarAmigo = useCallback(async (friendUsername: string): Promise<boolean> => {
+    if (!email || !friendUsername.trim()) return false;
+    setIsAdding(true);
+    setAddError(null);
+    try {
+      await AmigosService.addAmigo(email, friendUsername.trim());
+      await fetchAmigos(); // Refresca la lista inmediatamente
+      return true;
+    } catch (err: unknown) {
+      setAddError(err instanceof Error ? err.message : 'No se pudo añadir al amigo');
+      return false;
+    } finally {
+      setIsAdding(false);
+    }
+  }, [email, fetchAmigos]);
+
+  const eliminarAmigo = useCallback(async (friendUsername: string): Promise<boolean> => {
+    if (!email || !friendUsername.trim()) return false;
+    setIsRemoving(true);
+    try {
+      await AmigosService.removeAmigo(email, friendUsername.trim());
+      await fetchAmigos(); // Refresca la lista inmediatamente
+      return true;
+    } catch {
+      return false;
+    } finally {
+      setIsRemoving(false);
+    }
+  }, [email, fetchAmigos]);
+
+  return { amigos, isLoading, error, refresh: fetchAmigos, agregarAmigo, isAdding, addError, setAddError, eliminarAmigo, isRemoving };
 };

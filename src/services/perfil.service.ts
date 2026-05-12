@@ -2,6 +2,26 @@ import { PerfilUI } from '@/types/perfil';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
 
+export const generarUrlImagen = (nombre: string): string => {
+  if (!nombre || nombre.toLowerCase() === 'null' || nombre === '') return '';
+  return `/${nombre.toLowerCase().replace(/\s+/g, '_')}.png`;
+};
+
+const formatearNombreItem = (nombre: string): string => {
+  // Convierte "FICHA_AVENTURERO" a "Ficha Aventurero"
+  return nombre
+    .split('_')
+    .map(palabra => palabra.charAt(0).toUpperCase() + palabra.slice(1).toLowerCase())
+    .join(' ');
+};
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const normalizarNombre = (valor: any): string => {
+  if (typeof valor === 'string') return valor;
+  if (typeof valor === 'object' && valor !== null && valor.nombre) return valor.nombre;
+  return '';
+};
+
 export const PerfilService = {
   getPerfil: async (email: string): Promise<PerfilUI> => {
     const [perfilRes, iconsRes, pawnsRes, snakesRes, stairsRes] = await Promise.all([
@@ -24,22 +44,38 @@ export const PerfilService = {
     const stairsData = await stairsRes.json().catch(() => ({ escaleras: [] }));
 
     const todosMisCosmeticos = [
-      ...iconsData.iconos.map((nombre: string) => ({ id: nombre, tipo: 'Icono', nombre })),
-      ...pawnsData.fichas.map((nombre: string) => ({ id: nombre, tipo: 'Ficha', nombre })),
-      ...snakesData.serpientes.map((nombre: string) => ({ id: nombre, tipo: 'Serpiente', nombre })),
-      ...stairsData.escaleras.map((nombre: string) => ({ id: nombre, tipo: 'Escalera', nombre }))
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ...iconsData.iconos.map((item: any) => {
+        const nombre = typeof item === 'string' ? item : item.nombre;
+        return { id: nombre, tipo: 'Icono', nombre: formatearNombreItem(nombre), imagen: generarUrlImagen(nombre) };
+      }),
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ...pawnsData.fichas.map((item: any) => {
+        const nombre = typeof item === 'string' ? item : item.nombre;
+        return { id: nombre, tipo: 'Skin_Ficha', nombre: formatearNombreItem(nombre), imagen: generarUrlImagen(nombre) };
+      }),
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ...snakesData.serpientes.map((item: any) => {
+        const nombre = typeof item === 'string' ? item : item.nombre;
+        return { id: nombre, tipo: 'Skin_Serpiente', nombre: formatearNombreItem(nombre), imagen: generarUrlImagen(nombre) };
+      }),
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ...stairsData.escaleras.map((item: any) => {
+        const nombre = typeof item === 'string' ? item : item.nombre;
+        return { id: nombre, tipo: 'Skin_Escalera', nombre: formatearNombreItem(nombre), imagen: generarUrlImagen(nombre) };
+      })
     ];
 
     return {
       username: data.nombre,
-      fotoPerfil: data.iconoActual,
+      fotoPerfil: normalizarNombre(data.iconoActual),
       victorias: data.victorias,
       derrotas: data.derrotas,
       sep: data.SEP,
       cosmeticos: [
-        { id: 'ficha_actual', tipo: 'Ficha', nombre: data.FichaActual },
-        { id: 'serpiente_actual', tipo: 'Serpiente', nombre: data.SerpienteActual },
-        { id: 'escalera_actual', tipo: 'Escalera', nombre: data.EscaleraActual }
+        { id: 'ficha_actual', tipo: 'Skin_Ficha', nombre: formatearNombreItem(normalizarNombre(data.FichaActual)), imagen: generarUrlImagen(normalizarNombre(data.FichaActual)) },
+        { id: 'serpiente_actual', tipo: 'Skin_Serpiente', nombre: formatearNombreItem(normalizarNombre(data.SerpienteActual)), imagen: generarUrlImagen(normalizarNombre(data.SerpienteActual)) },
+        { id: 'escalera_actual', tipo: 'Skin_Escalera', nombre: formatearNombreItem(normalizarNombre(data.EscaleraActual)), imagen: generarUrlImagen(normalizarNombre(data.EscaleraActual)) }
       ],
       todosMisCosmeticos 
     };
@@ -54,15 +90,15 @@ export const PerfilService = {
         endpoint = 'icon';
         bodyData = { icon: item.nombre };
         break;
-      case 'Ficha':
+      case 'Skin_Ficha':
         endpoint = 'pawn';
         bodyData = { pawn: item.nombre };
         break;
-      case 'Serpiente':
+      case 'Skin_Serpiente':
         endpoint = 'snake';
         bodyData = { snake: item.nombre };
         break;
-      case 'Escalera':
+      case 'Skin_Escalera':
         endpoint = 'stair';
         bodyData = { stair: item.nombre };
         break;
@@ -82,5 +118,21 @@ export const PerfilService = {
     }
 
     return true;
+  },
+
+  cambiarUsername: async (email: string, nuevoNombre: string): Promise<boolean> => {
+  const response = await fetch(`${API_URL}/users/${email}/username`, {
+    method: 'PUT',
+    credentials: 'include',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ username: nuevoNombre })
+  });
+
+  if (!response.ok) {
+    const err = await response.json().catch(() => ({}));
+    throw new Error(err.error || 'Error al cambiar el nombre');
   }
+
+  return true;
+}
 };

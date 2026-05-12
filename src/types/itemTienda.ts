@@ -1,5 +1,5 @@
 
-export type tipoSkin = 'escalera' | 'serpiente' | 'icono' | 'ficha';
+export type tipoSkin = 'Skin_Escalera' | 'Skin_Serpiente' | 'Icono' | 'Skin_Ficha';
 
 export interface CosmeticoAPI {
   nomCosmetico: string;
@@ -9,10 +9,10 @@ export interface CosmeticoAPI {
 }
 
 export const TIPOS_COSMETICS: Record<string, tipoSkin> = {
-  'escalera': 'escalera',
-  'serpiente': 'serpiente',
-  'icono': 'icono',
-  'ficha': 'ficha',
+  'Skin_Escalera': 'Skin_Escalera',
+  'Skin_Serpiente': 'Skin_Serpiente',
+  'Icono': 'Icono',
+  'Skin_Ficha': 'Skin_Ficha',
 };
 
 interface ItemTienda {

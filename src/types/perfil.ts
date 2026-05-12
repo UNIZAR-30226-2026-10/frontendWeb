@@ -1,8 +1,8 @@
 export interface Cosmetico {
   id: string;
   nombre: string;
-  tipo: 'Ficha' | 'Escalera' | 'Serpiente';
-  imagen?: string;
+  tipo: 'Skin_Ficha' | 'Skin_Escalera' | 'Skin_Serpiente' | 'Icono';
+  imagen: string;
 }
 
 export interface PerfilUI {

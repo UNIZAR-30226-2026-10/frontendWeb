@@ -29,14 +29,33 @@ export const usePerfil = (email: string) => {
         nombre: itemAEquipar.id
       });
       if (exito) {
-        // Actualización optimista: cambiamos la UI antes de re-descargar
+      // ACTUALIZACIÓN OPTIMISTA
+      if (itemAEquipar.tipo === 'Icono') {
+        setPerfil({ ...perfil, fotoPerfil: itemAEquipar.id });
+      } else {
         const nuevosEquipados = perfil.cosmeticos.map(c => 
           c.tipo === itemAEquipar.tipo ? itemAEquipar : c
         );
         setPerfil({ ...perfil, cosmeticos: nuevosEquipados });
       }
-    } catch (err) {
+    }
+    } catch {
       alert("No se pudo equipar el item en el servidor.");
+    }
+  };
+
+  const actualizarUsername = async (nuevoNombre: string) => {
+    if (!perfil || !nuevoNombre.trim()) return;
+    if (nuevoNombre.length < 3) throw new Error("El nombre es demasiado corto");
+
+    try {
+      const exito = await PerfilService.cambiarUsername(email, nuevoNombre);
+      if (exito) {
+        // Actualización optimista del estado local
+        setPerfil({ ...perfil, username: nuevoNombre });
+      }
+    } catch (err) {
+      throw err; // Re-lanzamos para que el componente maneje el error
     }
   };
 
@@ -44,5 +63,5 @@ export const usePerfil = (email: string) => {
     if (email) fetchPerfil();
   }, [email, fetchPerfil]);
 
-  return { perfil, isLoading, error, actualizarEquipamiento, refresh: fetchPerfil };
+  return { perfil, isLoading, error, actualizarEquipamiento, actualizarUsername, refresh: fetchPerfil };
 };
