@@ -86,13 +86,66 @@ export const MazoService = {
     return mazo;
   },
 
-  updateMazo: async (email: string, id: string, name: string, cards: Carta[]) => {
-    // Borramos el existente y creamos el nuevo (no hay PUT en el back)
-    try {
-        await MazoService.deleteMazo(email, id);
-    } catch (e) {
-        console.warn("No se pudo borrar el mazo anterior, procediendo a crear...");
+  updateMazo: async (email: string, id: string, name: string, newCards: Carta[]) => {
+    const currentMazo = await MazoService.getMazoById(email, id);
+    const currentCards = currentMazo.cartas;
+
+    const currentCount: Record<string, number> = {};
+    const currentMap: Record<string, Carta> = {};
+    currentCards.forEach(c => {
+      currentCount[c.nombre] = (currentCount[c.nombre] || 0) + 1;
+      currentMap[c.nombre] = c;
+    });
+
+    const newCount: Record<string, number> = {};
+    const newMap: Record<string, Carta> = {};
+    newCards.forEach(c => {
+      newCount[c.nombre] = (newCount[c.nombre] || 0) + 1;
+      newMap[c.nombre] = c;
+    });
+
+    const format = (c: Carta) => ({
+      nombre: c.nombre,
+      calidad: c.calidad.normalize("NFD").replace(/[\u0300-\u036f]/g, "").charAt(0).toUpperCase() + c.calidad.slice(1).toLowerCase(),
+      tipo: c.tipo.charAt(0).toUpperCase() + c.tipo.slice(1).toLowerCase(),
+      descripcion: c.descripcion
+    });
+
+    const cartaAñadir: any[] = [];
+    const cartaEliminar: any[] = [];
+
+    for (const nameKey in newCount) {
+      const diff = newCount[nameKey] - (currentCount[nameKey] || 0);
+      for (let i = 0; i < diff; i++) {
+        cartaAñadir.push(format(newMap[nameKey]));
+      }
     }
-    return await MazoService.createMazo(email, name, cards);
+
+    for (const nameKey in currentCount) {
+      const diff = currentCount[nameKey] - (newCount[nameKey] || 0);
+      for (let i = 0; i < diff; i++) {
+        cartaEliminar.push(format(currentMap[nameKey]));
+      }
+    }
+
+    const payload = {
+      nombre: name,
+      cartaAñadir,
+      cartaEliminar
+    };
+
+    const url = `${API_URL}/users/${encodeURIComponent(email)}/decks/${encodeURIComponent(id)}`;
+    const response = await fetch(url, {
+      method: 'PUT',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) {
+      const err = await response.json().catch(() => ({}));
+      throw new Error(err.error || 'Error al actualizar el mazo');
+    }
+    return true;
   }
 };  
