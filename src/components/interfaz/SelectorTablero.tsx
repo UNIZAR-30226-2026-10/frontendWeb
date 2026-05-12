@@ -1,5 +1,6 @@
 "use client";
 import React, { useState } from "react";
+import Image from "next/image";
 
 interface SelectorTableroProps {
   tableroSeleccionado: string;
@@ -13,6 +14,14 @@ const SelectorTablero: React.FC<SelectorTableroProps> = ({
   tablerosDisponibles
 }) => {
   const [isOpen, setIsOpen] = useState(false);
+
+  // Formatear nombre del tablero para la ruta de imagen
+  const formatearNombreTablero = (nombre: string) => {
+    return nombre
+      .toLowerCase()
+      .replace(/\s+/g, "_")
+      .replace(/[^a-z0-9_]/g, "");
+  };
 
   const listaTableros = tablerosDisponibles && tablerosDisponibles.length > 0
     ? tablerosDisponibles
@@ -32,11 +41,22 @@ const SelectorTablero: React.FC<SelectorTableroProps> = ({
       >
         <p className="font-bold text-xl text-white self-start ml-1">Tablero</p>
 
-        <div className="w-full flex-1 rounded-2xl border border-white/20 bg-gradient-to-br from-white/10 to-white/5 flex items-center justify-center px-4 text-center flex-col gap-2">
+        <div className="w-full flex-1 rounded-2xl border border-white/20 bg-gradient-to-br from-white/10 to-white/5 flex items-center justify-center px-4 text-center flex-col gap-2 relative overflow-hidden">
+          {/* Imagen de fondo del tablero seleccionado */}
+          {tableroSeleccionado && (
+            <Image
+              src={`/tablero_${formatearNombreTablero(tableroSeleccionado)}.png`}
+              alt={tableroSeleccionado}
+              fill
+              className="object-cover opacity-30 absolute inset-0"
+              sizes="220px"
+            />
+          )}
+          
           <span className="text-6xl transform group-hover:rotate-12 group-hover:scale-110 transition-transform duration-200 select-none z-10 drop-shadow">
             ✏️
           </span>
-          <div>
+          <div className="relative z-10">
             <p className="text-white font-bold text-lg leading-tight">{tableroSeleccionado || 'Selecciona un tablero'}</p>
             <p className="text-white/60 text-xs uppercase tracking-widest mt-2">Seleccionar tablero</p>
           </div>
@@ -81,10 +101,14 @@ const SelectorTablero: React.FC<SelectorTableroProps> = ({
                       : "border-transparent bg-white/5 hover:bg-white/10"
                     }`}
                   >
-                    <div className="w-full aspect-video rounded-lg border border-white/15 bg-black/20 flex items-center justify-center">
-                      <span className="text-white/25 font-bold text-xs uppercase tracking-[0.3em] select-none pointer-events-none">
-                        Sin imagen
-                      </span>
+                    <div className="w-full aspect-video rounded-lg border border-white/15 bg-black/20 flex items-center justify-center overflow-hidden relative">
+                      <Image
+                        src={`/tablero_${formatearNombreTablero(tableroNombre)}.png`}
+                        alt={tableroNombre}
+                        fill
+                        className="object-cover"
+                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                      />
                     </div>
                     
                     <div className="pt-4 text-center">
