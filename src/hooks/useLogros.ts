@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { LogroUI } from '@/types/logro';
 import { LogrosService } from '@/services/logros.service';
+import { CardsService } from '@/services/cartas.service';
 
 export const useLogros = (email: string) => {
   const [logros, setLogros] = useState<LogroUI[]>([]);
@@ -12,9 +13,10 @@ export const useLogros = (email: string) => {
   const fetchLogros = async () => {
     try {
       setIsLoading(true);
-      const [stats, globalLogros] = await Promise.all([
+      const [stats, globalLogros, misCartas] = await Promise.all([
         LogrosService.getUserStats(email),
-        LogrosService.getGlobalAchievements()
+        LogrosService.getGlobalAchievements(),
+        CardsService.getAllCardsByUser(email)
       ]);
 
       const logrosProcesados: LogroUI[] = globalLogros.map(l => {
@@ -26,7 +28,8 @@ export const useLogros = (email: string) => {
           case 'Partidas': progreso = stats.PartidasJugadas || 0; break;
           case 'SEP': progreso = stats.SEP || 0; break;
           case 'CartasJugadas': progreso = stats.CartasJugadas || 0; break;
-          case 'CartasColeccionadas': progreso = stats.CartasLegendarias || 0; break; // O la lógica que prefieras
+          case 'LogrosDesbloqueados': progreso = stats.LogrosCompletados?.length || 0; break;
+          case 'CartasColeccionadas': progreso = misCartas.length || 0; break;
           default: progreso = 0;
         }
 

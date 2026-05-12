@@ -20,8 +20,8 @@
       const cargarDatos = async () => {
         try {
           setIsLoading(true);
-          // 1. Cargamos todas las cartas disponibles en el juego
-          const catalogo = await CardsService.getAllCards();
+          // 1. Cargamos las cartas que pertenecen al usuario (su colección)
+          const catalogo = await CardsService.getAllCardsByUser(email);
           setCartasDisponibles(catalogo);
 
           // 2. Si editamos, cargamos el mazo

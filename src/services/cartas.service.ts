@@ -30,5 +30,28 @@ export const CardsService = {
       imagen: `/Cartas/${imageSlug(c.nombre)}.png`,
       efecto: ""
     }));
+  },
+
+  /**
+   * Obtiene las cartas que pertenecen específicamente al usuario (su colección).
+   * Llama a GET /api/users/:email/cards en lugar del catálogo global.
+   */
+  getAllCardsByUser: async (email: string): Promise<Carta[]> => {
+    const response = await fetch(
+      `${API_URL}/users/${encodeURIComponent(email)}/cards`,
+      { credentials: 'include' }
+    );
+    if (!response.ok) throw new Error('Error al obtener las cartas del usuario');
+
+    const data = await response.json();
+
+    return data.cards.map((c: any) => ({
+      nombre: c.nombre,
+      tipo: c.tipo,
+      calidad: c.calidad,
+      descripcion: c.descripcion,
+      imagen: `/Cartas/${imageSlug(c.nombre)}.png`,
+      efecto: ""
+    }));
   }
 };

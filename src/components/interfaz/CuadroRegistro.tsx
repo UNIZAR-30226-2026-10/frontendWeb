@@ -37,10 +37,20 @@ export default function CuadroRegistro() {
       await CuentaService.register(email, nombre, password);
       setMostrarExito(true);
     } catch (err) {
-      if (err instanceof Error) {
-        setError(err.message || 'Error al registrar la cuenta');
-      } else {
-        setError('Error al registrar la cuenta');
+      // El backend a veces crea el usuario pero falla en pasos de inicialización posteriores
+      // (cosméticos por defecto, etc.) y devuelve error aunque el usuario sí quedó creado.
+      // Intentamos un login silencioso para comprobarlo.
+      try {
+        await CuentaService.login(email, password);
+        // Si el login tuvo éxito, el usuario existe: tratamos como registro exitoso
+        setMostrarExito(true);
+      } catch {
+        // Si el login también falla, el registro realmente falló
+        if (err instanceof Error) {
+          setError(err.message || 'Error al registrar la cuenta');
+        } else {
+          setError('Error al registrar la cuenta');
+        }
       }
     } finally {
       setCargando(false);
