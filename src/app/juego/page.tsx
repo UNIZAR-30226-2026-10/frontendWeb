@@ -7,6 +7,7 @@ import HuecoJugador from "@/components/interfaz/HuecoJugador";
 import PopupSalirLobby from "@/components/interfaz/PopupSalirLobby";
 import SelectorMazo from "@/components/interfaz/SelectorMazo";
 import SelectorTablero from "@/components/interfaz/SelectorTablero";
+import ModalError from "@/components/interfaz/ModalError";
 import { useLobby } from "@/hooks/useLobby";
 import { useMazos } from "@/hooks/useMazos";
 import { useUser } from "@/context/userContext";
@@ -39,6 +40,7 @@ export default function JuegoPrincipalPage() {
   } = useLobby();
 
   const [mostrarPopupSalir, setMostrarPopupSalir] = useState(false);
+  const [errorIniciandoPartida, setErrorIniciandoPartida] = useState<string | null>(null);
   const [mazoElegido, setMazoElegido] = useState("");
   const [tableroElegido, setTableroElegido] = useState("");
   const [tablerosDisponibles, setTablerosDisponibles] = useState<string[]>([]);
@@ -313,8 +315,9 @@ export default function JuegoPrincipalPage() {
                   const partida = await MatchesService.iniciarPartida(lobby?.idLobby)
                   router.push(`/partida?matchId=${encodeURIComponent(partida.ID)}`);
                 }
-                catch(err) {
+                catch(err: any) {
                   console.error("Error al iniciar la partida:", err);
+                  setErrorIniciandoPartida(err.message || "Error desconocido al iniciar la partida");
                 }
               }}
               disabled={loading || !estoyListo}
@@ -352,6 +355,13 @@ export default function JuegoPrincipalPage() {
         </div>
 
       </div>
+
+      {errorIniciandoPartida && (
+        <ModalError
+          mensaje={errorIniciandoPartida}
+          onClose={() => setErrorIniciandoPartida(null)}
+        />
+      )}
     </main>
   );
 }

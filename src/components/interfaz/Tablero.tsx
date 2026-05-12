@@ -207,6 +207,10 @@ const fichaActualizada = jugadorActualizado?.fichas.find(
 };
 
   const renderizarObstaculosPNG = () => {
+    const jugadorActual = partidaJugadores.find((p) => p.nombre === equipoActual);
+    const nombreSerpiente = jugadorActual?.serpienteActualField || "serpiente_default";
+    const nombreEscalera = jugadorActual?.escaleraActualField || "escalera_default";
+
     return Object.entries(saltosDinamicos).map(([inicio, fin]) => {
       const inicioNumero = Number(inicio);
       const start = obtenerCoordenadas(inicioNumero);
@@ -237,7 +241,7 @@ const fichaActualizada = jugadorActualizado?.fichas.find(
           >
             <div className="h-full flex-shrink-0 overflow-hidden relative z-20">
               <img
-                src="/escalera_estratega_base.png"
+                src={`/${nombreEscalera}_base.png`}
                 alt="Base"
                 className="h-full w-auto block max-w-none"
               />
@@ -246,7 +250,7 @@ const fichaActualizada = jugadorActualizado?.fichas.find(
             <div
               className="h-full flex-1 relative z-10"
               style={{
-                backgroundImage: "url(/escalera_estratega_cuerpo.png)",
+                backgroundImage: `url(/${nombreEscalera}_cuerpo.png)`,
                 backgroundRepeat: "repeat-x",
                 backgroundSize: "auto 100%",
                 backgroundPosition: "left center",
@@ -256,7 +260,7 @@ const fichaActualizada = jugadorActualizado?.fichas.find(
 
             <div className="h-full flex-shrink-0 overflow-hidden relative z-20">
               <img
-                src="/escalera_estratega_tope.png"
+                src={`/${nombreEscalera}_tope.png`}
                 alt="Tope"
                 className="h-full w-auto block max-w-none"
               />
@@ -285,7 +289,7 @@ const fichaActualizada = jugadorActualizado?.fichas.find(
             style={{ width: "52px" }}
           >
             <img
-              src="/serpiente_futuro_cabeza.png"
+              src={`/${nombreSerpiente}_cabeza.png`}
               alt="Cabeza"
               className="h-full max-w-none"
               style={{
@@ -299,7 +303,7 @@ const fichaActualizada = jugadorActualizado?.fichas.find(
           <div
             className="h-full flex-1"
             style={{
-              backgroundImage: "url(/serpiente_futuro_cuerpo.png)",
+              backgroundImage: `url(/${nombreSerpiente}_cuerpo.png)`,
               backgroundRepeat: "repeat-x",
               backgroundSize: "22px 44%",
               backgroundPosition: "left center",
@@ -311,7 +315,7 @@ const fichaActualizada = jugadorActualizado?.fichas.find(
             style={{ width: "70px" }}
           >
             <img
-              src="/serpiente_futuro_cola.png"
+              src={`/${nombreSerpiente}_cola.png`}
               alt="Cola"
               className="h-full max-w-none"
               style={{

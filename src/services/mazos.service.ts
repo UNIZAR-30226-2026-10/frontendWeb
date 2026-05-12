@@ -87,10 +87,22 @@ export const MazoService = {
   },
 
   updateMazo: async (email: string, id: string, name: string, newCards: Carta[]) => {
+    const CALIDAD_MAP: Record<string, string> = {
+      'comun': 'Comun', 'común': 'Comun',
+      'rara': 'Rara',
+      'epica': 'Epica', 'épica': 'Epica',
+      'legendaria': 'Legendaria',
+    };
+    const TIPO_MAP: Record<string, string> = {
+      'ofensiva': 'Ofensiva',
+      'defensiva': 'Defensiva',
+      'entorno': 'Entorno',
+    };
+
     const format = (c: Carta) => ({
       nombre: c.nombre,
-      calidad: c.calidad.normalize("NFD").replace(/[\u0300-\u036f]/g, "").charAt(0).toUpperCase() + c.calidad.slice(1).toLowerCase(),
-      tipo: c.tipo.charAt(0).toUpperCase() + c.tipo.slice(1).toLowerCase(),
+      calidad: CALIDAD_MAP[c.calidad.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "")] ?? c.calidad,
+      tipo: TIPO_MAP[c.tipo.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "")] ?? c.tipo,
       descripcion: c.descripcion
     });
 
