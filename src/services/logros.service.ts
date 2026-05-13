@@ -1,4 +1,4 @@
-import { LogroUI, AchievementApi, UserStatsApi } from '@/types/logro';
+import { AchievementApi, UserStatsApi } from '@/types/logro';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
 

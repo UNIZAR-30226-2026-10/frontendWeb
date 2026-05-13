@@ -26,7 +26,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
         
         localStorage.setItem('userEmail', data.email);
         localStorage.setItem('username', data.username); 
-      } catch (error) {
+      } catch {
         const emailGuardado = localStorage.getItem('userEmail');
         const usernameGuardado = localStorage.getItem('username'); 
         

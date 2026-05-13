@@ -24,8 +24,8 @@ export default function CajaCambiarNombre({ nombreActual, onClose, onSave }: Caj
       setErrorLocal(null);
       await onSave(nuevoNombre);
       onClose();
-    } catch (err: any) {
-      setErrorLocal(err.message);
+    } catch (err: unknown) {
+      setErrorLocal(err instanceof Error ? err.message : 'Error desconocido');
     } finally {
       setEnviando(false);
     }

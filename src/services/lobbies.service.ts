@@ -100,6 +100,7 @@ export const LobbiesService = {
     const data = await response.json().catch(() => ({ invites: [] }));
     const invitesRaw = data.invites || [];
     // Normalize backend field names: accept either 'lobbyID' or 'partidaID'
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const invites: Invitacion[] = invitesRaw.map((i: any) => ({
       inviteFor: i.inviteFor,
       inviteFrom: i.inviteFrom,

@@ -17,8 +17,8 @@ export const useAmigos = (email: string) => {
       const list = await AmigosService.getAmigos(email);
       setAmigos(list);
       setError(null);
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Error desconocido');
     } finally {
       setIsLoading(false);
     }
@@ -43,8 +43,8 @@ export const useAmigos = (email: string) => {
       await AmigosService.addAmigo(email, friendUsername.trim());
       await fetchAmigos(); // Refresca la lista inmediatamente
       return true;
-    } catch (err: any) {
-      setAddError(err.message || 'No se pudo añadir al amigo');
+    } catch (err: unknown) {
+      setAddError(err instanceof Error ? err.message : 'No se pudo añadir al amigo');
       return false;
     } finally {
       setIsAdding(false);
@@ -58,7 +58,7 @@ export const useAmigos = (email: string) => {
       await AmigosService.removeAmigo(email, friendUsername.trim());
       await fetchAmigos(); // Refresca la lista inmediatamente
       return true;
-    } catch (err: any) {
+    } catch {
       return false;
     } finally {
       setIsRemoving(false);

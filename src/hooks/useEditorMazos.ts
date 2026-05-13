@@ -75,7 +75,7 @@
           await MazoService.createMazo(email, nombreMazo, cartasSeleccionadas);
         }
         setExitoGuardado(true);
-      } catch (err) {
+      } catch {
         setErrorMazo({ abierto: true, mensaje: 'Error al guardar' });
       } finally {
         setIsSaving(false);

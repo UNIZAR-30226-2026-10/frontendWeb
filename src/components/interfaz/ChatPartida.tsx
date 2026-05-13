@@ -16,12 +16,26 @@ export function ChatPartida({ partidaId, username }: ChatPartidaProps) {
   } = useChatPartida({ partidaId, username, pollingMs: 2000 });
 
   const scrollRef = useRef<HTMLDivElement>(null);
+  const isAtBottom = useRef<boolean>(true);
+
+  const handleScroll = () => {
+    const container = scrollRef.current;
+    if (container) {
+      const { scrollTop, scrollHeight, clientHeight } = container;
+      const alFinal = Math.abs(scrollHeight - scrollTop - clientHeight) < 30;
+      isAtBottom.current = alFinal;
+    }
+  };
 
   useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    const container = scrollRef.current;
+    if (container) {
+      const ultimoMensajeEsMio = chat.length > 0 && chat[chat.length - 1].mandadoPor === username;
+      if (isAtBottom.current || ultimoMensajeEsMio) {
+        container.scrollTop = container.scrollHeight;
+      }
     }
-  }, [chat]);
+  }, [chat, username]);
 
   const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -40,6 +54,7 @@ export function ChatPartida({ partidaId, username }: ChatPartidaProps) {
       {/* Messages */}
       <div 
         ref={scrollRef}
+        onScroll={handleScroll}
         className="flex-1 overflow-y-auto p-2 flex flex-col gap-2 min-h-0 text-sm scrollbar-thin scrollbar-thumb-yellow-500 scrollbar-track-transparent"
       >
         {chat.map((msg, index) => {

@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 import Carta from "@/types/carta";
 import React from 'react'
 

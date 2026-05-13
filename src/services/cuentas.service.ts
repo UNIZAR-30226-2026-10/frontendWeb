@@ -39,7 +39,7 @@ export const CuentaService = {
     
     try {
       data = JSON.parse(text); 
-    } catch (e) {
+    } catch {
       data = { message: text }; 
     }
     
