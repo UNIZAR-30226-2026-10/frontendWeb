@@ -25,6 +25,9 @@ const HuecoJugador: React.FC<HuecoJugadorProps> = ({
 }) => {
 
   const resolverRutaIcono = (icono?: string): string => {
+    if(esBot) {
+      return `/icono_bots.png`;
+    }
     if (!icono || icono.trim() === '' || icono.toLowerCase() === 'null') {
       return '/icono_default.png';
     }

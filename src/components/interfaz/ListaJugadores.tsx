@@ -51,7 +51,11 @@ export const ListaJugadores: React.FC<Props> = ({ jugadores }) => {
                   className="w-full h-full object-cover rounded-full"
                 />
               ) : (
-                <span className="text-xs drop-shadow-sm">🐍</span>
+                <img
+                  src="/icono_bots.png"
+                  alt={jugador.nombreJugador}
+                  className="w-full h-full object-cover rounded-full"
+                /> 
               )}
               {jugador.esLider && (
                 <span className="absolute -top-5 -right-1 text-xl drop-shadow-md rotate-12">👑</span>
