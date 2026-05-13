@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import SlotSelectorSkin from '@/components/interfaz/SlotSelectorSkin';
 import SelectorSkin from '@/components/interfaz/SelectorSkin';
 import SelectorNombre from '@/components/interfaz/CajaCambiarNombre'; // Asegúrate de crearlo
@@ -18,17 +19,29 @@ const mostrartipo = (tipo: string): string => {
 };
 
 export default function Perfil() {
+  const router = useRouter();
   const { userEmail, logout,username, setUser } = useUser(); 
   const { 
     perfil, 
     isLoading, 
     error, 
     actualizarEquipamiento, 
-    actualizarUsername 
+    actualizarUsername,
+    eliminarUser
   } = usePerfil(userEmail || "");
 
   const [tipoEdicion, setTipoEdicion] = useState<string | null>(null);
   const [editandoNombre, setEditandoNombre] = useState(false);
+  const [mostrarConfirmacionEliminar, setMostrarConfirmacionEliminar] = useState(false);
+
+  const manejarEliminarCuenta = async () => {
+    try {
+      await eliminarUser(userEmail || "");
+      logout(); // Cierra sesión y limpia el contexto
+    } catch (err) {
+      alert('Error al eliminar la cuenta');
+    }
+  };
 
   const manejarCambioNombre = async (nuevoNombre: string) => {
     await actualizarUsername(nuevoNombre);
@@ -76,6 +89,30 @@ export default function Perfil() {
           onClose={() => setEditandoNombre(false)}
           onSave={manejarCambioNombre}
         />
+      )}
+
+      {/* MODAL: Confirmación Eliminar Cuenta */}
+      {mostrarConfirmacionEliminar && (
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
+          <div className="bg-[#283F9F] border-4 border-red-500 rounded-lg p-6 max-w-sm w-full mx-4">
+            <h2 className="text-white text-xl font-bold mb-4">¿Eliminar cuenta?</h2>
+            <p className="text-white/80 mb-6">Esta acción es irreversible. Se eliminará tu cuenta y todos tus datos.</p>
+            <div className="flex gap-4">
+              <button
+                onClick={() => setMostrarConfirmacionEliminar(false)}
+                className="flex-1 bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded transition-colors"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={manejarEliminarCuenta}
+                className="flex-1 bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded transition-colors"
+              >
+                Eliminar
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     
     <main className="w-full h-full flex flex-col p-4 md:p-6 overflow-y-auto custom-scroll">
@@ -129,14 +166,23 @@ export default function Perfil() {
               <span className="text-3xl md:text-4xl font-bold text-white">{perfil.sep}</span>
             </div>
 
-            {/* Botón Logout */}
-            <button
-              onClick={logout}
-              className="text-white/90 hover:text-amber-400 text-xs md:text-sm font-bold uppercase tracking-widest transition-all flex items-center gap-2 group w-fit"
-            >
-              <span className="text-lg transition-transform group-hover:scale-110">⎋</span> 
-              Cerrar Sesión
-            </button>
+            {/* Botones Logout y Eliminar Cuenta */}
+            <div className="flex gap-3 flex-wrap">
+              <button
+                onClick={logout}
+                className="text-white/90 hover:text-amber-400 text-xs md:text-sm font-bold uppercase tracking-widest transition-all flex items-center gap-2 group w-fit"
+              >
+                <span className="text-lg transition-transform group-hover:scale-110">⎋</span> 
+                Cerrar Sesión
+              </button>
+              <button
+                onClick={() => setMostrarConfirmacionEliminar(true)}
+                className="text-red-400 hover:text-red-200 text-xs md:text-sm font-bold uppercase tracking-widest transition-all flex items-center gap-2 group w-fit"
+              >
+                <span className="text-lg transition-transform group-hover:scale-110">🗑️</span>
+                Eliminar Cuenta
+              </button>
+            </div>
           </div>
         </div>
 

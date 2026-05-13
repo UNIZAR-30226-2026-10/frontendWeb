@@ -58,10 +58,22 @@ export const usePerfil = (email: string) => {
       throw err; // Re-lanzamos para que el componente maneje el error
     }
   };
+  const eliminarUser = async (email: string) => {
+    try {
+      const exito = await PerfilService.deleteUser(email);
+      if (exito) {
+        alert("Usuario eliminado exitosamente.");
+      } else {
+        alert("No se pudo eliminar el usuario.");
+      }
+    } catch (err) {
+      alert("No se pudo eliminar el usuario.");
+    }
+  };
 
   useEffect(() => {
     if (email) fetchPerfil();
   }, [email, fetchPerfil]);
 
-  return { perfil, isLoading, error, actualizarEquipamiento, actualizarUsername, refresh: fetchPerfil };
+  return { perfil, isLoading, error, actualizarEquipamiento, actualizarUsername, eliminarUser, refresh: fetchPerfil };
 };

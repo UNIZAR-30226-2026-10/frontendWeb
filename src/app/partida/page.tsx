@@ -1,6 +1,6 @@
 "use client";
 
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { useUser } from "@/context/userContext";
 import { ListaJugadores } from "@/components/interfaz/ListaJugadores";
@@ -13,6 +13,7 @@ import type Carta from "@/types/carta";
 import { usePartida } from "@/hooks/useMatches";
 
 export default function Home() {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const partidaId = searchParams.get("matchId");
 
@@ -40,6 +41,11 @@ export default function Home() {
 
   const [cartaEnFoco, setCartaEnFoco] = useState<Carta | null>(null);
   const [mostrarTurnoCancelado, setMostrarTurnoCancelado] = useState(false);
+
+  const partidaFinalizada = partida?.estado === "Finalizada";
+  const hayGanador = Boolean(partida?.ganador?.nombre);
+  const soyGanador = Boolean(hayGanador && partida?.ganador?.nombre === username);
+  const sepGanados = partidaFinalizada ? (soyGanador ? 100 : 30) : 0;
 
   // Info cosmética del jugador actual
   const miJugadorPJ = partida?.partidaJugadores.find(p => p.nombre === username) ?? null;
@@ -183,7 +189,7 @@ export default function Home() {
         fichasPropias={miJugador?.fichas ?? []}
       />
 
-      {mostrarTurnoCancelado && (
+      {mostrarTurnoCancelado && !partidaFinalizada && (
         <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60">
           <div className="w-80 rounded-2xl border-4 border-red-500 bg-blue-900 p-6 text-center shadow-2xl">
             <h2 className="mb-4 text-2xl font-black text-white">Turno Cancelado</h2>
@@ -199,6 +205,37 @@ export default function Home() {
               }}
             >
               Entendido
+            </button>
+          </div>
+        </div>
+      )}
+
+      {partidaFinalizada && (
+        <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/70 p-4">
+          <div className="w-full max-w-md rounded-3xl border-4 border-yellow-400 bg-blue-950 p-7 text-center shadow-2xl">
+            <h2 className="mb-2 text-3xl font-black text-white">
+              {hayGanador ? (soyGanador ? "Has ganado" : "Has perdido") : "Partida finalizada"}
+            </h2>
+
+            <p className="mb-4 text-sm font-semibold text-blue-100">
+              {hayGanador
+                ? (soyGanador
+                  ? "Enhorabuena. Te llevas la victoria de la partida."
+                  : `Ganador: ${partida?.ganador?.nombre}`)
+                : "La partida ha terminado."}
+            </p>
+
+            <div className="mb-6 rounded-2xl border-2 border-amber-400 bg-amber-500/10 p-4">
+              <p className="text-xs font-bold uppercase tracking-widest text-amber-300">SEP obtenidos</p>
+              <p className="mt-1 text-4xl font-black text-amber-300">+{sepGanados}</p>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => router.push("/juego")}
+              className="w-full rounded-2xl bg-red-600 px-6 py-3 font-black uppercase tracking-wide text-white transition hover:scale-[1.02] hover:bg-red-500 active:scale-95"
+            >
+              Ir al menu principal
             </button>
           </div>
         </div>
