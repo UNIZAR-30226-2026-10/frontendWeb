@@ -15,6 +15,7 @@ const formatearNombreItem = (nombre: string): string => {
     .join(' ');
 };
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const normalizarNombre = (valor: any): string => {
   if (typeof valor === 'string') return valor;
   if (typeof valor === 'object' && valor !== null && valor.nombre) return valor.nombre;
@@ -43,18 +44,22 @@ export const PerfilService = {
     const stairsData = await stairsRes.json().catch(() => ({ escaleras: [] }));
 
     const todosMisCosmeticos = [
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       ...iconsData.iconos.map((item: any) => {
         const nombre = typeof item === 'string' ? item : item.nombre;
         return { id: nombre, tipo: 'Icono', nombre: formatearNombreItem(nombre), imagen: generarUrlImagen(nombre) };
       }),
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       ...pawnsData.fichas.map((item: any) => {
         const nombre = typeof item === 'string' ? item : item.nombre;
         return { id: nombre, tipo: 'Skin_Ficha', nombre: formatearNombreItem(nombre), imagen: generarUrlImagen(nombre) };
       }),
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       ...snakesData.serpientes.map((item: any) => {
         const nombre = typeof item === 'string' ? item : item.nombre;
         return { id: nombre, tipo: 'Skin_Serpiente', nombre: formatearNombreItem(nombre), imagen: generarUrlImagen(nombre) };
       }),
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       ...stairsData.escaleras.map((item: any) => {
         const nombre = typeof item === 'string' ? item : item.nombre;
         return { id: nombre, tipo: 'Skin_Escalera', nombre: formatearNombreItem(nombre), imagen: generarUrlImagen(nombre) };

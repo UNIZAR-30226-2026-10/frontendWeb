@@ -59,7 +59,7 @@ export const useLobby = () => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [username]);
 
   const obtenerLobbyDeJugador = useCallback(async () => {
     if (!username) {

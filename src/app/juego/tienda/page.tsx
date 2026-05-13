@@ -11,7 +11,7 @@ import { formatearNombreItem } from '@/hooks/useTienda';
 
 export default function Tienda() {
   const { userEmail } = useUser();
-  const { tienda, isLoading, error, isComprando, mensajeCompra, setMensajeCompra, manejarCompra } = useTienda(userEmail || '');
+  const { tienda, isLoading, error, isComprando, mensajeCompra, manejarCompra } = useTienda(userEmail || '');
   const [itemSeleccionado, setItemSeleccionado] = useState<ItemTienda | null>(null);
 
   if (isLoading) {

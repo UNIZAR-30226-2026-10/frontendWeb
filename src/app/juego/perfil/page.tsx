@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 'use client';
 
 import React, { useState } from 'react';
@@ -19,8 +20,7 @@ const mostrartipo = (tipo: string): string => {
 };
 
 export default function Perfil() {
-  const router = useRouter();
-  const { userEmail, logout,username, setUser } = useUser(); 
+  const { userEmail, logout, setUser } = useUser(); 
   const { 
     perfil, 
     isLoading, 

@@ -1,14 +1,39 @@
 import { Mazo } from '@/types/mazo';
 import { Carta } from '@/types/carta';
 
-// Mantenemos el 3000 para las llamadas a la API
-const API_URL = 'http://localhost:3000/api'; 
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
 
 const generarUrlImagen = (nombre: string): string => {
   const nombreArchivo = nombre.toLowerCase().replace(/\s+/g, '_');
   return `/Cartas/${nombreArchivo}.png`;
 };
 
+
+const CALIDAD_MAP: Record<string, string> = {
+  'comun': 'Comun',
+  'común': 'Comun',
+  'rara': 'Rara',
+  'epica': 'Epica',
+  'épica': 'Epica',
+  'legendaria': 'Legendaria',
+};
+const TIPO_MAP: Record<string, string> = {
+  'ofensiva': 'Ofensiva',
+  'defensiva': 'Defensiva',
+  'entorno': 'Entorno',
+};
+
+const normalizarCarta = (c: Carta) => {
+  const normalizedCalidad = String(c.calidad || '').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+  const normalizedTipo = String(c.tipo || '').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+
+  return {
+    nombre: c.nombre || '',
+    calidad: CALIDAD_MAP[normalizedCalidad] ?? c.calidad,
+    tipo: TIPO_MAP[normalizedTipo] ?? c.tipo,
+    descripcion: c.descripcion || '' // Muy importante: si es undefined/null, TypeBox falla al validar el array de cartas y da 'required property cartas'
+  };
+};
 
 export const MazoService = {
   // GET: Obtener mazos
@@ -22,10 +47,12 @@ export const MazoService = {
     const data = await res.json(); 
     
     // El backend devuelve el objeto { decks: [...] } y dentro de cada mazo el array .cartas
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return (data.decks || []).map((m: any) => ({
       id: m.nombre,
       nombre: m.nombre,
       is_in_use: false, 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       cartas: (m.cartas || []).map((c: any) => ({
         ...c,
         imagen: generarUrlImagen(c.nombre),
@@ -56,13 +83,7 @@ export const MazoService = {
   createMazo: async (email: string, nombre: string, cartas: Carta[]) => {
     const payload = { 
       nombre: nombre, 
-      cartas: cartas.map(c => ({
-        nombre: c.nombre, 
-        // Limpiamos ENUMS (Quitar tildes y Capitalizar: Épica -> Epica)
-        calidad: c.calidad.normalize("NFD").replace(/[\u0300-\u036f]/g, "").charAt(0).toUpperCase() + c.calidad.slice(1).toLowerCase(),
-        tipo: c.tipo.charAt(0).toUpperCase() + c.tipo.slice(1).toLowerCase(),
-        descripcion: c.descripcion
-      }))
+      cartas: cartas.map(normalizarCarta)
     };  
 
     const response = await fetch(`${API_URL}/users/${encodeURIComponent(email)}/decks`, {
@@ -87,51 +108,9 @@ export const MazoService = {
   },
 
   updateMazo: async (email: string, id: string, name: string, newCards: Carta[]) => {
-    const currentMazo = await MazoService.getMazoById(email, id);
-    const currentCards = currentMazo.cartas;
-
-    const currentCount: Record<string, number> = {};
-    const currentMap: Record<string, Carta> = {};
-    currentCards.forEach(c => {
-      currentCount[c.nombre] = (currentCount[c.nombre] || 0) + 1;
-      currentMap[c.nombre] = c;
-    });
-
-    const newCount: Record<string, number> = {};
-    const newMap: Record<string, Carta> = {};
-    newCards.forEach(c => {
-      newCount[c.nombre] = (newCount[c.nombre] || 0) + 1;
-      newMap[c.nombre] = c;
-    });
-
-    const format = (c: Carta) => ({
-      nombre: c.nombre,
-      calidad: c.calidad.normalize("NFD").replace(/[\u0300-\u036f]/g, "").charAt(0).toUpperCase() + c.calidad.slice(1).toLowerCase(),
-      tipo: c.tipo.charAt(0).toUpperCase() + c.tipo.slice(1).toLowerCase(),
-      descripcion: c.descripcion
-    });
-
-    const cartaAñadir: any[] = [];
-    const cartaEliminar: any[] = [];
-
-    for (const nameKey in newCount) {
-      const diff = newCount[nameKey] - (currentCount[nameKey] || 0);
-      for (let i = 0; i < diff; i++) {
-        cartaAñadir.push(format(newMap[nameKey]));
-      }
-    }
-
-    for (const nameKey in currentCount) {
-      const diff = currentCount[nameKey] - (newCount[nameKey] || 0);
-      for (let i = 0; i < diff; i++) {
-        cartaEliminar.push(format(currentMap[nameKey]));
-      }
-    }
-
     const payload = {
       nombre: name,
-      cartaAñadir,
-      cartaEliminar
+      cartas: newCards.map(normalizarCarta)
     };
 
     const url = `${API_URL}/users/${encodeURIComponent(email)}/decks/${encodeURIComponent(id)}`;

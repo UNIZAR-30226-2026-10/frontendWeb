@@ -65,6 +65,7 @@ export const useTienda = (email: string) => {
 
   useEffect(() => {
     fetchTienda();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [email]);
 
   return {

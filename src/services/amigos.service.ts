@@ -74,6 +74,7 @@ export const AmigosService = {
     const invitesRaw = data.invites || [];
 
     // El backend puede devolver lobbyID; el front consume partidaID.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return invitesRaw.map((i: any) => ({
       inviteFor: i.inviteFor,
       inviteFrom: i.inviteFrom,

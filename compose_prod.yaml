@@ -3,7 +3,18 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      args:
+        # Esto le pasa la variable al Dockerfile durante el 'build'
+        NEXT_PUBLIC_API_URL: http://20.250.148.59/api
     container_name: frontend_prod_ag
     restart: always
+    # El puerto 3001 es opcional porque Nginx usará el 3000 interno, 
+    # pero déjalo por si quieres probar sin Nginx.
     ports:
       - "3001:3000"
+    networks:
+      - red_universal
+
+networks:
+  red_universal:
+    external: true

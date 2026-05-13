@@ -13,6 +13,7 @@ import {
 
 function calcularMovimientosFrontend(
   partida: Partida,
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
   miJugador: any,
   tirada: number
 ): movimientosResponse[] {
@@ -35,14 +36,18 @@ function calcularMovimientosFrontend(
   let fichasBloqueadas: number[] = [];
   if (tirada === 6) {
     const posicionesFichas = miJugador.fichas
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       .filter((f: any) => !f.meta)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       .map((f: any) => f.casilla);
     const bloqueoUsuario = posicionesFichas.find(
       (pos: number, index: number) => posicionesFichas.indexOf(pos) !== index
     );
     if (bloqueoUsuario !== undefined) {
       fichasBloqueadas = miJugador.fichas
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         .filter((f: any) => f.casilla === bloqueoUsuario && !f.meta)
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         .map((f: any) => f.id);
     }
   }
@@ -74,6 +79,7 @@ function calcularMovimientosFrontend(
         if (checkBlockInBox(casillaTablero.siguientes[0])) {
           if (
             miJugador.efectosActivos.some(
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               (e: any) => e.resumenEfecto === "Saltar bloqueo"
             )
           ) {

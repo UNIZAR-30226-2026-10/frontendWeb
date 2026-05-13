@@ -16,6 +16,7 @@ export const useInvitaciones = (username: string) => {
   }, [username]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchInvites();
     const interval = setInterval(fetchInvites, 10000); // Polling cada 10 seg
     return () => clearInterval(interval);
@@ -37,7 +38,7 @@ export const useInvitaciones = (username: string) => {
       fetchInvites();
       // Al aceptar, redirigir al lobby (juego/page.tsx detecta el lobby existente)
       if (aceptar) window.location.href = `/juego`;
-    } catch (err) {
+    } catch {
       alert('Error al procesar la invitación');
     }
   };
