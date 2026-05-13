@@ -1,8 +1,7 @@
 import { Mazo } from '@/types/mazo';
 import { Carta } from '@/types/carta';
 
-// Mantenemos el 3000 para las llamadas a la API
-const API_URL = 'http://localhost:3000/api'; 
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
 
 const generarUrlImagen = (nombre: string): string => {
   const nombreArchivo = nombre.toLowerCase().replace(/\s+/g, '_');
