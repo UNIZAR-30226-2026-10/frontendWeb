@@ -90,12 +90,12 @@ export const ModalCarta: React.FC<ModalCartaProps> = ({
       }
       onJugar(carta, undefined, inicio);
     } else if (necesitaFicha) {
-      const fichaId = parseInt(fichaSeleccionada);
-      if (isNaN(fichaId)) {
+      const fichaIndex = parseInt(fichaSeleccionada);
+      if (isNaN(fichaIndex)) {
         alert("Selecciona una ficha.");
         return;
       }
-      onJugar(carta, fichaId);
+      onJugar(carta, fichaIndex);
     } else {
       onJugar(carta);
     }
@@ -195,11 +195,15 @@ export const ModalCarta: React.FC<ModalCartaProps> = ({
               disabled={fichasDisponibles.length === 0}
             >
               <option value="">-- Elige ficha --</option>
-              {fichasDisponibles.map((ficha, index) => (
-                <option key={ficha.id} value={ficha.id}>
-                  Ficha {index + 1} - Casilla {ficha.casilla}
+              {fichasPropias.map((ficha, index) => {
+                if (ficha.meta) return null;
+
+                return (
+                <option key={ficha.id} value={index}>
+                  Ficha {ficha.id} - Casilla {ficha.casilla}
                 </option>
-              ))}
+                );
+              })}
             </select>
             {fichasDisponibles.length === 0 && (
               <p className="mt-2 text-center text-xs text-yellow-300">

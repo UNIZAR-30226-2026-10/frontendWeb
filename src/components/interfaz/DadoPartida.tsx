@@ -16,7 +16,7 @@ export const DadoPartida: React.FC<DadoPartidaProps> = ({ onTirar, resultado, re
         className={`flex items-center justify-center transition-all ${deshabilitado ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:scale-110 active:scale-95'}`}
       >
         <img
-          src="/dado.jpg"
+          src="/Dado.jpg"
           alt="Dado"
           className="w-32 h-32 lg:w-40 lg:h-40 object-contain drop-shadow-2xl"
         />

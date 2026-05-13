@@ -144,7 +144,7 @@ export function usePartida({
 
     try {
       setCargandoPartida(true);
-      setErrorPartida(null);
+      // No limpiar el error aquí para que el modal de error requiera acción del usuario
 
       const data = await MatchesService.obtenerEstadoPartida(partidaId, username);
 
