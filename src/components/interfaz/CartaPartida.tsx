@@ -200,7 +200,7 @@ export const ModalCarta: React.FC<ModalCartaProps> = ({
 
                 return (
                 <option key={ficha.id} value={index}>
-                  Ficha {ficha.id} - Casilla {ficha.casilla}
+                  Ficha {ficha.id} - Casilla {ficha.casilla+1}
                 </option>
                 );
               })}
