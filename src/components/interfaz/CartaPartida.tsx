@@ -197,7 +197,7 @@ export const ModalCarta: React.FC<ModalCartaProps> = ({
               <option value="">-- Elige ficha --</option>
               {fichasDisponibles.map((ficha, index) => (
                 <option key={ficha.id} value={ficha.id}>
-                  Ficha {index + 1}
+                  Ficha {index + 1} - Casilla {ficha.casilla}
                 </option>
               ))}
             </select>

@@ -22,9 +22,10 @@ export const useLogros = (email: string) => {
       const logrosProcesados: LogroUI[] = globalLogros.map(l => {
         let progreso = 0;
 
-        // El backend usa Tipo_Logro enum (p.ej: 'Victorias', 'SEP', 'Partidas')
+        // El backend usa Tipo_Logro enum (p.ej: 'Victorias', 'SEP', 'Partidas', 'Derrotas')
         switch (l.tipo) {
           case 'Victorias': progreso = stats.victorias || 0; break;
+          case 'Derrotas': progreso = stats.derrotas || 0; break;
           case 'Partidas': progreso = stats.PartidasJugadas || 0; break;
           case 'SEP': progreso = stats.SEP || 0; break;
           case 'CartasJugadas': progreso = stats.CartasJugadas || 0; break;

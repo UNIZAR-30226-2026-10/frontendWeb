@@ -134,5 +134,25 @@ export const PerfilService = {
   }
 
   return true;
-}
+},
+
+  deleteUser: async (email: string): Promise<{ message: string }> => {
+    const response = await fetch(`${API_URL}/users/${email}`, {
+      method: 'DELETE',
+      credentials: 'include', 
+    });
+    const responseText = await response.text();
+    console.log('deleteUser response:', responseText);
+
+    if (!response.ok) {
+      throw new Error('Error al eliminar la cuenta en el servidor');
+    }
+
+    try {
+      return JSON.parse(responseText) as { message: string };
+    } catch {
+      return { message: responseText };
+    }
+
+  }
 };
