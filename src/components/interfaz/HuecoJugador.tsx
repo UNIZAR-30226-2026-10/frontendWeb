@@ -29,7 +29,7 @@ const HuecoJugador: React.FC<HuecoJugadorProps> = ({
       return `/icono_bots.png`;
     }
     if (!icono || icono.trim() === '' || icono.toLowerCase() === 'null') {
-      return '/icono_default.png';
+      return '/icono_bots.png';
     }
 
     // Si ya viene como URL o ruta absoluta, se usa tal cual.
