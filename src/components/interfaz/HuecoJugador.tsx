@@ -77,8 +77,8 @@ const HuecoJugador: React.FC<HuecoJugadorProps> = ({
             />
           ) : (
             <img
-              src="/icono_default.png"
-              alt="Icono por defecto"
+              src="/icono_bots.png"
+              alt="Icono por bot"
               className="w-full h-full object-cover"
             />
           )}
