@@ -4,7 +4,15 @@ import { Carta } from '@/types/carta';
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
 
 const generarUrlImagen = (nombre: string): string => {
-  const nombreArchivo = nombre.toLowerCase().replace(/\s+/g, '_');
+  const nombreArchivo = nombre
+    .normalize('NFD')                    // separa letras de acentos
+    .replace(/[\u0300-\u036f]/g, '')     // elimina tildes
+    .replace(/ñ/g, 'n')
+    .replace(/Ñ/g, 'n')
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, '_')                // espacios a _
+    .replace(/[^a-z0-9_]/g, '');         // elimina caracteres raros
   return `/Cartas/${nombreArchivo}.png`;
 };
 

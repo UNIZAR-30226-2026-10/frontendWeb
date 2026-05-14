@@ -112,7 +112,7 @@ export default function JuegoPrincipalPage() {
     if (!username || !lobbyId) return;
 
     const verificarLobbyActivo = async () => {
-      const lobbyActual = await obtenerLobbyDeJugador();
+      const lobbyActual = await obtenerLobbyDeJugador(true);
 
       if (!lobbyActual) {
         limpiarLobby();

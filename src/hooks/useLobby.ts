@@ -61,12 +61,12 @@ export const useLobby = () => {
     }
   }, [username]);
 
-  const obtenerLobbyDeJugador = useCallback(async () => {
+  const obtenerLobbyDeJugador = useCallback(async (silencioso = false) => {
     if (!username) {
       return null;
     }
 
-    setLoading(true);
+    if (!silencioso) setLoading(true);
     setError(null);
 
     try {
@@ -86,7 +86,7 @@ export const useLobby = () => {
       setError(errorMessage);
       return null;
     } finally {
-      setLoading(false);
+      if (!silencioso) setLoading(false);
     }
   }, [username]);
 
